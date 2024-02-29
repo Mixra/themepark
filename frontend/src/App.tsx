@@ -1,4 +1,5 @@
 import './App.css'
+
 //npm run dev to run the program
 
 //git pull before you start to get the updated version
@@ -7,9 +8,11 @@ import './App.css'
 function App() {
   return (
     <div>
-      <h1>Theme Park Project Frontend</h1>
-      <h2>Test</h2>
+      <h1>Theme Park Management System</h1>
+      <h2>Login</h2>
+      <h2>Buy Tickets</h2>
     </div>
+
   )
 }
 
