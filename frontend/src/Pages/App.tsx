@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from './LoginPage';
 import '../assets/App.css';
 import Register from './Register';
+import { Button } from '@mui/material';
 //import themeparkBackground from '../images/backPic.jpeg';
 
 const MainPage: React.FC = () => {
@@ -12,13 +13,23 @@ const MainPage: React.FC = () => {
   return (
     <div className="Main">
       <h1>Theme Park Management</h1>
-      <button onClick={() => navigate('/login')}>
-        Login
-      </button>
+      <Button
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </Button>
 
-      <button onClick={() => navigate('/register')}>
-        Register
-      </button>
+      <Button
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              onClick={() => navigate('/login')}
+            >
+              Register
+            </Button>
     </div>
   );
 };
