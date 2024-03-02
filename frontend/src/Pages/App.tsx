@@ -26,7 +26,7 @@ const MainPage: React.FC = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/register')}
             >
               Register
             </Button>

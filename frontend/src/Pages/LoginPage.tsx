@@ -11,12 +11,33 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useFormik } from "formik";
+import * as yup from 'yup'
+
+const validationSchema = yup.object({
+  email: yup
+    .string() //tells us the type of value
+    .email('Enter a valid email') //validates the email tab
+    .required('Email is required'),
+  password: yup
+    .string()
+    .min(8, 'Password needs to be atleast 8 characters')
+    .required(),
+});
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleLogin = () => {};
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      //this handles the login value
+      console.log(values);
+    },
+  });
 
   return (
     <>
@@ -34,7 +55,8 @@ const Login = () => {
             <LockOutlined />
           </Avatar>
           <Typography variant="h5">Login</Typography>
-          <Box sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 1 }}>
+            {/*email field required*/}
             <TextField
               margin="normal"
               required
@@ -43,8 +65,10 @@ const Login = () => {
               label="Email Address"
               name="email"
               autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formik.values.email} //formik manages the email state
+              onChange={formik.handleChange} //updares the changes
+              error={formik.touched.email && Boolean(formik.errors.email)} //shows if its invalid email
+              helperText={formik.touched.email && formik.errors.email} //helper text to display error message
             />
 
             <TextField
