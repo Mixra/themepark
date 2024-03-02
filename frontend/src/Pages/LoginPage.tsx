@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { LockOutlined } from "@mui/icons-material";
 import {
   Container,
@@ -9,99 +10,116 @@ import {
   Button,
   Grid,
 } from "@mui/material";
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useFormik } from "formik";
-import * as yup from 'yup'
+import * as yup from 'yup';
+import { validationSchema } from '../Validation/loginVal'; // Assuming this import is correct
 
-const validationSchema = yup.object({
-  email: yup
-    .string() //tells us the type of value
-    .email('Enter a valid email') //validates the email tab
-    .required('Email is required'),
-  password: yup
-    .string()
-    .min(8, 'Password needs to be atleast 8 characters')
-    .required(),
-});
+interface FieldError {
+  [key: string]: string;
+}
 
-const Login = () => {
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [errors, setErrors] = useState<FieldError>({});
 
-  const formik = useFormik({
-    initialValues: {
-      email: '',
-      password: '',
-    },
-    validationSchema: validationSchema,
-    onSubmit: (values) => {
-      //this handles the login value
-      console.log(values);
-    },
-  });
+  // Function to validate a field
+  const validateField = async (name: string, value: string) => {
+    let field = { [name]: value };
+    try {
+      // Validate the field using the schema
+      await validationSchema.validateAt(name, field);
+      // If successful, clear any errors for that field
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        // If validation fails, set the error message for the field
+        setErrors(prev => ({ ...prev, [name]: error.message }));
+      }
+    }
+  };
+
+  // Effect hooks to validate fields in real-time
+  useEffect(() => {
+    validateField('email', email);
+  }, [email]);
+
+  useEffect(() => {
+    validateField('password', password);
+  }, [password]);
+
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Additional login logic here
+  };
 
   return (
-    <>
-      <Container maxWidth="xs">
-        <CssBaseline />
-        <Box
-          sx={{
-            mt: 20,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: "primary.light" }}>
-            <LockOutlined />
-          </Avatar>
-          <Typography variant="h5">Login</Typography>
-          <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 1 }}>
-            {/*email field required*/}
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoFocus
-              value={formik.values.email} //formik manages the email state
-              onChange={formik.handleChange} //updares the changes
-              error={formik.touched.email && Boolean(formik.errors.email)} //shows if its invalid email
-              helperText={formik.touched.email && formik.errors.email} //helper text to display error message
-            />
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-            />
-
-            <Button
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              onClick={handleLogin}
-            >
-              Login
-            </Button>
-            <Grid container justifyContent={"flex-end"}>
-              <Grid item>
-                <Link to="/register">Don't have an account? Register</Link>
-              </Grid>
+    <Container maxWidth="xs">
+      <CssBaseline />
+      <Box
+        sx={{
+          mt: 20,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
+          <LockOutlined />
+        </Avatar>
+        <Typography variant="h5">
+          Login
+        </Typography>
+        <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={Boolean(errors.email)}
+            helperText={errors.email}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={Boolean(errors.password)}
+            helperText={errors.password}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Login
+          </Button>
+          <Grid container>
+            <Grid item xs>
+              {/* Additional links or actions can be placed here */}
             </Grid>
-          </Box>
+            <Grid item>
+              <Link to="/register" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
+            </Grid>
+          </Grid>
         </Box>
-      </Container>
-    </>
+      </Box>
+    </Container>
   );
 };
 
