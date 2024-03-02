@@ -1,32 +1,34 @@
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from "express";
 import path from 'path';
+import { sql, connect, disconnect } from './database/db';
+import authRouter from './routers/authRouter';
 
 dotenv.config({ path: '../../config.env' });
 const PORT = parseInt(process.env.PORT || '1337', 10);
 const app: Express = express();
+app.use(express.json());
 
-// Test our API
-app.use('/api', (req: Request, res: Response) => {
-    const status = {
-        'status': 'Working',
-    };
-    res.send(status);
+// Test our database connection
+app.get('/api/db', async (req: Request, res: Response) => {
+    try {
+        const result = await sql.request().query(`
+            SELECT TABLE_NAME 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_TYPE = 'BASE TABLE'
+        `);
+
+        // Send the list of table names
+        res.json(result.recordset);
+    } catch (err) {
+        // If there's an error, log it and send an error response
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Setting our routes
+app.use('/api/auth', authRouter);
 
 
 
@@ -49,6 +51,9 @@ app.use((req, res, next) => {
     }
 });
 
+app.disable('x-powered-by');
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+process.on('SIGINT', disconnect);
