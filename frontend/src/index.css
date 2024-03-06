@@ -15,7 +15,8 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #ffffff;
+  opacity: 1;
   text-decoration: inherit;
 }
 a:hover {
@@ -27,6 +28,10 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
+  background-image: url(./images/night.avif);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 h1 {

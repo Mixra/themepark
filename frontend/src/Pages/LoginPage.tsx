@@ -72,6 +72,7 @@ const Login: React.FC = () => {
         </Typography>
         <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 1 }}>
           <TextField
+            sx={{ input: {color: 'white'} }}
             margin="normal"
             required
             fullWidth
@@ -86,6 +87,7 @@ const Login: React.FC = () => {
             helperText={errors.email}
           />
           <TextField
+            sx={{ input: {color: 'white'} }} //added this line to make all input white
             margin="normal"
             required
             fullWidth
