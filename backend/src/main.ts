@@ -51,9 +51,15 @@ app.use((req, res, next) => {
     }
 });
 
-app.disable('x-powered-by');
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// app.disable()
+
+connect().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running at http://localhost:${PORT}`);
+    });
+  }).catch(err => {
+    console.error('Failed to connect to the database', err);
+    process.exit(1);
+  });
 
 process.on('SIGINT', disconnect);

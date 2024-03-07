@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import * as yup from 'yup';
-import { validationSchema } from '../Validation/loginVal'; // Assuming this import is correct
+import { loginSchema } from '../validation/auth.valid';
 
 interface FieldError {
   [key: string]: string;
@@ -28,10 +28,11 @@ const Login: React.FC = () => {
     let field = { [name]: value };
     try {
       // Validate the field using the schema
-      await validationSchema.validateAt(name, field);
+      await loginSchema.validateAt(name, field);
       // If successful, clear any errors for that field
       setErrors(prev => ({ ...prev, [name]: '' }));
     } catch (error) {
+      // Cast the error object to yup.ValidationError
       if (error instanceof yup.ValidationError) {
         // If validation fails, set the error message for the field
         setErrors(prev => ({ ...prev, [name]: error.message }));
@@ -62,6 +63,9 @@ const Login: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          backdropFilter: "blur(3px)",
+          padding: "3rem",
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
@@ -114,7 +118,7 @@ const Login: React.FC = () => {
               {/* Additional links or actions can be placed here */}
             </Grid>
             <Grid item>
-              <Link to="/register" variant="body2">
+              <Link to="/register">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>

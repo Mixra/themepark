@@ -12,7 +12,7 @@ import {
 import { LockOutlined } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import * as yup from 'yup';
-import { registrationSchema } from "../Validation/registerVal";
+import { registrationSchema } from '../validation/auth.valid';
 
 interface FieldError {
   [key: string]: string;
@@ -65,7 +65,10 @@ const Register: React.FC = () => {
           mt: 20,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center"
+          alignItems: "center",
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          backdropFilter: "blur(3px)",
+          padding: "3rem",
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
@@ -133,7 +136,7 @@ const Register: React.FC = () => {
               {/*Additional can be added*/}
             </Grid>
             <Grid item>
-              <Link to="/login" variant="body2">
+              <Link to="/login">
                 {"Already have an account? Login"}
               </Link>
             </Grid>
