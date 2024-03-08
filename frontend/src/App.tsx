@@ -6,6 +6,7 @@ import Register from './pages/Register';
 //import themeparkBackground from '../images/backPic.jpeg';
 import Navbar from './components/Navbar';
 import MainPage from './pages/Home';
+import Dashboard from './pages/MainPage';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/test" element={<Navbar/>}/>
+        <Route path='/main' element={<Dashboard/>} />
       </Routes>
     </BrowserRouter>
   );

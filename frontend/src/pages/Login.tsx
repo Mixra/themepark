@@ -10,7 +10,7 @@ import {
   Button,
   Grid,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from 'yup';
 import { loginSchema } from '../validation/auth.valid';
 
@@ -49,8 +49,12 @@ const Login: React.FC = () => {
     validateField('password', password);
   }, [password]);
 
+  let navigate=useNavigate();
+
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    navigate('/main');
     // Additional login logic here
   };
 
@@ -110,6 +114,7 @@ const Login: React.FC = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            onClick={() => navigate('/main')}
           >
             Login
           </Button>
