@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { LockOutlined } from "@mui/icons-material";
 import {
   Container,
@@ -11,8 +11,8 @@ import {
   Grid,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import * as yup from 'yup';
-import { loginSchema } from '../validation/auth.valid';
+import * as yup from "yup";
+import { loginSchema } from "../validation/auth.valid";
 
 interface FieldError {
   [key: string]: string;
@@ -30,31 +30,31 @@ const Login: React.FC = () => {
       // Validate the field using the schema
       await loginSchema.validateAt(name, field);
       // If successful, clear any errors for that field
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     } catch (error) {
       // Cast the error object to yup.ValidationError
       if (error instanceof yup.ValidationError) {
         // If validation fails, set the error message for the field
-        setErrors(prev => ({ ...prev, [name]: error.message }));
+        setErrors((prev) => ({ ...prev, [name]: error.message }));
       }
     }
   };
 
   // Effect hooks to validate fields in real-time
   useEffect(() => {
-    validateField('email', email);
+    validateField("email", email);
   }, [email]);
 
   useEffect(() => {
-    validateField('password', password);
+    validateField("password", password);
   }, [password]);
 
-  let navigate=useNavigate();
+  let navigate = useNavigate();
 
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    navigate('/main');
+    navigate("/dashboard");
     // Additional login logic here
   };
 
@@ -75,12 +75,10 @@ const Login: React.FC = () => {
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
           <LockOutlined />
         </Avatar>
-        <Typography variant="h5">
-          Login
-        </Typography>
+        <Typography variant="h5">Login</Typography>
         <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 1 }}>
           <TextField
-            sx={{ input: {color: 'white'} }}
+            sx={{ input: { color: "white" } }}
             margin="normal"
             required
             fullWidth
@@ -95,7 +93,7 @@ const Login: React.FC = () => {
             helperText={errors.email}
           />
           <TextField
-            sx={{ input: {color: 'white'} }} //added this line to make all input white
+            sx={{ input: { color: "white" } }} //added this line to make all input white
             margin="normal"
             required
             fullWidth
@@ -114,7 +112,6 @@ const Login: React.FC = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            onClick={() => navigate('/main')}
           >
             Login
           </Button>
@@ -123,9 +120,7 @@ const Login: React.FC = () => {
               {/* Additional links or actions can be placed here */}
             </Grid>
             <Grid item>
-              <Link to="/register">
-                {"Don't have an account? Sign Up"}
-              </Link>
+              <Link to="/register">{"Don't have an account? Sign Up"}</Link>
             </Grid>
           </Grid>
         </Box>
