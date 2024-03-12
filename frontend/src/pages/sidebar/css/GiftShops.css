@@ -1,0 +1,33 @@
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 600px; /* Adjust card width as needed */
+    margin: auto;
+    background-color: white; /* Set card background to white */
+    border-radius: 10px;
+  }
+  
+  .card-image {
+    width: 100%;
+    height: auto;
+  }
+  
+  .card-content {
+    padding: 2px 16px;
+  }
+  
+  .card-content h5 {
+    margin: 10px 0;
+  }
+  
+  .card-content p {
+    color: #555;
+  }
