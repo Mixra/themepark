@@ -1,6 +1,7 @@
 // Rides.tsx
 import React from 'react';
 import './css/Rides.css'; // Adjusted import to match the relative path
+
 type Ride = {
   id: number;
   name: string;
