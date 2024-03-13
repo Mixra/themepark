@@ -56,22 +56,35 @@ const Sidebar: React.FC<SidebarProps> = ({ open, menuItems }) => {
                 "&.Mui-selected": {
                   backgroundColor: "rgba(255, 255, 255, 0.25)",
                 },
+                display: "flex",
+                alignItems: "center",
               }}
             >
               <ListItemIcon
                 sx={{
                   color: "white",
+                  minWidth: 0,
+                  mr: open ? 3 : "auto",
+                  justifyContent: "center",
                 }}
               >
                 {item.icon}
               </ListItemIcon>
-              <Collapse in={open} timeout="auto" unmountOnExit>
+              <Collapse
+                in={open}
+                timeout={theme.transitions.duration.leavingScreen}
+                unmountOnExit
+                orientation="horizontal"
+              >
                 <ListItemText
                   primary={item.text}
                   sx={{
                     color: "inherit",
                     "& .MuiListItemText-primary": {
                       color: "white",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     },
                   }}
                 />
