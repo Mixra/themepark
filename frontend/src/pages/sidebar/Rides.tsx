@@ -57,5 +57,16 @@ const RidesPage: React.FC = () => {
 export default RidesPage;
 
 /*
-added pictures and description columns for rides
+-Name (from Rides)
+-Area Name (Connect AreaID from Rides -> AreaID from ParkAreas)
+-MinHeight (from Rides)
+-MaxHeight (from Rides)
+-MaxCapacity (from Rides)
+-RideDescription (from Rides)
+-RideImage (from Rides)
+-OpeningTime (from Rides)
+-ClosingTime (from Rides)
+-TICKETS(we have to merge tickets with rides to show the tickets for each ride)
+ -we will adjust columns as needed once we have met with the team
+
 */

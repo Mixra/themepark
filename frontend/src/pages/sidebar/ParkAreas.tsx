@@ -9,3 +9,11 @@ const ParkAreas: React.FC = () => {
 };
 
 export default ParkAreas;
+
+/*
+-Name (from ParkAreas)
+-Description (from ParkAreas)
+-Theme (from ParkAreas)
+-OpeningTime (from ParkAreas)
+-ClosingTime (from ParkAreas)
+*/

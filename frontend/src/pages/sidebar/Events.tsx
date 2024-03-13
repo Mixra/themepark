@@ -9,3 +9,13 @@ const Events = () => {
 };
 
 export default Events;
+
+/*
+Columns needed:
+-Name (from Events )
+-Description (from Events)
+-StartDateTime (from Events)
+-EndDateTime (from Events)
+-AgeRestriction (from Events)
+-Area Name (Connect AreaID from Events -> AreaID from ParkAreas)
+*/

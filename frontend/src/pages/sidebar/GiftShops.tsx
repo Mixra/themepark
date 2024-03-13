@@ -56,3 +56,14 @@ const GiftShopsPage: React.FC = () => {
 };
 
 export default GiftShopsPage;
+
+/*
+Columns needed:
+- Name (from GiftShops)
+- Description (from GiftShops)
+- OpeningTime (from GiftShops)
+- ClosingTime (from GiftShops)
+- MerchandiseType (from GiftShops)
+- Area Name (Connect AreaID from GiftShops -> AreaID from ParkAreas)
+*/
+
