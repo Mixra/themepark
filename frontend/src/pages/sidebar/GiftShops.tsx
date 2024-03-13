@@ -1,6 +1,7 @@
-// GiftShops.tsx
 import React from 'react';
 import './css/GiftShops.css'; // Ensure you have a corresponding CSS file for styling
+// Correctly import your image here, adjusting the path relative to this file's location
+import themeParkBackground from '../../assets/images/themeparkBackground.jpeg';
 
 type GiftShop = {
   id: number;
@@ -8,15 +9,16 @@ type GiftShop = {
   imageUrl: string;
   ClosingTime: string;
   OpeningTime: string;
-  description: string; // Example of additional property specific to gift shops
-  MerchandiseType: string[]; // Example of additional property specific to gift shops
+  description: string;
+  MerchandiseType: string[];
 };
 
+// Update your gift shops data to use the imported image
 const giftShops: GiftShop[] = [
   {
     id: 1,
     name: 'Magic Memories',
-    imageUrl: 'path/to/your/giftshop-image1.jpg', // Adjust path as needed
+    imageUrl: themeParkBackground, // Use the imported image variable here
     ClosingTime: '8:00 PM',
     OpeningTime: '10:00 AM',
     description: 'Find the perfect souvenir to remember your visit to the park!',
@@ -25,7 +27,7 @@ const giftShops: GiftShop[] = [
   {
     id: 2,
     name: 'Wonderland Wares',
-    imageUrl: 'path/to/your/giftshop-image2.jpg', // Adjust path as needed
+    imageUrl: themeParkBackground, // Use the same imported image variable if you want the same image
     ClosingTime: '8:00 PM',
     OpeningTime: '10:00 AM',
     description: 'Discover unique gifts and trinkets to take home with you.',
@@ -45,7 +47,7 @@ const GiftShopsPage: React.FC = () => {
             <p>OPENING TIME: {shop.OpeningTime}</p>
             <p>CLOSING TIME: {shop.ClosingTime}</p>
             <p>{shop.description}</p>
-            <p>MerchandiseType: {shop.MerchandiseType.join(', ')}</p>
+            <p>Merchandise Type: {shop.MerchandiseType.join(', ')}</p>
           </div>
         </div>
       ))}

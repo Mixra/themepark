@@ -1,9 +1,6 @@
 // TicketsPage.tsx
 import React from 'react';
 import { Grid, Card, CardMedia, CardContent, Typography, CardActions, Button } from '@mui/material';
-
-
-
 interface Ticket {
     id: number;
     type: string;
