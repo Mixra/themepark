@@ -9,7 +9,7 @@
   .card {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     transition: 0.3s;
-    width: 600px; /* Adjust card width as needed */
+    width: 1000px; /* Adjust card width as needed */
     margin: auto;
     background-color: white; /* Set card background to white */
     border-radius: 10px;
