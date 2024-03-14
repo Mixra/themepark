@@ -2,6 +2,7 @@
 import React from 'react';
 import './css/Rides.css'; // Adjusted import to match the relative path
 import rocketImage from '../../assets/images/istockphoto-876037616-612x612.jpg';
+import FerrisWheel from '../../assets/images/ferriswheel.jpeg';
 
 type Ride = {
   id: number;
@@ -26,7 +27,7 @@ const rides: Ride[] = [
   {
     id: 2,
     name: 'Ferris Wheel of Dreams',
-    imageUrl: rocketImage,
+    imageUrl: FerrisWheel,
     minHeight: 100,
     maxHeight: 200,
     duration: 5,
