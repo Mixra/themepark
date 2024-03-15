@@ -18,7 +18,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/dashboard" element={<Layout children={<Dashbaord />} />} />
         <Route path="/rides" element={<Layout children={<Rides />} />} />
         <Route path="/restaurants" element={<Layout children={<Restaurants />} />} />
         <Route path="/gifts" element={<Layout children={<Shops />} />} />

@@ -54,7 +54,7 @@ const Login: React.FC = () => {
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    navigate("/dashboard");
+    navigate("/rides");
     // Additional login logic here
   };
 
