@@ -1,14 +1,60 @@
 import React from 'react';
+import './css/GiftShops.css'; 
+import rideBackground from '../../assets/images/images.jpeg';
+import {GenericCard} from '../../components/Card.tsx';
+import {BaseItem} from 'frontend/interface.ts';
 
-const ParkAreas: React.FC = () => {
-    return (
-        <div>
-            Hello from the park :D
-        </div>
-    );
+type Ride = {
+  id: number;
+  Name: string;
+  imageUrl: string;
+  MinHeight: number;
+  MaxHeight: number;
+  Duration: number;
+  Description: string;
+  ClosingTime: string;
+  OpeningTime: string;
 };
 
-export default ParkAreas;
+const rides: Ride[] = [
+  {
+    id: 1,
+    Name: 'The Great Ride',
+    imageUrl: rideBackground,
+    MinHeight: 100,
+    MaxHeight: 200,
+    Duration: 5,
+    Description: 'The best ride in the park!',
+    ClosingTime: '8:00 PM',
+    OpeningTime: '10:00 AM',
+  },
+  // Add more rides as needed
+];
+
+const RidesPage: React.FC = () => {
+  return (
+    <div className="grid-container">
+      {rides.map((ride) => (
+        <GenericCard key={ride.id} item={ride}>
+        {/* Assuming GenericCard handles basic properties (id, Name, Description, etc.) */}
+        {/* You'll need to modify GenericCard or use children for additional properties like imageUrl */}
+        <div style={{ marginTop: '100px' }}>
+          <img src={ride.imageUrl} alt={ride.Name} style={{ width: '100%', height: 'auto' }} />
+        </div>
+        <div>
+          <p><strong>Opening Time:</strong> {ride.OpeningTime}</p>
+          <p><strong>Closing Time:</strong> {ride.ClosingTime}</p>
+          <p><strong>Min Height:</strong> {ride.MinHeight} cm</p>
+          <p><strong>Max Height:</strong> {ride.MaxHeight} cm</p>
+          <p><strong>Duration:</strong> {ride.Duration} minutes</p>
+        </div>
+      </GenericCard>
+      ))}
+    </div>
+  );
+};
+
+export default RidesPage;
 
 /*
 -Name (from ParkAreas)

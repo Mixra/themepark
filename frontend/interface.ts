@@ -16,8 +16,17 @@ export interface BaseItem {
     MaxHeight: number;
     Duration: number;
   }
+  export interface Restaurant extends BaseItem {
+    SeatingCapacity: number;
+
+  }
 
   export interface Restaurant extends BaseItem {
     SeatingCapacity: number;
+  }
+  export interface ParkAreas extends BaseItem {
+    MinHeight: number;
+    MaxHeight: number;
+    Duration: number;
   }
   
