@@ -1,8 +1,8 @@
 import React from 'react';
 import './css/GiftShops.css'; 
-import restaurantBackground from '../../assets/images/images.jpeg';
+import Burger from '../../assets/images/BurgerSpot.jpeg';
 import {GenericCard} from '../../components/Card.tsx';
-import {BaseItem} from 'frontend/interface.ts';
+import './css/Restauraunt.css'
 
 type Restaurant = {
   id: number;
@@ -23,17 +23,17 @@ type Restaurant = {
 const restaurants: Restaurant[] = [
   {
     id: 1,
-    Name: 'The Great Restaurant',
-    imageUrl: restaurantBackground,
+    Name: 'Fat Burger',
+    imageUrl: Burger,
     ClosingTime: '10:00 PM',
     OpeningTime: '8:00 AM',
     SeatingCapacity: 100,
-    Description: 'The best restaurant in the park!',
+    Description: 'Fat Burger, known for its juicy oversized burgers, offering a fun and flavorful esacape for thrill-seekers and food lovers alike',
     Menu: [
       {
-        Name: 'Dish 1',
-        Description: 'Delicious dish 1',
-        Price: 10,
+        Name: 'Colossal Coaster Burger',
+        Description: 'A towering feast featuring a trio of beef patties, layered with crispy bacon, cheddar cheese, onion rings, and a special coaster sauce, served on a toasted sesame bun.',
+        Price: 12.99,
         Category: 'Main Course',
       },
       // Add more menu items as needed
