@@ -5,7 +5,6 @@ export interface BaseItem {
     Description: string;
     ClosingTime: string;
     OpeningTime: string;
-
   }
 
   export interface GiftShop extends BaseItem {

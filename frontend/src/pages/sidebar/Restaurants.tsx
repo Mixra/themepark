@@ -40,6 +40,24 @@ const initialRestaurants: Restaurant[] = [
       // Add more menu items as needed
     ],
   },
+  {
+    id: 2,
+    Name: 'Fat Burger',
+    imageUrl: Burger,
+    ClosingTime: '10:00 PM',
+    OpeningTime: '8:00 AM',
+    SeatingCapacity: 100,
+    Description: 'Fat Burger, known for its juicy oversized burgers, offering a fun and flavorful escape for thrill-seekers and food lovers alike.',
+    Menu: [
+      {
+        Name: 'Colossal Coaster Burger',
+        Description: 'A towering feast featuring a trio of beef patties, layered with crispy bacon, cheddar cheese, onion rings, and a special coaster sauce, served on a toasted sesame bun.',
+        Price: 12.99,
+        Category: 'Main Course',
+      },
+      // Add more menu items as needed
+    ],
+  },
   // Add more restaurants as needed
 ];
 
