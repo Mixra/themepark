@@ -3,7 +3,7 @@ import './css/GiftShops.css';
 import Burger from '../../assets/images/BurgerSpot.jpeg';
 import {GenericCard} from '../../components/Card';
 import './css/Restauraunt.css';
-
+import { BaseItem } from '../../../interface';
 type Restaurant = {
   id: number;
   Name: string;

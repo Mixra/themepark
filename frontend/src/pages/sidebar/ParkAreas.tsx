@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './css/GiftShops.css'; 
 import rideBackground from '../../assets/images/images.jpeg';
-import {GenericCard} from '../../components/Card.tsx';
-import {BaseItem} from 'frontend/interface.ts';
-
+import {GenericCard} from '../../components/Card';
+import { BaseItem } from '../../../interface';
 type Ride = {
   id: number;
   Name: string;
@@ -16,7 +15,7 @@ type Ride = {
   OpeningTime: string;
 };
 
-const rides: Ride[] = [
+const initialRides: Ride[] = [
   {
     id: 1,
     Name: 'The Great Ride',
@@ -32,10 +31,17 @@ const rides: Ride[] = [
 ];
 
 const RidesPage: React.FC = () => {
+  const [rides, setRides] = useState<Ride[]>(initialRides);
+  const handleDelete = (id: number) => {
+    setRides(rides.filter(ride => ride.id !== id));
+  }
   return (
     <div className="grid-container">
       {rides.map((ride) => (
-        <GenericCard key={ride.id} item={ride}>
+        <GenericCard key={ride.id}
+         item={ride}
+         onDelete = {() => handleDelete(ride.id)} // Pass the delete handler
+         >
         {/* Assuming GenericCard handles basic properties (id, Name, Description, etc.) */}
         {/* You'll need to modify GenericCard or use children for additional properties like imageUrl */}
         <div style={{ marginTop: '100px' }}>
