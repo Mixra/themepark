@@ -6,20 +6,20 @@ import Layout from './components/Layout';
 import Tickets from './pages/sidebar/Tickets.tsx';
 import Reports from './pages/sidebar/ReportingAnalytics.tsx';
 import Maintenance from './pages/sidebar/Maintenance.tsx';
-import Dashbaord from './pages/sidebar/Dashboard.tsx';
 import Restaurants from './pages/sidebar/Restaurants.tsx';
 import Rides from './pages/sidebar/Rides.tsx';
 import Shops from './pages/sidebar/GiftShops.tsx';
 import UserManagement from './pages/sidebar/UserManagement.tsx';
 import ParkAreas from './pages/sidebar/ParkAreas.tsx';
 import Home from './pages/Home';
+import Events from './pages/sidebar/Events.tsx';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/dashboard" element={<Layout children={<Dashbaord />} />} />
         <Route path="/rides" element={<Layout children={<Rides />} />} />
+        <Route path="/events" element={<Layout children={<Events />} />} />
         <Route path="/restaurants" element={<Layout children={<Restaurants />} />} />
         <Route path="/gifts" element={<Layout children={<Shops />} />} />
         <Route path="/tickets" element={<Layout children={<Tickets />} />} />

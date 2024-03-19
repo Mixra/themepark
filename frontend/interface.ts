@@ -5,13 +5,27 @@ export interface BaseItem {
     Description: string;
     ClosingTime: string;
     OpeningTime: string;
-
   }
 
   export interface GiftShop extends BaseItem {
         MerchandiseType: string[];
   }
+  export interface Rides extends BaseItem {
+    MinHeight: number;
+    MaxHeight: number;
+    Duration: number;
+  }
   export interface Restaurant extends BaseItem {
     SeatingCapacity: number;
+
+  }
+
+  export interface Restaurant extends BaseItem {
+    SeatingCapacity: number;
+  }
+  export interface ParkAreas extends BaseItem {
+    MinHeight: number;
+    MaxHeight: number;
+    Duration: number;
   }
   
