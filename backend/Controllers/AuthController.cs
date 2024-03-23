@@ -1,6 +1,8 @@
 ﻿using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
+using backend.Utils;
+
 
 namespace backend.Controllers
 {
@@ -16,19 +18,49 @@ namespace backend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterModel user)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            // Example: Retrieve the list of table names from the database
-            var query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
-            var tables = await _databaseService.QueryAsync<string>(query);
-            
+            var existingUser = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new {user.Username});
+            if (existingUser != null)
+            {
+                return Conflict("error: User already exists");
+            }
 
-            return Ok(tables);
+            var hashed_pass = PasswordUtility.HashPassword(user.Password);
+
+            var newUser = new
+            {
+                Username = user.Username,
+                PasswordHash = hashed_pass,
+                Name = user.Name,
+                Email = "test@gmail.com",
+                RoleID = 1, // Set the default role ID
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var insertQuery = @"
+                INSERT INTO UserAccounts (Username, PasswordHash, Name, Email, RoleID, CreatedAt, UpdatedAt)
+                VALUES (@Username, @PasswordHash, @Name, @Email, @RoleID, @CreatedAt, @UpdatedAt);
+            ";
+            try
+            {
+                await _databaseService.ExecuteAsync(insertQuery, newUser);
+                return Ok("User registered successfully");
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+
+
+
+
         }
     }
 }
