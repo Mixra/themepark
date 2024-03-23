@@ -52,7 +52,7 @@ const EventsPage: React.FC = () => {
           <GenericCard
             item={event}
             onDelete={() => handleDelete(event.id)}
-            onEdit={(updatedItem) => handleEdit(updatedItem)}
+            onEdit={(updatedEvent) => console.log(updatedEvent)}
           />
         </Grid>
       ))}

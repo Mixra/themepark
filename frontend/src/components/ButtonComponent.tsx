@@ -1,6 +1,5 @@
 import React from "react";
 import { Button, ButtonProps } from '@mui/material';
-import { GenericCard } from "./Card";
 
 
 interface CustomButtonProps extends ButtonProps {
