@@ -1,51 +1,52 @@
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace backend.Utils
 {
-    public static class JwtUtility
+    public static class JWT
     {
-        public static string GenerateJwtToken(int username, int roleID, IConfiguration configuration)
+        public static string GenerateToken(string username, int level, IConfiguration configuration)
         {
-            var claims = new[]
+            var secret = configuration.GetValue<string>("JwtSecret");
+            var key = Encoding.ASCII.GetBytes(secret ?? string.Empty);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(ClaimTypes.NameIdentifier, username.ToString()),
-                new Claim(ClaimTypes.Role, roleID.ToString())
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Role, level.ToString())
+                }),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSecret"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                claims: claims
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
-
-        public static ClaimsPrincipal GetPrincipalFromToken(string token, IConfiguration configuration)
+        public static (string? Username, int Level) DecodeJwtToken(string token, IConfiguration configuration)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSecret"]));
+            var secret = configuration.GetValue<string>("JwtSecret");
+            var key = Encoding.ASCII.GetBytes(secret ?? string.Empty);
 
-            try
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                return new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
-            }
-            catch
-            {
-                return null;
-            }
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var username = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+            var level = int.Parse(jwtToken.Claims.FirstOrDefault(x => x.Type == "Level")?.Value ?? "0");
+
+            return (username, level);
         }
     }
 }
