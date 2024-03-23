@@ -13,6 +13,7 @@ import {
   Engineering as MaintenanceIcon,
   ManageAccounts as ManageAccountsIcon,
   History as HistoryIcon,
+  Event as EventsIcon
 } from "@mui/icons-material";
 import { useEffect } from "react";
 
@@ -37,6 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { text: "Park Areas", icon: <ForestIcon />, path: "/park" },
     { text: "Rides", icon: <RidesIcon />, path: "/rides" },
+    { text: "Events", icon: <EventsIcon />, path: "/events" },
     { text: "Restaurants", icon: <RestaurantIcon />, path: "/restaurants" },
     { text: "Gift Shops", icon: <GiftShopIcon />, path: "/gifts" },
     { text: "Tickets", icon: <TicketsIcon />, path: "/tickets" },

@@ -35,7 +35,7 @@ export const GenericCard: React.FC<Props> = ({ item, children, onDelete, onEdit 
 
   return (
     <Card sx={{ minWidth: 275, margin: 2, boxShadow: 3 }}>
-      <CardContent>
+      <CardContent>npm install
         {isEditing ? (
           <>
             <TextField value={name} onChange={(e) => setName(e.target.value)} label="Name" />
