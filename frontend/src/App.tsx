@@ -13,12 +13,14 @@ import UserManagement from './pages/sidebar/UserManagement.tsx';
 import ParkAreas from './pages/sidebar/ParkAreas.tsx';
 import Home from './pages/Home';
 import Events from './pages/sidebar/Events.tsx';
+import PurchaseTickets from './pages/PurchaseTick.tsx';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/rides" element={<Layout children={<Rides />} />} />
+        <Route path="/purchase-tickets" element={<PurchaseTickets />} />
         <Route path="/events" element={<Layout children={<Events />} />} />
         <Route path="/restaurants" element={<Layout children={<Restaurants />} />} />
         <Route path="/gifts" element={<Layout children={<Shops />} />} />
