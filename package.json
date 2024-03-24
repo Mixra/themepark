@@ -19,6 +19,7 @@
     "@mui/x-data-grid": "^6.19.6",
     "@types/mssql": "^9.1.5",
     "antd": "^5.15.1",
+    "axios": "^1.6.8",
     "express": "^4.18.2",
     "formik": "^2.4.5",
     "install": "^0.13.0",

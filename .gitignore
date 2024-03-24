@@ -433,3 +433,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+backend/Properties/*
+.vscode/settings.json
+
+backend/wwwroot

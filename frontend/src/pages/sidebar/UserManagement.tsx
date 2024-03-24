@@ -117,7 +117,7 @@ const UserManagement: React.FC = () => {
         <DataGrid
           rows={filteredUsers}
           columns={columns}
-          pageSize={10}
+          // pageSize={10}
           sx={{
             '& .MuiDataGrid-cell': {
               color: 'text.primary', // Set the cell text color

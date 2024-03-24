@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { LockOutlined } from "@mui/icons-material";
 import {
   Container,
@@ -11,118 +11,119 @@ import {
   Grid,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import * as yup from "yup";
+import { useFormik } from "formik";
 import { loginSchema } from "../validation/auth.valid";
-
-interface FieldError {
-  [key: string]: string;
-}
+import db from "../components/db";
+import axios from "axios";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [errors, setErrors] = useState<FieldError>({});
-
-  // Function to validate a field
-  const validateField = async (name: string, value: string) => {
-    let field = { [name]: value };
-    try {
-      // Validate the field using the schema
-      await loginSchema.validateAt(name, field);
-      // If successful, clear any errors for that field
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    } catch (error) {
-      // Cast the error object to yup.ValidationError
-      if (error instanceof yup.ValidationError) {
-        // If validation fails, set the error message for the field
-        setErrors((prev) => ({ ...prev, [name]: error.message }));
+  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const formik = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+    },
+    validationSchema: loginSchema,
+    onSubmit: async (values) => {
+      try {
+        const response = await db.post("/auth/login", values);
+        console.log(response.data);
+        localStorage.setItem("level", response.data.level);
+        navigate("/park");
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const statusCode = error.response?.status;
+          if (statusCode && statusCode >= 400 && statusCode < 500) {
+            setErrorMessage("Wrong username or password");
+          } else if (statusCode && statusCode >= 500) {
+            setErrorMessage("Something went wrong. Please try again later.");
+          }
+        } else {
+          setErrorMessage("Could not communicate with server.");
+          console.error(error);
+        }
       }
-    }
-  };
-
-  // Effect hooks to validate fields in real-time
-  useEffect(() => {
-    validateField("email", email);
-  }, [email]);
-
-  useEffect(() => {
-    validateField("password", password);
-  }, [password]);
-
-  let navigate = useNavigate();
-
-  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    navigate("/rides");
-    // Additional login logic here
-  };
+    },
+    validateOnBlur: true,
+    validateOnChange: true,
+  });
 
   return (
     <Container maxWidth="xs">
       <CssBaseline />
       <Box
         sx={{
-          mt: 20,
           display: "flex",
           flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          backdropFilter: "blur(3px)",
-          padding: "3rem",
+          backgroundColor: "rgba(255, 255, 255, 0.15)",
+          backdropFilter: "blur(5px)",
+          padding: "4rem",
+          color: "#fff",
+          boxShadow: "0 0 15px rgba(255, 255, 255, 0.3)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          marginTop: "15vh",
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
           <LockOutlined />
         </Avatar>
         <Typography variant="h5">Login</Typography>
-        <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 1 }}>
+        <Box component="form" noValidate onSubmit={formik.handleSubmit} sx={{ mt: 1 }}>
           <TextField
             sx={{ input: { color: "white" } }}
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
+            id="username"
+            label="Username"
+            autoComplete="username"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={Boolean(errors.email)}
-            helperText={errors.email}
+            name="username"
+            value={formik.values.username}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.username && Boolean(formik.errors.username)}
+            helperText={formik.touched.username && formik.errors.username}
           />
           <TextField
-            sx={{ input: { color: "white" } }} //added this line to make all input white
+            sx={{ input: { color: "white" } }}
             margin="normal"
             required
             fullWidth
-            name="password"
             label="Password"
             type="password"
             id="password"
             autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={Boolean(errors.password)}
-            helperText={errors.password}
+            name="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
           />
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            onClick={() => formik.handleSubmit()}
           >
             Login
           </Button>
           <Grid container>
-            <Grid item xs>
-              {/* Additional links or actions can be placed here */}
-            </Grid>
+            <Grid item xs></Grid>
             <Grid item>
               <Link to="/register">{"Don't have an account? Sign Up"}</Link>
             </Grid>
           </Grid>
+          {errorMessage && (
+            <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+              {errorMessage}
+            </Typography>
+          )}
         </Box>
       </Box>
     </Container>

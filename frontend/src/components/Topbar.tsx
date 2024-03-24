@@ -32,7 +32,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   };
 
   const handleLogout = () => {
-    console.log("Logout clicked");
+    localStorage.clear();
   };
 
   return (

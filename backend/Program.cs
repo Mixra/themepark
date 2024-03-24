@@ -2,7 +2,7 @@ using backend.Services;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,6 +65,23 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+var wwwPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (Directory.Exists(wwwPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(
+            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
+    });
+
+    app.UseRouting();
+    app.MapFallbackToFile("index.html");
+}
+
+app.UseCors();
+
+
 app.MapControllers();
+
 
 app.Run();

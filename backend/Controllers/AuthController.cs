@@ -42,7 +42,7 @@ namespace backend.Controllers
                 First_Name = user.First_name,
                 Last_Name = user.Last_name,
                 Email = user.Email,
-                Phone = user.Phone ?? string.Empty,
+                Phone = user.Phone,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -78,27 +78,34 @@ namespace backend.Controllers
             {
                 return BadRequest();
             }
+            
             user.Username = user.Username.ToLower();
 
+            var userData = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT Username, PasswordHash, Level FROM UserAccounts WHERE Username = @Username", new { Username = user.Username });
 
-            var userData = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT Username, PasswordHash, Level FROM UserAccounts WHERE Username = @Username", new { user.Username });
-
-            if (!BCrypt.Net.BCrypt.Verify(user.Password, userData?.PasswordHash))
+            if (userData == null || !BCrypt.Net.BCrypt.Verify(user.Password, userData?.PasswordHash))
             {
-                return Unauthorized(new { error = "Invalid password" });
+                return Unauthorized(new { error = "Invalid username or password" });
             }
 
-            var token = JWT.GenerateToken(user.Username, userData?.Level, _configuration);
-
-            Response.Cookies.Append("token", token, new CookieOptions
+            try
             {
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = true
-            });
+                var token = JWT.GenerateToken(user.Username, userData?.Level, _configuration);
 
+                Response.Cookies.Append("token", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
 
-            return Ok(new { message = "Login successful", token = token, level = userData?.Level });
+                return Ok(new { message = "Login successful", token = token, level = userData?.Level });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erorr: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
 
 

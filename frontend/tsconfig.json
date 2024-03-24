@@ -24,6 +24,6 @@
 
     "useUnknownInCatchVariables": false
   },
-  "include": ["src"],
+  "include": ["src", "src/components/db.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
