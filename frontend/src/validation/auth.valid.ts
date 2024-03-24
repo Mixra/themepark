@@ -31,6 +31,7 @@ export const registrationSchema = yup.object().shape({
     .email("Invalid email address."),
   phone: yup
     .string()
+    .required("Phone number is required.")
     .matches(
       /^(\+?\d{1,2}?[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/,
       "Invalid phone number."

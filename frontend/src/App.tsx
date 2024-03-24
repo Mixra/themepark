@@ -14,28 +14,127 @@ import ParkAreas from './pages/sidebar/ParkAreas.tsx';
 import Home from './pages/Home';
 import Events from './pages/sidebar/Events.tsx';
 import PurchaseTickets from './pages/PurchaseTick.tsx';
+import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/sidebar/Profile.tsx';
 
 function App() {
+  const isLoggedIn = localStorage.getItem('level') !== null;
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/rides" element={<Layout children={<Rides />} />} />
+        <Route
+          path="/"
+          element={
+            isLoggedIn ? (
+              <ProtectedRoute isAllowed>
+                <Layout children={<Rides />} />
+              </ProtectedRoute>
+            ) : (
+              <Home />
+            )
+          }
+        />
+        <Route
+          path="/rides"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Rides />} />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/purchase-tickets" element={<PurchaseTickets />} />
-        <Route path="/events" element={<Layout children={<Events />} />} />
-        <Route path="/restaurants" element={<Layout children={<Restaurants />} />} />
-        <Route path="/gifts" element={<Layout children={<Shops />} />} />
-        <Route path="/tickets" element={<Layout children={<Tickets />} />} />
-        <Route path="/maintenance" element={<Layout children={<Maintenance />} />} />
-        <Route path="/reports" element={<Layout children={<Reports />} />} />
-        <Route path="/manage" element={<Layout children={<UserManagement />} />} />
-        <Route path="/park" element={<Layout children={<ParkAreas />} />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Home/>} />
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Events />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/restaurants"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Restaurants />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gifts"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Shops />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tickets"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Tickets />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Maintenance />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Reports />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<UserManagement />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/park"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<ParkAreas />} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <ProtectedRoute isAllowed={false}>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute isAllowed={false}>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<Profile />} />
+            </ProtectedRoute>
+          }
+          />
       </Routes>
     </BrowserRouter>
   );
 }
-
 
 export default App;

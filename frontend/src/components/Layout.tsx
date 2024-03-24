@@ -3,7 +3,6 @@ import { Box, Toolbar } from "@mui/material";
 import Topbar from "./Topbar";
 import Sidebar from "./Sidebar";
 import {
-  Dashboard as DashboardIcon,
   ConfirmationNumber as TicketsIcon,
   People as UserManagementIcon,
   Forest as ForestIcon,
@@ -21,6 +20,28 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+const filterMenuItems = () => {
+  const level = localStorage.getItem('level');
+  if (level === '999') {
+    return menuItems;
+  } else {
+    return menuItems.filter(item => item.text !== 'User Management');
+  }
+};
+
+const menuItems = [
+  { text: "Park Areas", icon: <ForestIcon />, path: "/park" },
+  { text: "Rides", icon: <RidesIcon />, path: "/rides" },
+  { text: "Events", icon: <EventsIcon />, path: "/events" },
+  { text: "Restaurants", icon: <RestaurantIcon />, path: "/restaurants" },
+  { text: "Gift Shops", icon: <GiftShopIcon />, path: "/gifts" },
+  { text: "Tickets", icon: <TicketsIcon />, path: "/tickets" },
+  { text: "Maintenance", icon: <MaintenanceIcon />, path: "/maintenance" },
+  { text: "Reporting and Analytics", icon: <UserManagementIcon />, path: "/reports" },
+  { text: "User Management", icon: <ManageAccountsIcon />, path: "/manage" },
+  { text: "My Profile", icon: <HistoryIcon />, path: "/profile" },
+];
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [open, setOpen] = useState(() => {
     const isSidebarOpen = localStorage.getItem("sidebarOpen");
@@ -35,23 +56,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setOpen(!open);
   };
 
-  const menuItems = [
-    { text: "Park Areas", icon: <ForestIcon />, path: "/park" },
-    { text: "Rides", icon: <RidesIcon />, path: "/rides" },
-    { text: "Events", icon: <EventsIcon />, path: "/events" },
-    { text: "Restaurants", icon: <RestaurantIcon />, path: "/restaurants" },
-    { text: "Gift Shops", icon: <GiftShopIcon />, path: "/gifts" },
-    { text: "Tickets", icon: <TicketsIcon />, path: "/tickets" },
-    { text: "Maintenance", icon: <MaintenanceIcon />, path: "/maintenance" },
-    { text: "Reporting and Analytics", icon: <UserManagementIcon />, path: "/reports" },
-    { text: "User Management", icon: <ManageAccountsIcon />, path: "/manage" },
-    { text: "My Profile", icon: <HistoryIcon />, path: "/profile" },
-  ];
+  const filteredMenuItems = filterMenuItems();
 
   return (
     <Box sx={{ display: "flex" }}>
       <Topbar onDrawerToggle={handleDrawerToggle} />
-      <Sidebar open={open} menuItems={menuItems} />
+      <Sidebar open={open} menuItems={filteredMenuItems} />
       <Box
         component="main"
         sx={{
