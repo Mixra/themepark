@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './css/GiftShops.css'; 
 import Burger from '../../assets/images/BurgerSpot.jpeg';
 import {GenericCard} from '../../components/Card';
+import ButtonComponent from '../../components/ButtonComponent';
+
 import './css/Restauraunt.css';
 type Restaurant = {
   id: number;
@@ -59,7 +61,7 @@ const initialRestaurants: Restaurant[] = [
   },
   // Add more restaurants as needed
 ];
-
+const handleCreateCard = () => {}
 const RestaurantsPage: React.FC = () => {
   // Use useState to manage the restaurants state
   const [restaurants, setRestaurants] = useState<Restaurant[]>(initialRestaurants);
@@ -95,10 +97,15 @@ const RestaurantsPage: React.FC = () => {
           </div>
         </GenericCard>
       ))}
+   {/* Create Button */}
+   <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <ButtonComponent variant="contained" color="primary" size="small" onClick={handleCreateCard}>
+          Create
+        </ButtonComponent>
+      </div>
     </div>
   );
 };
-
 export default RestaurantsPage;
 
 /*

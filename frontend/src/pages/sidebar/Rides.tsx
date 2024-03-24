@@ -3,6 +3,7 @@ import "./css/GiftShops.css";
 import themeParkBackground from "../../assets/images/images.jpeg";
 import themeParkBackgrounds from "../../assets/images/Giftshopimage2.jpeg";
 import { GenericCard } from "../../components/Card";
+import ButtonComponent from "../../components/ButtonComponent";
 import {
   Button,
   TextField,
@@ -91,6 +92,10 @@ const RidesPage: React.FC = () => {
     );
   };
 
+  const handleCreateCard = () => {
+    
+  }
+
   return (
     <div className="grid-container">
       {rides.map((ride) => (
@@ -176,8 +181,19 @@ const RidesPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+{/* Create Button */}
+<div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+  <ButtonComponent variant="contained" color="primary" size="small" onClick={handleCreateCard}>
+    Create
+  </ButtonComponent>
+</div>
+
+      
     </div>
+    
   );
+  
 };
 
 export default RidesPage;
