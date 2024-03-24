@@ -45,7 +45,7 @@ const Login: React.FC = () => {
         }
       }
     },
-    validateOnBlur: true,
+    validateOnBlur: false,
     validateOnChange: true,
   });
 

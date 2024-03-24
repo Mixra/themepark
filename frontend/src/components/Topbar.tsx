@@ -15,6 +15,7 @@ import {
   Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface TopbarProps {
   onDrawerToggle: () => void;
@@ -22,6 +23,7 @@ interface TopbarProps {
 
 const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -33,6 +35,12 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
 
   const handleLogout = () => {
     localStorage.clear();
+    navigate("/login");
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+    handleProfileMenuClose();
   };
 
   return (
@@ -65,7 +73,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           open={Boolean(anchorEl)}
           onClose={handleProfileMenuClose}
         >
-          <MenuItem>
+          <MenuItem onClick={handleProfileClick}>
             <ListItemIcon>
               <PersonIcon />
             </ListItemIcon>

@@ -63,6 +63,8 @@ const Register: React.FC = () => {
         }
       }
     },
+    validateOnBlur: false,
+    validateOnChange: true,
   });
 
   return (
