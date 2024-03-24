@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Grid } from '@mui/material';
 import { GenericCard } from "../../components/Card";
 import ButtonComponent from "../../components/ButtonComponent";
 
@@ -45,24 +44,27 @@ const EventsPage: React.FC = () => {
   };
 
   return (
-    <Grid container spacing={3}>
+    <div>
       {/* Event cards */}
-      {events.map((event) => (
-        <Grid item key={event.id} xs={12} sm={6} md={4}>
-          <GenericCard
-            item={event}
-            onDelete={() => handleDelete(event.id)}
-            onEdit={(updatedEvent) => console.log(updatedEvent)}
-          />
-        </Grid>
-      ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {events.map((event) => (
+          <div key={event.id} style={{ margin: '10px' }}>
+            <GenericCard
+              item={event}
+              onDelete={() => handleDelete(event.id)}
+              onEdit={(updatedEvent) => console.log(updatedEvent)}
+            />
+          </div>
+        ))}
+      </div>
       {/* Create Button */}
-      <Grid item xs={12} sm={6} md={4}>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
         <ButtonComponent variant="contained" color="primary" size="small" onClickCreate={handleCreateCard}>
           Create
         </ButtonComponent>
-      </Grid>
-    </Grid>
+      </div>
+      
+    </div>
   );
 };
 

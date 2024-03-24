@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Grid } from '@mui/material';
 import { GenericCard } from "../../components/Card";
 import ButtonComponent from "../../components/ButtonComponent";
 
@@ -41,25 +40,27 @@ const MaintenancePage: React.FC = () => {
   };
 
   return (
-    <Grid container spacing={3}>
+    <div>
       {/* Maintenance task cards */}
-      {maintenance.map((task) => (
-        <Grid item key={task.id} xs={12} sm={6} md={4}>
-          <GenericCard
-            item={task}
-            onDelete={() => handleDelete(task.id)}
-            onEdit={(updatedTask) => console.log(updatedTask)}
-          />
-        </Grid>
-      ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {maintenance.map((task) => (
+          <div key={task.id} style={{ margin: '10px' }}>
+            <GenericCard
+              item={task}
+              onDelete={() => handleDelete(task.id)}
+              onEdit={(updatedTask) => console.log(updatedTask)}
+            />
+          </div>
+        ))}
+      </div>
       {/* Create Button */}
-      <Grid item xs={12} sm={6} md={4}>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
         <ButtonComponent variant="contained" color="primary" size="small" onClickCreate={handleCreateCard}>
           Create
         </ButtonComponent>
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
-};
+};  
 
 export default MaintenancePage;

@@ -183,7 +183,7 @@ const RidesPage: React.FC = () => {
       </Dialog>
 
 {/* Create Button */}
-<div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+<div style={{marginTop: "15px", display: "flex", flexDirection: "column", alignItems: "center" }}>
   <ButtonComponent variant="contained" color="primary" size="small" onClick={handleCreateCard}>
     Create
   </ButtonComponent>
