@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using backend.Utils;
+using Isopoh.Cryptography.Argon2;
 
 namespace backend.Controllers
 {
@@ -33,7 +34,7 @@ namespace backend.Controllers
                 return Conflict(new { error = "User already exists" });
             }
 
-            var hashed_pass = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            var hashed_pass = Argon2.Hash(password: user.Password, timeCost: 1, memoryCost: 4096, parallelism: 1, hashLength: 16);
 
             var newUserData = new
             {
@@ -48,8 +49,8 @@ namespace backend.Controllers
             };
 
             var insertQuery = @"
-            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt)
-            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt)";
+            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role, Level)
+            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, 'customer', 0)";
 
             try
             {
@@ -60,7 +61,8 @@ namespace backend.Controllers
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.None,
-                    Secure = true
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddYears(1)
                 });
 
                 return Ok(new { message = "User registered successfully", token = token, level = 0 });
@@ -78,12 +80,12 @@ namespace backend.Controllers
             {
                 return BadRequest();
             }
-            
+
             user.Username = user.Username.ToLower();
 
             var userData = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT Username, PasswordHash, Level FROM UserAccounts WHERE Username = @Username", new { Username = user.Username });
 
-            if (userData == null || !BCrypt.Net.BCrypt.Verify(user.Password, userData?.PasswordHash))
+            if (userData == null || !Argon2.Verify(userData?.PasswordHash, user.Password))
             {
                 return Unauthorized(new { error = "Invalid username or password" });
             }
@@ -96,7 +98,8 @@ namespace backend.Controllers
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.None,
-                    Secure = true
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddYears(1)
                 });
 
                 return Ok(new { message = "Login successful", token = token, level = userData?.Level });

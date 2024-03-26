@@ -3,7 +3,7 @@ using Dapper;
 
 namespace backend.Services
 {
-    public class DatabaseService : IDisposable
+    public class DatabaseService
     {
         private readonly string _connectionString;
 
@@ -46,11 +46,6 @@ namespace backend.Services
                 await connection.OpenAsync();
                 return await connection.QuerySingleAsync<T>(sql, param);
             }
-        }
-
-        public void Dispose()
-        {
-            // No need to dispose anything since the SqlConnection is created and disposed within the method
         }
     }
 }

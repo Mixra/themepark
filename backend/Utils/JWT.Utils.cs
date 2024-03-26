@@ -20,6 +20,7 @@ namespace backend.Utils
                     new Claim(ClaimTypes.Name, username),
                     new Claim(ClaimTypes.Role, level.ToString())
                 }),
+                Expires = DateTime.UtcNow.AddYears(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -39,12 +40,12 @@ namespace backend.Utils
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = false,
                 ValidateAudience = false,
-                ClockSkew = TimeSpan.Zero
+                ValidateLifetime = false,
             }, out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
-            var username = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-            var level = int.Parse(jwtToken.Claims.FirstOrDefault(x => x.Type == "Level")?.Value ?? "0");
+            var username = jwtToken.Claims.FirstOrDefault(x => x.Type == "unique_name")?.Value;
+            var level = int.Parse(jwtToken.Claims.FirstOrDefault(x => x.Type == "role")?.Value ?? "0");
 
             return (username, level);
         }

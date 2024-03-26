@@ -11,7 +11,7 @@ import {
   CardGiftcard as GiftShopIcon,
   Engineering as MaintenanceIcon,
   ManageAccounts as ManageAccountsIcon,
-  History as HistoryIcon,
+  AccountBox,
   Event as EventsIcon
 } from "@mui/icons-material";
 import { useEffect } from "react";
@@ -39,7 +39,7 @@ const menuItems = [
   { text: "Maintenance", icon: <MaintenanceIcon />, path: "/maintenance" },
   { text: "Reporting and Analytics", icon: <UserManagementIcon />, path: "/reports" },
   { text: "User Management", icon: <ManageAccountsIcon />, path: "/manage" },
-  { text: "My Profile", icon: <HistoryIcon />, path: "/profile" },
+  { text: "My Profile", icon: <AccountBox />, path: "/profile" },
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {

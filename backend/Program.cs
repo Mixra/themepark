@@ -2,7 +2,7 @@ using backend.Services;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.FileProviders;
+using backend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +15,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddPolicy("AllowOrigin", builder =>
     {
-        builder.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        builder.WithOrigins("http://localhost:5173")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
     });
 });
 
@@ -50,6 +51,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireRole("1");
+    });
+});
 
 
 var app = builder.Build();
@@ -60,26 +68,30 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
+app.UseStaticFiles(new StaticFileOptions
+{
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "application/octet-stream"
+});
+
+app.MapFallbackToFile("index.html");
+
+
+app.UseRouting();
+
+app.UseAuthentication();
+
+app.UseMiddleware<ExtractJWTMiddleware>();
 
 app.UseAuthorization();
 
-var wwwPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-if (Directory.Exists(wwwPath))
-{
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(
-            Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
-    });
 
-    app.UseRouting();
-    app.MapFallbackToFile("index.html");
-}
-
-app.UseCors();
-
+app.UseCors("AllowOrigin");
 
 app.MapControllers();
 

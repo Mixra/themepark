@@ -18,7 +18,7 @@ namespace backend.Controllers
             _configuration = configuration;
         }
 
-        
+
         [Authorize(Roles = "1")]
         [HttpGet("test")]
         public IActionResult AdminEndpoint()
