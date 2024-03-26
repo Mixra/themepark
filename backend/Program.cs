@@ -73,11 +73,11 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles(new StaticFileOptions
+/*app.UseStaticFiles(new StaticFileOptions
 {
     ServeUnknownFileTypes = true,
     DefaultContentType = "application/octet-stream"
-});
+});*/
 
 app.MapFallbackToFile("index.html");
 
