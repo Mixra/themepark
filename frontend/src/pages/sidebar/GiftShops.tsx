@@ -90,6 +90,7 @@ interface GiftShop {
   openingTime: string;
   closingTime: string;
   merchandiseType: string;
+  hasCrud?: boolean;
 }
 
 const fakeGiftShops: GiftShop[] = [
@@ -101,6 +102,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "09:00",
     closingTime: "18:00",
     merchandiseType: "Adventure Gear",
+    hasCrud: true,
   },
   {
     shopID: 2,
@@ -110,6 +112,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "10:00",
     closingTime: "20:00",
     merchandiseType: "Tech Gadgets",
+    hasCrud: false,
   },
   // Add more fake data as needed
 ];
@@ -147,6 +150,7 @@ const GiftShopsPage: React.FC = () => {
         openingTime: formData.openingTime || "",
         closingTime: formData.closingTime || "",
         merchandiseType: formData.merchandiseType || "",
+        hasCrud: formData.hasCrud || false,
       };
 
       setGiftShops([...giftShops, newGiftShop]);
@@ -251,7 +255,7 @@ const GiftShopsPage: React.FC = () => {
               </Typography>
               </Box>
               </CardContent>
-              {display_crud && (
+              {shop.hasCrud && (
               <CardActions>
               <IconButton
               aria-label="edit"
