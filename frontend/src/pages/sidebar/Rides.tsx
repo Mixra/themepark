@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import "./css/GiftShops.css";
-import themeParkBackground from "../../assets/images/images.jpeg";
-import themeParkBackgrounds from "../../assets/images/Giftshopimage2.jpeg";
 import { GenericCard } from "../../components/Card";
 import ButtonComponent from "../../components/ButtonComponent";
 import {
@@ -12,8 +10,9 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode.react";
+//ParkAreas changes
+import { NestCamWiredStand } from "@mui/icons-material";
 
 type Ride = {
   id: number;
@@ -31,7 +30,7 @@ const rides: Ride[] = [
   {
     id: 1,
     Name: "The Great Ride",
-    imageUrl: themeParkBackground,
+    imageUrl: "https://sf-static.sixflags.com/wp-content/uploads/2020/04/sfmm_viper2-scaled.jpg",
     MinHeight: 100,
     MaxHeight: 200,
     Duration: 5,
@@ -42,7 +41,7 @@ const rides: Ride[] = [
   {
     id: 2,
     Name: "The Awesome Ride",
-    imageUrl: themeParkBackgrounds,
+    imageUrl: "https://sf-static.sixflags.com/wp-content/uploads/Anne-McDade-BATMAN-2-min-scaled.jpg",
     MinHeight: 120,
     MaxHeight: 220,
     Duration: 6,
@@ -54,13 +53,44 @@ const rides: Ride[] = [
 ];
 
 const RidesPage: React.FC = () => {
-  const navigate = useNavigate();
   const [selectedRide, setSelectedRide] = useState<number | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
   const [ticketCodes, setTicketCodes] = useState<string[]>([]);
   const [currentTicketIndex, setCurrentTicketIndex] = useState<number>(0);
 
+  //this is the changes from the ParkRides page
+  const [ridesVar, setRides] = useState<Ride[]>(rides);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [formData, setFormData] = useState<Partial<Ride>>({});
+  const level = Number(localStorage.getItem("level"));
+  const display_crud = level === 1 ? true : false;
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const handleCreateClick = () => {
+    setFormData({});
+    setIsEditing(false);
+    setOpenPopup(true);
+  };
+
+  const handleFormSubmit = (formData: Partial<Ride>) => {
+    
+    //ask about setting up the if statement for handleFormSubmit
+    const newRide: Ride = {
+      Name: formData.Name || "",
+      MinHeight: formData.MinHeight || 0,
+      MaxHeight: formData.MaxHeight || 0,
+      Description: formData.Description || "",
+      OpeningTime: formData.OpeningTime || "",
+      ClosingTime: formData.ClosingTime || "",
+      imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
+    };
+
+    setRides([...ridesVar, newRide]);
+
+    //add a setOpenPopup(false); outside the if else
+  }
+  //
   const handlePurchase = (rideId: number) => {
     setSelectedRide(rideId);
   };
