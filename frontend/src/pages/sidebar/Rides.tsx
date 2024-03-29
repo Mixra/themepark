@@ -233,22 +233,30 @@ import {
   CardContent,
   CardActions,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
   IconButton,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ParkPopup from "../../components/ParkPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import QRCode from "qrcode.react";
+
 
 interface Rides {
   imageUrl: string | undefined;
   id: number;
   name: string;
-  description: string;
+  type: string;
+  minHeight: number;
+  maxCapacity: number;
+  duration: number;
+  description: string;//this may not be needed (not in db so far)
   openingTime: string;
   closingTime: string;
 }
@@ -259,6 +267,10 @@ const fakeParkAreas: Rides[] = [
     name: "The Great Ride",
     description:
       "The best ride in the park!",
+    minHeight: 100,
+    maxCapacity: 50,
+    type: "Rollercoaster",
+    duration: 5,
     openingTime: "09:00",
     closingTime: "18:00",
     imageUrl:
@@ -269,6 +281,10 @@ const fakeParkAreas: Rides[] = [
     name: "The Awesome Ride",
     description:
       "The second best ride in the park!",
+    minHeight: 100,
+    maxCapacity: 25,
+    type: "Rollercoaster", //rollercoaster, water ride, ferris wheel
+    duration: 5,
     openingTime: "10:00",
     closingTime: "20:00",
     imageUrl:
@@ -277,8 +293,8 @@ const fakeParkAreas: Rides[] = [
   // Add more fake data as needed
 ];
 
-const ParkAreaPage: React.FC = () => {
-  const [parkAreas, setParkAreas] = useState<Rides[]>(fakeParkAreas);
+const RidesPage: React.FC = () => {
+  const [selectedRide, setSelectedRide] = useState<Rides[]>(fakeParkAreas);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [formData, setFormData] = useState<Partial<Rides>>({});
@@ -286,6 +302,10 @@ const ParkAreaPage: React.FC = () => {
     null
   );
   const [isEditing, setIsEditing] = useState(false);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
+  const [ticketCodes, setTicketCodes] = useState<string[]>([]);
+  const [currentTicketIndex, setCurrentTicketIndex] = useState<number>(0);
 
   const level = Number(localStorage.getItem("level"));
   const display_crud = level === 999 ? true : false;
@@ -298,13 +318,13 @@ const ParkAreaPage: React.FC = () => {
 
   const handleFormSubmit = (formData: Partial<Rides>) => {
     if (isEditing && selectedParkArea) {
-      const updatedParkAreas = parkAreas.map((area) =>
+      const updatedParkAreas = selectedRide.map((area) =>
         area.id === selectedParkArea.id ? { ...area, ...formData } : area
       );
-      setParkAreas(updatedParkAreas);
+      setSelectedRide(updatedParkAreas);
     } else {
       // Generate a new ID for the new park area
-      const newId = parkAreas.length + 1;
+      const newId = selectedRide.length + 1;
 
       // Create a new park area object with the form data and the new ID
       const newParkArea: Rides = {
@@ -312,13 +332,49 @@ const ParkAreaPage: React.FC = () => {
         name: formData.name || "",
         description: formData.description || "",
         openingTime: formData.openingTime || "",
+        minHeight: formData.minHeight || 0,
+        maxCapacity: formData.maxCapacity || 0,
+        type: formData.type || "",
+        duration: formData.duration || 0,
         closingTime: formData.closingTime || "",
         imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
       };
 
-      setParkAreas([...parkAreas, newParkArea]);
+      setSelectedRide([...selectedRide, newParkArea]);
     }
     setOpenPopup(false);
+  };
+
+  const handleOpenPurchaseDialog = (selectedRide: Rides) => {
+    setSelectedRide(selectedRide); // Assuming setSelectedRide sets the state for the current ride of interest
+    setShowTicketDialog(true); // Show the dialog to start the purchase process
+  };
+
+  const handleConfirmPurchase = () => {
+    // Generate random ticket codes
+    const codes = Array.from({ length: quantity }, () =>
+      Math.random().toString(36).substring(7)
+    );
+    setTicketCodes(codes);
+    setShowTicketDialog(true);
+  };
+
+  const handleCloseTicketDialog = () => {
+    setShowTicketDialog(false);
+    setSelectedRide(null);
+    setQuantity(1);
+    setTicketCodes([]);
+    setCurrentTicketIndex(0);
+  };
+
+  const handleNextTicket = () => {
+    setCurrentTicketIndex((prevIndex) => (prevIndex + 1) % ticketCodes.length);
+  };
+
+  const handlePrevTicket = () => {
+    setCurrentTicketIndex(
+      (prevIndex) => (prevIndex - 1 + ticketCodes.length) % ticketCodes.length
+    );
   };
 
   const handleEditClick = (parkArea: Rides) => {
@@ -335,13 +391,56 @@ const ParkAreaPage: React.FC = () => {
 
   const handleDeleteConfirm = () => {
     if (selectedParkArea) {
-      const updatedParkAreas = parkAreas.filter(
+      const updatedParkAreas = selectedRide.filter(
         (area) => area.id !== selectedParkArea.id
       );
-      setParkAreas(updatedParkAreas);
+      setSelectedRide(updatedParkAreas);
     }
     setOpenDeleteDialog(false);
   };
+
+  const renderTicketDialog = () => {
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={() => handleOpenPurchaseDialog(Rides)}
+    >
+      Purchase Tickets
+    </Button>
+    return(
+    <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
+        <DialogTitle>Ticket Details</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
+            <p>Ticket Code: {ticketCodes[currentTicketIndex]}</p>
+            <p>Quantity: {quantity}</p>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePrevTicket} disabled={quantity === 1}>
+            Prev
+          </Button>
+          <Button
+            onClick={handleNextTicket}
+            disabled={currentTicketIndex === ticketCodes.length - 1}
+          >
+            Next
+          </Button>
+          <Button onClick={handleCloseTicketDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -363,7 +462,7 @@ const ParkAreaPage: React.FC = () => {
           maxWidth: "100%",
         }}
       >
-        {parkAreas.map((area) => (
+        {selectedRide.map((area) => (
           <Card
             key={area.id}
             sx={{
@@ -391,9 +490,22 @@ const ParkAreaPage: React.FC = () => {
               </Typography>
               <Divider sx={{ marginY: 1 }} />
               <Typography color="text.secondary" gutterBottom>
-                {area.description}
+                {area.type}
               </Typography>
               
+              <Box
+                sx={{
+                  maxHeight: 60,
+                  minHeight: 60,
+                  overflow: "auto",
+                  padding: 1,
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="body2">{area.description}</Typography>
+              </Box>
+
               <Divider sx={{ marginY: 1 }} />
               <Box
                 sx={{
@@ -410,6 +522,12 @@ const ParkAreaPage: React.FC = () => {
                 </Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
+              <Typography variant="body2" fontWeight="bold">
+                  Minimum Height: {area.minHeight}
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  Max seating per ride: {area.maxCapacity}
+                </Typography>
             </CardContent>
             {display_crud && (
               <CardActions>
@@ -447,4 +565,4 @@ const ParkAreaPage: React.FC = () => {
   );
 };
 
-export default ParkAreaPage;
+export default RidesPage;
