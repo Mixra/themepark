@@ -346,7 +346,7 @@ const RidesPage: React.FC = () => {
   };
 
   const handleOpenPurchaseDialog = (selectedRide: Rides) => {
-    setSelectedRide(selectedRide); // Assuming setSelectedRide sets the state for the current ride of interest
+    setSelectedRide(fakeParkAreas); // Assuming setSelectedRide sets the state for the current ride of interest
     setShowTicketDialog(true); // Show the dialog to start the purchase process
   };
 
@@ -399,47 +399,7 @@ const RidesPage: React.FC = () => {
     setOpenDeleteDialog(false);
   };
 
-  const renderTicketDialog = () => {
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => handleOpenPurchaseDialog(Rides)}
-    >
-      Purchase Tickets
-    </Button>
-    return(
-    <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
-        <DialogTitle>Ticket Details</DialogTitle>
-        <DialogContent>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
-            <p>Ticket Code: {ticketCodes[currentTicketIndex]}</p>
-            <p>Quantity: {quantity}</p>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePrevTicket} disabled={quantity === 1}>
-            Prev
-          </Button>
-          <Button
-            onClick={handleNextTicket}
-            disabled={currentTicketIndex === ticketCodes.length - 1}
-          >
-            Next
-          </Button>
-          <Button onClick={handleCloseTicketDialog} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
+  
 
   return (
     <Box
@@ -545,8 +505,68 @@ const RidesPage: React.FC = () => {
                 </IconButton>
               </CardActions>
             )}
+
+            {selectedRide === area.name ? (
+            <div>
+              <TextField
+                type="number"
+                label="Quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value))}
+                style={{ marginTop: "10px" }}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginTop: "10px", marginLeft: "10px" }}
+                onClick={handleConfirmPurchase}
+              >
+                Confirm Purchase
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginTop: "10px" }}
+              onClick={() => handleOpenPurchaseDialog(fakeParkAreas.id)}
+            >
+              Purchase
+            </Button>
+          )}
+
           </Card>
         ))}
+        <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
+        <DialogTitle>Ticket Details</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
+            <p>Ticket Code: {ticketCodes[currentTicketIndex]}</p>
+            <p>Quantity: {quantity}</p>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlePrevTicket} disabled={quantity === 1}>
+            Prev
+          </Button>
+          <Button
+            onClick={handleNextTicket}
+            disabled={currentTicketIndex === ticketCodes.length - 1}
+          >
+            Next
+          </Button>
+          <Button onClick={handleCloseTicketDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
       </Box>
       <ParkPopup
         open={openPopup}
