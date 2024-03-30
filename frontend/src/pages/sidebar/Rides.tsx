@@ -488,6 +488,14 @@ const RidesPage: React.FC = () => {
                 <Typography variant="body2" fontWeight="bold">
                   Max seating per ride: {area.maxCapacity}
                 </Typography>
+                <Button
+              variant="contained"
+              color="primary"
+              style={{ marginTop: "10px" }}
+              onClick={() => handleOpenPurchaseDialog(fakeParkAreas.id)}
+            >
+              Purchase
+            </Button>
             </CardContent>
             {display_crud && (
               <CardActions>
@@ -534,10 +542,7 @@ const RidesPage: React.FC = () => {
               Purchase
             </Button>
           )}
-
-          </Card>
-        ))}
-        <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
+            <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
         <DialogTitle>Ticket Details</DialogTitle>
         <DialogContent>
           <div
@@ -567,6 +572,8 @@ const RidesPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+          </Card>
+        ))}
       </Box>
       <ParkPopup
         open={openPopup}
