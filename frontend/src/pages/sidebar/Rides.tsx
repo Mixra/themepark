@@ -243,7 +243,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ParkPopup from "../../components/ParkPopup";
+import RidesPopup from "../../components/RidesPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import QRCode from "qrcode.react";
 
@@ -488,6 +488,9 @@ const RidesPage: React.FC = () => {
                 <Typography variant="body2" fontWeight="bold">
                   Max seating per ride: {area.maxCapacity}
                 </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  Duration of the ride: {area.duration} minutes
+                </Typography>
                 <Button
               variant="contained"
               color="primary"
@@ -575,7 +578,7 @@ const RidesPage: React.FC = () => {
           </Card>
         ))}
       </Box>
-      <ParkPopup
+      <RidesPopup
         open={openPopup}
         onClose={() => setOpenPopup(false)}
         onSubmit={handleFormSubmit}
