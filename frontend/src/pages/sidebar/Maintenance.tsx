@@ -69,7 +69,7 @@ function MaintenancePage() {
                                 <Table>
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Name</TableCell>
+                                            <TableCell>Type</TableCell>
                                             <TableCell>Description</TableCell>
                                             <TableCell>Start Date Time</TableCell>
                                             <TableCell>End Date Time</TableCell>
