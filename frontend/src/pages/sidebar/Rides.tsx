@@ -399,8 +399,6 @@ const RidesPage: React.FC = () => {
     setOpenDeleteDialog(false);
   };
 
-  
-
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}

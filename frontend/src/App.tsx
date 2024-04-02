@@ -16,6 +16,7 @@ import Events from './pages/sidebar/Events.tsx';
 import PurchaseTickets from './pages/PurchaseTick.tsx';
 import ProtectedRoute from './components/ProtectedRoute';
 import Profile from './pages/sidebar/Profile.tsx';
+import FrontPage from './pages/sidebar/FrontPage.tsx';
 
 function App() {
   const isLoggedIn = localStorage.getItem('level') !== null;
@@ -28,11 +29,19 @@ function App() {
           element={
             isLoggedIn ? (
               <ProtectedRoute isAllowed>
-                <Layout children={<Rides />} />
+                <Layout children={<FrontPage />} />
               </ProtectedRoute>
             ) : (
               <Home />
             )
+          }
+        />
+        <Route
+          path="/front-page"
+          element={
+            <ProtectedRoute isAllowed>
+              <Layout children={<FrontPage />} />
+            </ProtectedRoute>
           }
         />
         <Route

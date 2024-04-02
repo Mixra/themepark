@@ -14,7 +14,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EventPopup from "../../components/EventPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 
-
 interface Event {
   EventID: number;
   AreaID: number;
