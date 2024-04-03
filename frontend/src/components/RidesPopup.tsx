@@ -14,6 +14,10 @@ interface Rides {
   openingTime?: string;
   closingTime?: string;
   imageUrl?: string;
+  type?: string;
+  minHeight?: number,
+  maxCapacity?: number;
+  duration?: number;
 }
 
 interface RidesPopupProps {
@@ -52,6 +56,38 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           name="name"
           label="Name"
           value={formData.name || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          name="type"
+          label="Type"
+          value={formData.type || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          name="minHeight"
+          label="Minimum Height Required"
+          value={formData.minHeight || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          name="max Seating"
+          label="Maximum seating on ride"
+          value={formData.maxCapacity || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          name="duration"
+          label="Duration of the ride"
+          value={formData.duration || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"

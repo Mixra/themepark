@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import {
-  Box,
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
-  Typography,
+  List,
+  ListItem,
+  ListItemText,
   IconButton,
   DialogActions,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import QRCode from "qrcode.react";
 
 interface Purchase {
   id: number;
@@ -18,7 +22,6 @@ interface Purchase {
   price: number;
   quantity: number;
   purchaseDate: string;
-  barcode: string; // Assuming each purchase has a unique barcode value
 }
 
 const Tickets: React.FC = () => {
@@ -34,32 +37,18 @@ const Tickets: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-      }}
-    >
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleOpenHistory}
-        sx={{
-          fontSize: "1.5rem",
-          px: 6,
-          py: 3,
-          borderRadius: "25px",
-          fontWeight: "bold",
-          "&:hover": {
-            transform: "scale(1.1)",
-          },
-        }}
-      >
+    <>
+      <Button variant="outlined" onClick={handleOpenHistory} sx={{ my: 2 }}>
         View Purchase History
       </Button>
+
+      <Grid
+        container
+        spacing={4}
+        sx={{ padding: "10px", justifyContent: "center" }}
+      >
+        {/* Removed "Fast Pass" and "Normal" tickets */}
+      </Grid>
 
       <Dialog
         open={historyOpen}
@@ -67,40 +56,44 @@ const Tickets: React.FC = () => {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Purchase History</DialogTitle>
-        <DialogContent>
-          {purchaseHistory.length === 0 ? (
-            <Typography sx={{ textAlign: "center" }}>
-              You have not yet purchased any tickets. To do so, please navigate
-              to the "Rides" panel.
-            </Typography>
+        <DialogTitle>
+          Purchase History
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseHistory}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {purchaseHistory.length > 0 ? (
+            <List>
+              {purchaseHistory.map((purchase) => (
+                <ListItem key={purchase.id}>
+                  <ListItemText
+                    primary={`${purchase.type} Ticket - $${purchase.price}`}
+                    secondary={`Quantity: ${purchase.quantity}, Purchase Date: ${purchase.purchaseDate}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
           ) : (
-            purchaseHistory.map((purchase, index) => (
-              <Box key={index} sx={{ mb: 2 }}>
-                <Typography variant="h6">{purchase.type} Ticket</Typography>
-                <Typography variant="body1">
-                  Price: ${purchase.price}
-                </Typography>
-                <Typography variant="body1">
-                  Quantity: {purchase.quantity}
-                </Typography>
-                <Typography variant="body1">
-                  Purchase Date: {purchase.purchaseDate}
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-                  <QRCode value={purchase.barcode} size={128} level="H" />
-                </Box>
-              </Box>
-            ))
+            <Typography sx={{ textAlign: "center" }}>
+              You have not yet purchased any tickets.
+            </Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <IconButton aria-label="close" onClick={handleCloseHistory}>
-            <CloseIcon />
-          </IconButton>
+          <Button onClick={handleCloseHistory}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 

@@ -14,7 +14,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EventPopup from "../../components/EventPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 
-
 interface Event {
   EventID: number;
   AreaID: number;
@@ -39,7 +38,7 @@ const initialEvents: Event[] = [
     EndDateTime: '(1:00AM) 04-04-24',
     AgeRestriction: 5,
     hasCrud: true,
-    ImageUrl:"https://www.google.com/url?sa=i&url=https%3A%2F%2Fusopps-froggy-hat.tumblr.com%2Fpost%2F732752965818023936%2Fep-1080&psig=AOvVaw0ELYizwsAIrWGmAh0JCw5K&ust=1711677841669000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCOiX_YHvlYUDFQAAAAAdAAAAABAE",
+    ImageUrl:"https://64.media.tumblr.com/304f056d8b08280b24cb75363d0586da/eb3305b9c6f87ab3-f2/s2048x3072/596137a2b5b0f4f30e0d14138b9e80546552a2af.png",
   },
   // Add more events as needed
 ];
@@ -53,7 +52,7 @@ const EventsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const level = Number(localStorage.getItem("level"));
-  const displayCrud = level === 999 ? true : false;
+  const display_Crud = level === 999 ? true : false;
 
   const handleCreateClick = () => {
     setFormData({});
@@ -111,10 +110,11 @@ const EventsPage: React.FC = () => {
 
   
 
-  return (<Box
+  return (
+  <Box
     sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
   >
-    {displayCrud && (
+    {display_Crud && (
       <Box
         sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
       >
@@ -200,8 +200,9 @@ const EventsPage: React.FC = () => {
               }}
             >
             </Box>
+
           </CardContent>
-          {thisevent.hasCrud && (
+          {display_Crud && (
             <CardActions>
               <IconButton
                 aria-label="edit"
@@ -219,6 +220,7 @@ const EventsPage: React.FC = () => {
           )}
         </Card>
       ))}
+      
     </Box>
     <EventPopup
       open={openPopup}
