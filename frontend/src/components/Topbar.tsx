@@ -21,6 +21,41 @@ interface TopbarProps {
   onDrawerToggle: () => void;
 }
 
+const GlobalStyles = () => (
+  <style>
+    {`
+      @keyframes clownColorAnimation {
+        0% { color: red; }
+        25% { color: yellow; }
+        50% { color: green; }
+        75% { color: orange; }
+        100% { color: red; }
+      }
+
+      @keyframes pulsate {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+
+      .clown-colors {
+        animation: clownColorAnimation 6s infinite, pulsate 2s infinite;
+      }
+
+      .attractions-enter {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      .attractions-enter-active {
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 800ms, transform 800ms;
+      }
+    `}
+  </style>
+);
+
+
 const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
@@ -62,7 +97,8 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+        <GlobalStyles />
+        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} className="clown-colors">
           The Clown Park
         </Typography>
         <IconButton color="inherit" onClick={handleProfileMenuOpen}>
