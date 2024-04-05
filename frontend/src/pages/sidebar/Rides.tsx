@@ -1,3 +1,5 @@
+//update the delete confirmation text so it doesnt go off the park area 
+
 import React, { useState } from "react";
 import {
   Box,
@@ -37,31 +39,59 @@ interface Rides {
 const fakeRides: Rides[] = [
   {
     id: 1,
-    name: "The Great Ride",
-    description: "The best ride in the park!",
-    minHeight: 100,
-    maxCapacity: 50,
+    name: "Jungle Expedition",
+    description: "Experience a thrilling ride through a jungle full of twists, turns, and lifelike animals on the Jungle Expedition rollercoaster.",
+    minHeight: 120,
+    maxCapacity: 24,
     type: "Rollercoaster",
-    duration: 5,
+    duration: 120,
     openingTime: "09:00",
     closingTime: "18:00",
     hasCrud: true,
     imageUrl:
-      "https://sf-static.sixflags.com/wp-content/uploads/2020/04/sfmm_viper2-scaled.jpg",
+      "https://media.cnn.com/api/v1/images/stellar/prod/210712153839-disneyland-jungle-cruise-ride-0709-restricted.jpg?q=w_3000,h_2000,x_0,y_0,c_fill",
   },
   {
     id: 2,
-    name: "The Awesome Ride",
-    description: "The second best ride in the park!",
+    name: "Mystic River",
+    description: "A captivating water ride that takes adventurers on a thrilling journey through enchanting landscapes and mysterious caves, sprinkled with unexpected splashes and serene moments, perfect for family fun",
     minHeight: 100,
-    maxCapacity: 25,
-    type: "Rollercoaster",
-    duration: 5,
+    maxCapacity: 30,
+    type: "Water Ride",
+    duration: 180,
     openingTime: "10:00",
     closingTime: "20:00",
     hasCrud: false,
     imageUrl:
-      "https://sf-static.sixflags.com/wp-content/uploads/Anne-McDade-BATMAN-2-min-scaled.jpg",
+      "https://blooloop.com/wp-content/uploads/2019/03/6-guests-on-Carowinds-Rip-Roarin-Rapids.jpeg",
+  },
+  {
+    id: 3,
+    name: "Sky High Adventure",
+    description: "Takes you and your family on a gentle ride up high, where you can see beautiful views all around, making it a fun and memorable experience for everyone.",
+    minHeight: 0,
+    maxCapacity: 144,
+    type: "Ferris Wheel",
+    duration: 15,
+    openingTime: "10:00",
+    closingTime: "20:00",
+    hasCrud: false,
+    imageUrl:
+      "https://media.istockphoto.com/id/517726745/photo/ferris-wheel.jpg?s=612x612&w=0&k=20&c=0PLYAc3BZBzw5plVUlNuCP-IUoSVrDmtDV8bHlqH4wI=",
+  },
+  {
+    id: 4,
+    name: "Fairy Tale Carousel",
+    description: "Whisks riders away on a whimsical journey atop enchanting steeds, gliding through a realm of classic stories and magical dreams come to life, perfect for children and the young at heart.",
+    minHeight: 0,
+    maxCapacity: 50,
+    type: "Carousel",
+    duration: 3,
+    openingTime: "10:00",
+    closingTime: "20:00",
+    hasCrud: false,
+    imageUrl:
+      "https://www.familypark.at/wp-content/uploads/FP_Maerchenkarussell_cSemeliker_Web1.jpg",
   },
 ];
 
@@ -224,12 +254,13 @@ const RidesPage: React.FC = () => {
 
               <Box
                 sx={{
-                  maxHeight: 60,
-                  minHeight: 60,
+                  //maxHeight: 60,
+                  //minHeight: 60,
                   overflow: "auto",
                   padding: 1,
                   border: "1px solid #ccc",
                   borderRadius: 1,
+                  display: "inline-block"
                 }}
               >
                 <Typography variant="body2">{ride.description}</Typography>
@@ -258,7 +289,7 @@ const RidesPage: React.FC = () => {
                 Max seating per ride: {ride.maxCapacity}
               </Typography>
               <Typography variant="body2" fontWeight="bold">
-                Duration of the ride: {ride.duration} minutes
+                Duration of the ride: {ride.duration} seconds
               </Typography>
 
               <CardActions>

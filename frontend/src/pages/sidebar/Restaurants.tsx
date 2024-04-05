@@ -144,26 +144,50 @@ const fakeRestaurants: Restaurant[] = [
   {
     RestaurantID: 1,
     AreaID: 1, // Assuming this corresponds to an existing park area
-    Name: "Jungle Feast",
+    Name: "The Explorers Eatery",
     CuisineType: "International",
     OpeningTime: "10:00",
     ClosingTime: "22:00",
-    MenuDescription: "A wide selection of international dishes to take you on a culinary adventure.",
-    SeatingCapacity: 120,
+    MenuDescription: "A culinary journey around the globe, featuring dishes from various countries.",
+    SeatingCapacity: 100,
     hasCrud: true,
-    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/McDonald%27s_logo.svg/2560px-McDonald%27s_logo.svg.png", // Placeholder image URL
+    imageUrl: "https://4.bp.blogspot.com/-VLzbxqBg9aI/XJtFo_RQJEI/AAAAAAABmFg/w27B82VpVNsuua7iUdEzZ1Q1I4Xw7zJUACLcBGAs/s1600/2016-12-08_0312.jpg", // Placeholder image URL
   },
   {
     RestaurantID: 2,
     AreaID: 2, // Assuming this corresponds to an existing park area
-    Name: "HELLO WORLD",
-    CuisineType: "International",
-    OpeningTime: "10:00",
-    ClosingTime: "22:00",
-    MenuDescription: "A wide selection of international dishes to take you on a culinary adventure.",
-    SeatingCapacity: 120,
+    Name: "Pirate Cove Cafe",
+    CuisineType: "Seafood",
+    OpeningTime: "11:00",
+    ClosingTime: "21:00",
+    MenuDescription: "Fresh seafood and pirate-themed delights in a nautical setting.",
+    SeatingCapacity: 80,
     hasCrud: false,
-    imageUrl: "https://images2.minutemediacdn.com/image/upload/c_fill,w_1440,ar_16:9,f_auto,q_auto,g_auto/shape/cover/sport/kevin-t-houle-rc-1860fdfe095ab612c3be825623b06184.jpg"
+    imageUrl: "https://blog.discoveruniversal.com/wp-content/uploads/2023/06/Lombards-Seafood-Grille-full-scope.jpg"
+  },
+  {
+    RestaurantID: 3,
+    AreaID: 3, // Assuming this corresponds to an existing park area
+    Name: "Frosty Treats",
+    CuisineType: "Desserts",
+    OpeningTime: "12:00",
+    ClosingTime: "20:00",
+    MenuDescription: "Cool off with our assortment of ice creams, sundaes, and frozen delights.",
+    SeatingCapacity: 50,
+    hasCrud: false,
+    imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/media/blog/wp-content/uploads/2016/07/DLICM499875.jpg"
+  },
+  {
+    RestaurantID: 6,
+    AreaID: 6, // Assuming this corresponds to an existing park area
+    Name: "Wild West BBQ and Grill",
+    CuisineType: "Barbecue",
+    OpeningTime: "11:00",
+    ClosingTime: "20:00",
+    MenuDescription: "Hearty barbecue favorites with a western spin.",
+    SeatingCapacity: 130,
+    hasCrud: false,
+    imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/1920/1080/75/dam/wdpro-assets/gallery/dining/downtown-disney/smokehouse/smokehouse-gallery00.jpg?1692734886976"
   },
   // Add more fake restaurants as needed
 ];
