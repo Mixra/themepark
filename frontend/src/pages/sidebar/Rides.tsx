@@ -260,6 +260,15 @@ const RidesPage: React.FC = () => {
               <Typography variant="body2" fontWeight="bold">
                 Duration of the ride: {ride.duration} minutes
               </Typography>
+
+              <CardActions>
+              <Button
+                variant="contained"
+                onClick={() => handleOpenPurchaseDialog(ride)}
+              >
+                Purchase
+              </Button>
+            </CardActions>
             </CardContent>
             {ride.hasCrud && (
               <CardActions>
@@ -277,18 +286,6 @@ const RidesPage: React.FC = () => {
                   </IconButton>
               </CardActions>
             )}
-            
-            //start of test
-            <CardActions>
-              <Button
-                variant="contained"
-                onClick={() => handleOpenPurchaseDialog(ride)}
-              >
-                Purchase
-              </Button>
-            </CardActions>
-              //end of test
-
           </Card>
         ))}
       </Box>
