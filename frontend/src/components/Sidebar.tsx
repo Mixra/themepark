@@ -7,6 +7,7 @@ import {
   Toolbar,
   Box,
   Collapse,
+  Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import React from "react";
@@ -77,7 +78,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, menuItems }) => {
                 orientation="horizontal"
               >
                 <ListItemText
-                  primary={item.text}
+                  primary={
+                    <Typography variant="body1" fontWeight="bold">
+                      {item.text}
+                    </Typography>
+                  }
                   sx={{
                     color: "inherit",
                     "& .MuiListItemText-primary": {
