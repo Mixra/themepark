@@ -1,229 +1,4 @@
-/*import React, { useState } from "react";
-import "./css/GiftShops.css";
-import { GenericCard } from "../../components/Card";
-import ButtonComponent from "../../components/ButtonComponent";
-import {
-  Button,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import QRCode from "qrcode.react";
-//ParkAreas changes
-import { NestCamWiredStand } from "@mui/icons-material";
-
-type Ride = {
-  id: number;
-  Name: string;
-  imageUrl: string;
-  MinHeight: number;
-  MaxHeight: number;
-  Duration: number;
-  Description: string;
-  ClosingTime: string;
-  OpeningTime: string;
-};
-
-const rides: Ride[] = [
-  {
-    id: 1,
-    Name: "The Great Ride",
-    imageUrl: "https://sf-static.sixflags.com/wp-content/uploads/2020/04/sfmm_viper2-scaled.jpg",
-    MinHeight: 100,
-    MaxHeight: 200,
-    Duration: 5,
-    Description: "The best ride in the park!",
-    ClosingTime: "8:00 PM",
-    OpeningTime: "10:00 AM",
-  },
-  {
-    id: 2,
-    Name: "The Awesome Ride",
-    imageUrl: "https://sf-static.sixflags.com/wp-content/uploads/Anne-McDade-BATMAN-2-min-scaled.jpg",
-    MinHeight: 120,
-    MaxHeight: 220,
-    Duration: 6,
-    Description: "The second best ride in the park!",
-    ClosingTime: "8:00 PM",
-    OpeningTime: "10:00 AM",
-  },
-  // Add more rides as needed
-];
-
-const RidesPage: React.FC = () => {
-  const [selectedRide, setSelectedRide] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [ticketCodes, setTicketCodes] = useState<string[]>([]);
-  const [currentTicketIndex, setCurrentTicketIndex] = useState<number>(0);
-
-  //this is the changes from the ParkRides page
-  const [ridesVar, setRides] = useState<Ride[]>(rides);
-  const [openPopup, setOpenPopup] = useState(false);
-  const [formData, setFormData] = useState<Partial<Ride>>({});
-  const level = Number(localStorage.getItem("level"));
-  const display_crud = level === 1 ? true : false;
-  const [isEditing, setIsEditing] = useState(false);
-  
-  const handleCreateClick = () => {
-    setFormData({});
-    setIsEditing(false);
-    setOpenPopup(true);
-  };
-
-  const handleFormSubmit = (formData: Partial<Ride>) => {
-    
-    //ask about setting up the if statement for handleFormSubmit
-    const newRide: Ride = {
-      Name: formData.Name || "",
-      MinHeight: formData.MinHeight || 0,
-      MaxHeight: formData.MaxHeight || 0,
-      Description: formData.Description || "",
-      OpeningTime: formData.OpeningTime || "",
-      ClosingTime: formData.ClosingTime || "",
-      imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
-    };
-
-    setRides([...ridesVar, newRide]);
-
-    //add a setOpenPopup(false); outside the if else
-  }
-  //
-  const handlePurchase = (rideId: number) => {
-    setSelectedRide(rideId);
-  };
-
-  const handleConfirmPurchase = () => {
-    // Generate random ticket codes
-    const codes = Array.from({ length: quantity }, () =>
-      Math.random().toString(36).substring(7)
-    );
-    setTicketCodes(codes);
-    setShowTicketDialog(true);
-  };
-
-  const handleCloseTicketDialog = () => {
-    setShowTicketDialog(false);
-    setSelectedRide(null);
-    setQuantity(1);
-    setTicketCodes([]);
-    setCurrentTicketIndex(0);
-  };
-
-  const handleNextTicket = () => {
-    setCurrentTicketIndex((prevIndex) => (prevIndex + 1) % ticketCodes.length);
-  };
-
-  const handlePrevTicket = () => {
-    setCurrentTicketIndex(
-      (prevIndex) => (prevIndex - 1 + ticketCodes.length) % ticketCodes.length
-    );
-  };
-
-  const handleCreateCard = () => {
-    
-  }
-
-  return (
-    <div className="grid-container">
-      {rides.map((ride) => (
-        <GenericCard key={ride.id} item={ride}>
-          <div style={{ marginTop: "100px" }}>
-            <img
-              src={ride.imageUrl}
-              alt={ride.Name}
-              style={{ width: "100%", height: "auto" }}
-            />
-          </div>
-          <div>
-            <p>
-              <strong>Min Height:</strong> {ride.MinHeight} cm
-            </p>
-            <p>
-              <strong>Max Height:</strong> {ride.MaxHeight} cm
-            </p>
-            <p>
-              <strong>Duration:</strong> {ride.Duration} minutes
-            </p>
-          </div>
-          {selectedRide === ride.id ? (
-            <div>
-              <TextField
-                type="number"
-                label="Quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                style={{ marginTop: "10px" }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                style={{ marginTop: "10px", marginLeft: "10px" }}
-                onClick={handleConfirmPurchase}
-              >
-                Confirm Purchase
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ marginTop: "10px" }}
-              onClick={() => handlePurchase(ride.id)}
-            >
-              Purchase
-            </Button>
-          )}
-        </GenericCard>
-      ))}
-
-      <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
-        <DialogTitle>Ticket Details</DialogTitle>
-        <DialogContent>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
-            <p>Ticket Code: {ticketCodes[currentTicketIndex]}</p>
-            <p>Quantity: {quantity}</p>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePrevTicket} disabled={quantity === 1}>
-            Prev
-          </Button>
-          <Button
-            onClick={handleNextTicket}
-            disabled={currentTicketIndex === ticketCodes.length - 1}
-          >
-            Next
-          </Button>
-          <Button onClick={handleCloseTicketDialog} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-<div style={{marginTop: "15px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-  <ButtonComponent variant="contained" color="primary" size="small" onClick={handleCreateCard}>
-    Create
-  </ButtonComponent>
-</div>
-
-      
-    </div>
-    
-  );
-  
-};
-
-export default RidesPage;*/
+//update the delete confirmation text so it doesnt go off the park area 
 
 import React, { useState } from "react";
 import {
@@ -243,10 +18,9 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import QRCode from "qrcode.react";
 import RidesPopup from "../../components/RidesPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
-import QRCode from "qrcode.react";
-
 
 interface Rides {
   imageUrl: string | undefined;
@@ -256,115 +30,159 @@ interface Rides {
   minHeight: number;
   maxCapacity: number;
   duration: number;
-  description: string;//this may not be needed (not in db so far)
+  description: string;
   openingTime: string;
   closingTime: string;
+  hasCrud?: boolean;
 }
 
-const fakeParkAreas: Rides[] = [
+const fakeRides: Rides[] = [
   {
     id: 1,
-    name: "The Great Ride",
-    description:
-      "The best ride in the park!",
-    minHeight: 100,
-    maxCapacity: 50,
+    name: "Jungle Expedition",
+    description: "Experience a thrilling ride through a jungle full of twists, turns, and lifelike animals on the Jungle Expedition rollercoaster.",
+    minHeight: 120,
+    maxCapacity: 24,
     type: "Rollercoaster",
-    duration: 5,
+    duration: 120,
     openingTime: "09:00",
     closingTime: "18:00",
+    hasCrud: true,
     imageUrl:
-      "https://sf-static.sixflags.com/wp-content/uploads/2020/04/sfmm_viper2-scaled.jpg",
+      "https://media.cnn.com/api/v1/images/stellar/prod/210712153839-disneyland-jungle-cruise-ride-0709-restricted.jpg?q=w_3000,h_2000,x_0,y_0,c_fill",
   },
   {
     id: 2,
-    name: "The Awesome Ride",
-    description:
-      "The second best ride in the park!",
+    name: "Mystic River",
+    description: "A captivating water ride that takes adventurers on a thrilling journey through enchanting landscapes and mysterious caves, sprinkled with unexpected splashes and serene moments, perfect for family fun",
     minHeight: 100,
-    maxCapacity: 25,
-    type: "Rollercoaster", //rollercoaster, water ride, ferris wheel
-    duration: 5,
+    maxCapacity: 30,
+    type: "Water Ride",
+    duration: 180,
     openingTime: "10:00",
     closingTime: "20:00",
+    hasCrud: false,
     imageUrl:
-      "https://sf-static.sixflags.com/wp-content/uploads/Anne-McDade-BATMAN-2-min-scaled.jpg",
+      "https://blooloop.com/wp-content/uploads/2019/03/6-guests-on-Carowinds-Rip-Roarin-Rapids.jpeg",
   },
-  // Add more fake data as needed
+  {
+    id: 3,
+    name: "Sky High Adventure",
+    description: "Takes you and your family on a gentle ride up high, where you can see beautiful views all around, making it a fun and memorable experience for everyone.",
+    minHeight: 0,
+    maxCapacity: 144,
+    type: "Ferris Wheel",
+    duration: 15,
+    openingTime: "10:00",
+    closingTime: "20:00",
+    hasCrud: false,
+    imageUrl:
+      "https://media.istockphoto.com/id/517726745/photo/ferris-wheel.jpg?s=612x612&w=0&k=20&c=0PLYAc3BZBzw5plVUlNuCP-IUoSVrDmtDV8bHlqH4wI=",
+  },
+  {
+    id: 4,
+    name: "Fairy Tale Carousel",
+    description: "Whisks riders away on a whimsical journey atop enchanting steeds, gliding through a realm of classic stories and magical dreams come to life, perfect for children and the young at heart.",
+    minHeight: 0,
+    maxCapacity: 50,
+    type: "Carousel",
+    duration: 3,
+    openingTime: "10:00",
+    closingTime: "20:00",
+    hasCrud: false,
+    imageUrl:
+      "https://www.familypark.at/wp-content/uploads/FP_Maerchenkarussell_cSemeliker_Web1.jpg",
+  },
 ];
 
 const RidesPage: React.FC = () => {
-  const [selectedRide, setSelectedRide] = useState<Rides[]>(fakeParkAreas);
-  const [openPopup, setOpenPopup] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [formData, setFormData] = useState<Partial<Rides>>({});
-  const [selectedParkArea, setSelectedParkArea] = useState<Rides | null>(
-    null
-  );
-  const [isEditing, setIsEditing] = useState(false);
+  const [selectedRides, setSelectedRides] = useState<Rides[]>(fakeRides);
+  const [selectedRide, setSelectedRide] = useState<Rides | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
   const [ticketCodes, setTicketCodes] = useState<string[]>([]);
   const [currentTicketIndex, setCurrentTicketIndex] = useState<number>(0);
-
   const level = Number(localStorage.getItem("level"));
-  const display_crud = level === 999 ? true : false;
+  const displayCrud = level === 999;
+
+  const handleOpenPurchaseDialog = (ride: Rides) => {
+    setSelectedRide(ride);
+    setShowTicketDialog(true);
+  };
+  //this will be the admin portion
+  const [formData, setFormData] = useState<Partial<Rides>>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
-  };
+  }
 
   const handleFormSubmit = (formData: Partial<Rides>) => {
-    if (isEditing && selectedParkArea) {
-      const updatedParkAreas = selectedRide.map((area) =>
-        area.id === selectedParkArea.id ? { ...area, ...formData } : area
+    if (isEditing && selectedRide) {
+      const updatedRestaurants = selectedRides.map((ride) =>
+        ride.id === selectedRide.id ? { ...ride, ...formData } : ride
       );
-      setSelectedRide(updatedParkAreas);
+      setSelectedRides(updatedRestaurants);
     } else {
-      // Generate a new ID for the new park area
-      const newId = selectedRide.length + 1;
+      const newId = Math.max(...selectedRides.map(r => r.id)) + 1; // Simplistic approach to generate a new ID
 
-      // Create a new park area object with the form data and the new ID
-      const newParkArea: Rides = {
+      const newRestaurant: Rides = {
         id: newId,
+        //AreaID: formData.AreaID || 0, // Defaulting to 0 if not specified
         name: formData.name || "",
-        description: formData.description || "",
-        openingTime: formData.openingTime || "",
+        type: formData.type || "",
         minHeight: formData.minHeight || 0,
         maxCapacity: formData.maxCapacity || 0,
-        type: formData.type || "",
         duration: formData.duration || 0,
+        description: formData.description || "",
+        openingTime: formData.openingTime || "",
         closingTime: formData.closingTime || "",
         imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
       };
 
-      setSelectedRide([...selectedRide, newParkArea]);
+      setSelectedRides([...selectedRides, newRestaurant]);
     }
     setOpenPopup(false);
   };
 
-  const handleOpenPurchaseDialog = (selectedRide: Rides) => {
-    setSelectedRide(fakeParkAreas); // Assuming setSelectedRide sets the state for the current ride of interest
-    setShowTicketDialog(true); // Show the dialog to start the purchase process
+  const handleEditClick = (ride: Rides) => {
+    setFormData(ride);
+    setSelectedRide(ride);
+    setIsEditing(true);
+    setOpenPopup(true);
   };
+
+  const handleDeleteClick = (ride: Rides) => {
+    setSelectedRide(ride);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedRide) {
+      const updatedRestaurants = selectedRides.filter(
+        (ride) => ride.id !== selectedRide.id
+      );
+      setSelectedRides(updatedRestaurants);
+    }
+    setOpenDeleteDialog(false);
+  };
+
+  //end of admin section
 
   const handleConfirmPurchase = () => {
-    // Generate random ticket codes
-    const codes = Array.from({ length: quantity }, () =>
-      Math.random().toString(36).substring(7)
+    if (!selectedRide) return;
+
+    const codes = Array.from(
+      { length: quantity },
+      () => `${selectedRide.id}-${Math.random().toString(36).substring(2, 15)}`
     );
     setTicketCodes(codes);
-    setShowTicketDialog(true);
-  };
-
-  const handleCloseTicketDialog = () => {
-    setShowTicketDialog(false);
-    setSelectedRide(null);
-    setQuantity(1);
-    setTicketCodes([]);
-    setCurrentTicketIndex(0);
+    setCurrentTicketIndex(0); // Start showing tickets from the first one
+    // Do not close the dialog here, change logic to show QR codes next
   };
 
   const handleNextTicket = () => {
@@ -377,35 +195,17 @@ const RidesPage: React.FC = () => {
     );
   };
 
-  const handleEditClick = (parkArea: Rides) => {
-    setFormData(parkArea);
-    setSelectedParkArea(parkArea);
-    setIsEditing(true);
-    setOpenPopup(true);
+  const handleCloseDialog = () => {
+    setShowTicketDialog(false);
+    setTicketCodes([]); // Clear the tickets once the dialog is closed
+    setQuantity(1); // Reset quantity for future purchases
   };
-
-  const handleDeleteClick = (parkArea: Rides) => {
-    setSelectedParkArea(parkArea);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (selectedParkArea) {
-      const updatedParkAreas = selectedRide.filter(
-        (area) => area.id !== selectedParkArea.id
-      );
-      setSelectedRide(updatedParkAreas);
-    }
-    setOpenDeleteDialog(false);
-  };
-
-  
 
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {display_crud && (
+      {displayCrud && (
         <Box
           sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
         >
@@ -422,20 +222,19 @@ const RidesPage: React.FC = () => {
           maxWidth: "100%",
         }}
       >
-        {selectedRide.map((area) => (
+        {selectedRides.map((ride) => (
           <Card
-            key={area.id}
+            key={ride.id}
             sx={{
               margin: 1,
               width: 300,
-              height: 660,
               display: "flex",
               flexDirection: "column",
             }}
           >
             <img
-              src={area.imageUrl}
-              alt="Park Area"
+              src={ride.imageUrl}
+              alt={ride.name}
               style={{ width: "100%", objectFit: "cover", height: "150px" }}
             />
             <CardContent
@@ -446,24 +245,25 @@ const RidesPage: React.FC = () => {
               }}
             >
               <Typography variant="h5" component="div" gutterBottom>
-                {area.name}
+                {ride.name}
               </Typography>
               <Divider sx={{ marginY: 1 }} />
               <Typography color="text.secondary" gutterBottom>
-                {area.type}
+                {ride.type}
               </Typography>
-              
+
               <Box
                 sx={{
-                  maxHeight: 60,
-                  minHeight: 60,
+                  //maxHeight: 60,
+                  //minHeight: 60,
                   overflow: "auto",
                   padding: 1,
                   border: "1px solid #ccc",
                   borderRadius: 1,
+                  display: "inline-block"
                 }}
               >
-                <Typography variant="body2">{area.description}</Typography>
+                <Typography variant="body2">{ride.description}</Typography>
               </Box>
 
               <Divider sx={{ marginY: 1 }} />
@@ -475,122 +275,114 @@ const RidesPage: React.FC = () => {
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: {area.openingTime}
+                  Opening Time: {ride.openingTime}
                 </Typography>
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: {area.closingTime}
+                  Closing Time: {ride.closingTime}
                 </Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
               <Typography variant="body2" fontWeight="bold">
-                  Minimum Height: {area.minHeight}
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  Max seating per ride: {area.maxCapacity}
-                </Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  Duration of the ride: {area.duration} minutes
-                </Typography>
-                <Button
-              variant="contained"
-              color="primary"
-              style={{ marginTop: "10px" }}
-              onClick={() => handleOpenPurchaseDialog(fakeParkAreas.id)}
-            >
-              Purchase
-            </Button>
+                Minimum Height: {ride.minHeight}
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                Max seating per ride: {ride.maxCapacity}
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                Duration of the ride: {ride.duration} seconds
+              </Typography>
+
+              <CardActions>
+              <Button
+                variant="contained"
+                onClick={() => handleOpenPurchaseDialog(ride)}
+              >
+                Purchase
+              </Button>
+            </CardActions>
             </CardContent>
-            {display_crud && (
+            {ride.hasCrud && (
               <CardActions>
                 <IconButton
                   aria-label="edit"
-                  onClick={() => handleEditClick(area)}
+                  onClick={() => handleEditClick(ride)}
                 >
                   <EditIcon />
                 </IconButton>
                 <IconButton
-                  aria-label="delete"
-                  onClick={() => handleDeleteClick(area)}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                    aria-label="delete"
+                    onClick={() => handleDeleteClick(ride)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
               </CardActions>
             )}
-
-            {selectedRide === area.name ? (
-            <div>
-              <TextField
-                type="number"
-                label="Quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                style={{ marginTop: "10px" }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                style={{ marginTop: "10px", marginLeft: "10px" }}
-                onClick={handleConfirmPurchase}
-              >
-                Confirm Purchase
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ marginTop: "10px" }}
-              onClick={() => handleOpenPurchaseDialog(fakeParkAreas.id)}
-            >
-              Purchase
-            </Button>
-          )}
-            <Dialog open={showTicketDialog} onClose={handleCloseTicketDialog}>
-        <DialogTitle>Ticket Details</DialogTitle>
-        <DialogContent>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
-            <p>Ticket Code: {ticketCodes[currentTicketIndex]}</p>
-            <p>Quantity: {quantity}</p>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePrevTicket} disabled={quantity === 1}>
-            Prev
-          </Button>
-          <Button
-            onClick={handleNextTicket}
-            disabled={currentTicketIndex === ticketCodes.length - 1}
-          >
-            Next
-          </Button>
-          <Button onClick={handleCloseTicketDialog} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
           </Card>
         ))}
       </Box>
+      
       <RidesPopup
-        open={openPopup}
-        onClose={() => setOpenPopup(false)}
-        onSubmit={handleFormSubmit}
-        formData={formData}
-        setFormData={setFormData}
-        isEditing={isEditing}
-      />
-      <DeleteConfirmationPopup
-        open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
-        onConfirm={handleDeleteConfirm}
-      />
+          open={openPopup}
+          onClose={() => setOpenPopup(false)}
+          onSubmit={handleFormSubmit}
+          formData={formData}
+          setFormData={setFormData}
+          isEditing={isEditing}
+        />
+        <DeleteConfirmationPopup
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+          onConfirm={handleDeleteConfirm}
+        />    
+
+      <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
+        {ticketCodes.length > 0 ? (
+          <>
+            <DialogTitle>QR Code</DialogTitle>
+            <DialogContent sx={{ textAlign: "center" }}>
+              <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
+              <Typography>
+                Ticket ID: {ticketCodes[currentTicketIndex]}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={handlePrevTicket}
+                disabled={ticketCodes.length <= 1}
+              >
+                Prev
+              </Button>
+              <Button
+                onClick={handleNextTicket}
+                disabled={ticketCodes.length <= 1}
+              >
+                Next
+              </Button>
+              <Button onClick={handleCloseDialog}>Close</Button>
+            </DialogActions>
+          </>
+        ) : (
+          <>
+            <DialogTitle>Confirm Purchase</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="quantity"
+                label="Quantity"
+                type="number"
+                fullWidth
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog}>Cancel</Button>
+              <Button onClick={handleConfirmPurchase}>Confirm</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 };

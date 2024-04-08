@@ -43,6 +43,18 @@ const fakeParkAreas: ParkArea[] = [
   },
   {
     id: 2,
+    name: "FantasyLand",
+    theme: "Fantasy",
+    description:
+      "Step into a world of enchantment and fairy tales!",
+    openingTime: "08:30",
+    closingTime: "22:00",
+    list_of_rides: ["Fill with Rides in Database"],
+    imageUrl:
+      "https://farm66.static.flickr.com/65535/52151137553_be9f29c533_b.jpg",
+  },
+  {
+    id: 3,
     name: "Tomorrowland",
     theme: "Futuristic",
     description:
@@ -52,6 +64,18 @@ const fakeParkAreas: ParkArea[] = [
     list_of_rides: ["Space Mountain", "Buzz Lightyear Astro Blasters"],
     imageUrl:
       "https://i.pinimg.com/550x/65/bf/1d/65bf1d708f7df38bd1d46e636a7ee1c3.jpg",
+  },
+  {
+    id: 4,
+    name: "FrontierLand",
+    theme: "Western",
+    description:
+      "Discover the rugged wilderness of the Old West",
+    openingTime: "09:30",
+    closingTime: "19:00",
+    list_of_rides: ["Add rides in database"],
+    imageUrl:
+      "https://st.depositphotos.com/1679308/1352/i/450/depositphotos_13523937-stock-photo-saloon-in-the-frontierland.jpg",
   },
   // Add more fake data as needed
 ];
