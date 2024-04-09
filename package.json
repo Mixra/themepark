@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "cd frontend && npm run dev",
+    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && dotnet run\"",
     "build": "concurrently \"cd frontend && npm run build\" \"cd backend && npm run build\"",
     "start": "cd backend && npm start"
   },

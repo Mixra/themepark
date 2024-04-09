@@ -1,12 +1,15 @@
 import React from "react";
 import { TextField, Box, Typography, Grid } from "@mui/material";
 import { StaffInfoProps } from "../models/profile.model";
+import { useTheme } from "@mui/material/styles";
 
 const StaffDetails: React.FC<StaffInfoProps> = ({ staffInfo, isEditing }) => {
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        backgroundColor: theme.palette.background.paper,
         padding: 5,
         borderRadius: 1,
         marginTop: 2,
@@ -14,7 +17,11 @@ const StaffDetails: React.FC<StaffInfoProps> = ({ staffInfo, isEditing }) => {
     >
       <Typography
         variant="h5"
-        sx={{ color: "black", marginBottom: 2, fontWeight: "bold" }}
+        sx={{
+          color: theme.palette.text.primary,
+          marginBottom: 2,
+          fontWeight: "bold",
+        }}
       >
         Staff Info
       </Typography>

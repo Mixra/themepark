@@ -1,5 +1,6 @@
 import React from "react";
 import { TextField, Box, Typography, Grid } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { UserData } from "../models/profile.model";
 
 interface UserDetailsProps {
@@ -13,17 +14,23 @@ const UserDetails: React.FC<UserDetailsProps> = ({
   isEditing,
   handleChange,
 }) => {
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        backgroundColor: theme.palette.background.paper,
         padding: 5,
         borderRadius: 1,
       }}
     >
       <Typography
         variant="h5"
-        sx={{ color: "black", marginBottom: 2, fontWeight: "bold" }}
+        sx={{
+          color: theme.palette.text.primary,
+          marginBottom: 2,
+          fontWeight: "bold",
+        }}
       >
         User Details
       </Typography>
