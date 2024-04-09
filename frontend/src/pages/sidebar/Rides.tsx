@@ -20,7 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import QRCode from "qrcode.react";
 import RidesPopup from "../../components/RidesPopup";
-import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import DeleteRideConfirmation from "../../components/DeleteRideConfirmation";
 
 interface Rides {
   imageUrl: string | undefined;
@@ -329,7 +329,7 @@ const RidesPage: React.FC = () => {
           setFormData={setFormData}
           isEditing={isEditing}
         />
-        <DeleteConfirmationPopup
+        <DeleteRideConfirmation
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
           onConfirm={handleDeleteConfirm}

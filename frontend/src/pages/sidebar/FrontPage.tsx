@@ -1,5 +1,4 @@
 import React from 'react';
-import BackgroundMusic from '../../assets/BackgroundMusic';
 // Updated styles with longer transitions and a subtler footer
 const styles = {
   page: {
@@ -103,7 +102,6 @@ const FrontPage: React.FC = () => {
   return (
     <div style={styles.page}>
       <GlobalStyles />
-      <BackgroundMusic />
       <Header />
       <WelcomeSection />
       <AttractionsSection />
