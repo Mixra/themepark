@@ -1,5 +1,3 @@
-//update the delete confirmation text so it doesnt go off the park area 
-
 import React, { useState } from "react";
 import {
   Box,
@@ -33,7 +31,7 @@ interface Rides {
   description: string;
   openingTime: string;
   closingTime: string;
-  hasCrud?: boolean;
+  //hasCrud?: boolean;
 }
 
 const fakeRides: Rides[] = [
@@ -47,7 +45,7 @@ const fakeRides: Rides[] = [
     duration: 120,
     openingTime: "09:00",
     closingTime: "18:00",
-    hasCrud: true,
+    //hasCrud: true,
     imageUrl:
       "https://media.cnn.com/api/v1/images/stellar/prod/210712153839-disneyland-jungle-cruise-ride-0709-restricted.jpg?q=w_3000,h_2000,x_0,y_0,c_fill",
   },
@@ -61,7 +59,7 @@ const fakeRides: Rides[] = [
     duration: 180,
     openingTime: "10:00",
     closingTime: "20:00",
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl:
       "https://blooloop.com/wp-content/uploads/2019/03/6-guests-on-Carowinds-Rip-Roarin-Rapids.jpeg",
   },
@@ -75,7 +73,7 @@ const fakeRides: Rides[] = [
     duration: 15,
     openingTime: "10:00",
     closingTime: "20:00",
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl:
       "https://media.istockphoto.com/id/517726745/photo/ferris-wheel.jpg?s=612x612&w=0&k=20&c=0PLYAc3BZBzw5plVUlNuCP-IUoSVrDmtDV8bHlqH4wI=",
   },
@@ -89,7 +87,7 @@ const fakeRides: Rides[] = [
     duration: 3,
     openingTime: "10:00",
     closingTime: "20:00",
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl:
       "https://www.familypark.at/wp-content/uploads/FP_Maerchenkarussell_cSemeliker_Web1.jpg",
   },
@@ -301,7 +299,7 @@ const RidesPage: React.FC = () => {
               </Button>
             </CardActions>
             </CardContent>
-            {ride.hasCrud && (
+            {displayCrud && (
               <CardActions>
                 <IconButton
                   aria-label="edit"
