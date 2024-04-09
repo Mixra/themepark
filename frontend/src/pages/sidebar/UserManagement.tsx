@@ -1,245 +1,158 @@
-import React, { useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import React, { useState } from "react";
+import { Box, Button, TextField, makeStyles } from "@mui/material";
+import CreateUserDialog from "../../components/Management/UserDialog";
+import UserDataTable from "../../components/Management/UserDataTable";
+import AssignAreaDialog from "../../components/Management/AssignAreaDialog";
+import { User, Position, ParkArea } from "../../components/Management/types";
+import { PrivilegeLevel } from "../../components/Management/types";
+import { useTheme } from "@mui/material/styles";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'employee' | 'customer';
-  ssn: string;
-  position: string;
-  areaId: string | null;
-}
-
-// Fake user data
-export const users: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'admin', ssn: '123-45-6789', position: 'Administrator', areaId: null },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'manager', ssn: '987-65-4321', position: 'Area Manager', areaId: '1' },
-  { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'employee', ssn: '456-78-9012', position: 'Ride Operator', areaId: '2' },
-  { id: '4', name: 'Alice Williams', email: 'alice@example.com', role: 'customer', ssn: '', position: '', areaId: null },
+const mockUsers: User[] = [
+  {
+    username: "johndoe",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    phone: "1234567890",
+    position: {
+      name: "Administrator",
+      level: PrivilegeLevel.AdminPrivilege,
+    },
+    hourlyRate: 25.5,
+    ssn: "123456789",
+    startDate: "2022-01-01",
+    endDate: "2023-12-31",
+    address: "123 Main Street, Cityville, ST 12345",
+    emergencyContactName: "Jane Doe",
+    emergencyContactPhone: "9876543210",
+    isFullTime: true,
+    parkAreas: [
+      { id: 1, name: "Roller Coaster Area" },
+      { id: 2, name: "Water Park Area" },
+    ],
+  },
+  {
+    username: "janesmith",
+    firstName: "Jane",
+    lastName: "Smith",
+    email: "jane.smith@example.com",
+    phone: "0987654321",
+    position: {
+      name: "Area Manager",
+      level: PrivilegeLevel.EmployeePrivilege,
+    },
+    hourlyRate: 20.0,
+    ssn: "987654321",
+    startDate: "2020-05-15",
+    endDate: "2023-05-14",
+    address: "456 Oak Road, Townville, ST 67890",
+    emergencyContactName: "John Smith",
+    emergencyContactPhone: "1234509876",
+    isFullTime: false,
+    parkAreas: [{ id: 2, name: "Water Park Area" }],
+  },
+  // Add more mock users as needed
 ];
 
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#269dff',
-    },
-    secondary: {
-      main: '#5fa2d9',
-    },
-    background: {
-      default: '#121212',
-    },
-    text: {
-      primary: '#ffffff',
-    },
-  },
-});
-
-
-
 const UserManagement: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const theme = useTheme();
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<Partial<User>>({});
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [parkAreas, setParkAreas] = useState<ParkArea[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAssignAreaDialogOpen, setIsAssignAreaDialogOpen] = useState(false);
 
-  const filteredUsers = users.filter(
+  const filteredUsers = mockUsers.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.position?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 100 },
-    { field: 'name', headerName: 'Name', width: 200 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    { field: 'role', headerName: 'Role', width: 150 },
-    { field: 'ssn', headerName: 'SSN', width: 150 },
-    { field: 'position', headerName: 'Position', width: 200 },
-    { field: 'areaId', headerName: 'Area ID', width: 150 },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 200,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="space-around">
-          <Button variant="contained" color="primary" onClick={() => handleEditUser(params.row)}>
-            Edit
-          </Button>
-          <Button variant="contained" color="error" onClick={() => handleDeleteUser(params.row.id)}>
-            Delete
-          </Button>
-        </Box>
-      ),
-    },
-  ];
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
+    setIsCreateDialogOpen(true);
   };
 
-  const handleUpdateUser = () => {
-    // Update the user in the database or state
-    console.log('Update user:', editingUser);
-    setEditingUser(null);
-  };
-
-  const handleCreateUser = () => {
-    // Create a new user in the database or state
-    console.log('Create new user:', newUser);
+  const handleCreateUser = (newUser: User) => {
+    console.log("Create new user:", newUser);
     setNewUser({});
+    setIsCreateDialogOpen(false);
   };
 
-  const handleDeleteUser = (userId: string) => {
-    // Delete the user from the database or state
-    console.log('Delete user:', userId);
+  const handleDeleteUser = (username: string) => {
+    console.log("Delete user:", username);
+  };
+
+  const handleAssignArea = (username: string, areaIds: number[]) => {
+    console.log("Assign areas to user:", username, areaIds);
+    setIsAssignAreaDialogOpen(false);
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <Box sx={{ backgroundColor: 'background.default', color: 'text.primary' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <TextField
-            label="Search Users"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              style: { color: 'white' }, // Set the input text color
-            }}
-          />
-          <Button variant="contained" color="primary" onClick={() => setEditingUser({ id: '', name: '', email: '', role: 'customer', ssn: '', position: '', areaId: null })}>
-            Create New User
-          </Button>
-        </Box>
-        <DataGrid
-          rows={filteredUsers}
-          columns={columns}
-          // pageSize={10}
-          sx={{
-            '& .MuiDataGrid-cell': {
-              color: 'text.primary', // Set the cell text color
-            },
-            '& .MuiDataGrid-columnHeader': {
-              backgroundColor: 'background.default', // Set the column header background color
-              color: 'text.primary', // Set the column header text color
-            },
+    <Box
+      sx={{
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: 4,
+      }}
+    >
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1200,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <TextField
+          label="Search Users"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            style: { color: theme.palette.text.primary },
           }}
         />
-
-        <Dialog open={!!editingUser} onClose={() => setEditingUser(null)}>
-          <DialogTitle>{editingUser ? 'Edit User' : 'Create New User'}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>Please enter the user details.</DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Name"
-              fullWidth
-              value={editingUser?.name || newUser.name || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, name: e.target.value });
-                } else {
-                  setNewUser({ ...newUser, name: e.target.value });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-            <TextField
-              margin="dense"
-              label="Email"
-              fullWidth
-              value={editingUser?.email || newUser.email || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, email: e.target.value });
-                } else {
-                  setNewUser({ ...newUser, email: e.target.value });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-            <TextField
-              margin="dense"
-              label="Role"
-              fullWidth
-              value={editingUser?.role || newUser.role || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, role: e.target.value as User['role'] });
-                } else {
-                  setNewUser({ ...newUser, role: e.target.value as User['role'] });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-            <TextField
-              margin="dense"
-              label="SSN"
-              fullWidth
-              value={editingUser?.ssn || newUser.ssn || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, ssn: e.target.value });
-                } else {
-                  setNewUser({ ...newUser, ssn: e.target.value });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-            <TextField
-              margin="dense"
-              label="Position"
-              fullWidth
-              value={editingUser?.position || newUser.position || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, position: e.target.value });
-                } else {
-                  setNewUser({ ...newUser, position: e.target.value });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-            <TextField
-              margin="dense"
-              label="Area ID"
-              fullWidth
-              value={editingUser?.areaId || newUser.areaId || ''}
-              onChange={(e) => {
-                if (editingUser) {
-                  setEditingUser({ ...editingUser, areaId: e.target.value || null });
-                } else {
-                  setNewUser({ ...newUser, areaId: e.target.value || null });
-                }
-              }}
-              InputProps={{
-                style: { color: 'white' }, // Set the input text color
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditingUser(null)}>Cancel</Button>
-            <Button onClick={editingUser ? handleUpdateUser : handleCreateUser} color="primary">
-              {editingUser ? 'Update' : 'Create'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setIsCreateDialogOpen(true)}
+        >
+          Create New User
+        </Button>
       </Box>
-    </ThemeProvider>
+      <UserDataTable
+        users={filteredUsers}
+        onEditUser={handleEditUser}
+        onDeleteUser={handleDeleteUser}
+        onAssignArea={(username) => setIsAssignAreaDialogOpen(true)}
+      />
+      <CreateUserDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onCreateUser={handleCreateUser}
+        onUpdateUser={(updatedUser) => console.log("Update user:", updatedUser)}
+        positions={positions}
+        onCreatePosition={() => console.log("Create position")}
+        user={editingUser}
+      />
+      <AssignAreaDialog
+        open={isAssignAreaDialogOpen}
+        onClose={() => setIsAssignAreaDialogOpen(false)}
+        onAssignArea={handleAssignArea}
+        parkAreas={parkAreas}
+      />
+    </Box>
   );
 };
 

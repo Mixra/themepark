@@ -55,7 +55,6 @@ const GlobalStyles = () => (
   </style>
 );
 
-
 const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
@@ -98,7 +97,13 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           <MenuIcon />
         </IconButton>
         <GlobalStyles />
-        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} className="clown-colors" fontWeight="bold">
+        <Typography
+          variant="h6"
+          noWrap
+          sx={{ flexGrow: 1 }}
+          className="clown-colors"
+          fontWeight="bold"
+        >
           The Clown Park
         </Typography>
         <IconButton color="inherit" onClick={handleProfileMenuOpen}>

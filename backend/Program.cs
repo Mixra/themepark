@@ -55,7 +55,11 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
     {
-        policy.RequireRole("1");
+        policy.RequireRole("999");
+    });
+    options.AddPolicy("Staff_Admin", policy =>
+    {
+        policy.RequireRole("999", "1");
     });
 });
 
