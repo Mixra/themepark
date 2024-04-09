@@ -17,6 +17,7 @@ interface Restaurant {
   ClosingTime?: string;
   MenuDescription?: string;
   SeatingCapacity?: number;
+  Menulist?: string[];
 }
 
 interface RestaurantPopupProps {
@@ -42,6 +43,11 @@ const RestaurantPopup: React.FC<RestaurantPopupProps> = ({
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: parseInt(e.target.value) || 0 });
+  };
+
+  const handleMenuChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const menuItems = e.target.value.split(',').map(item => item.trim());
+    setFormData({ ...formData, Menulist: menuItems });
   };
 
   const handleSubmit = () => {
@@ -111,6 +117,14 @@ const RestaurantPopup: React.FC<RestaurantPopupProps> = ({
           InputLabelProps={{
             shrink: true,
           }}
+        />
+        <TextField
+          name="Menulist"
+          label="Menu Items (separated by commas)"
+          value={formData.Menulist ? formData.Menulist.join(", ") : ""}
+          onChange={handleMenuChange}
+          fullWidth
+          margin="normal"
         />
       </DialogContent>
       <DialogActions>

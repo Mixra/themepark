@@ -137,6 +137,7 @@ interface Restaurant {
   SeatingCapacity: number;
   hasCrud?: boolean;
   imageUrl?: string;
+  Menulist: string[];
 }
 
 const fakeRestaurants: Restaurant[] = [
@@ -151,6 +152,7 @@ const fakeRestaurants: Restaurant[] = [
     MenuDescription: "A culinary journey around the globe, featuring dishes from various countries.",
     SeatingCapacity: 100,
     hasCrud: true,
+    Menulist:["Blood Pudding"],
     imageUrl: "https://4.bp.blogspot.com/-VLzbxqBg9aI/XJtFo_RQJEI/AAAAAAABmFg/w27B82VpVNsuua7iUdEzZ1Q1I4Xw7zJUACLcBGAs/s1600/2016-12-08_0312.jpg", // Placeholder image URL
   },
   {
@@ -163,6 +165,7 @@ const fakeRestaurants: Restaurant[] = [
     MenuDescription: "Fresh seafood and pirate-themed delights in a nautical setting.",
     SeatingCapacity: 80,
     hasCrud: false,
+    Menulist: ["Coconut Curry"],
     imageUrl: "https://blog.discoveruniversal.com/wp-content/uploads/2023/06/Lombards-Seafood-Grille-full-scope.jpg"
   },
   {
@@ -175,6 +178,7 @@ const fakeRestaurants: Restaurant[] = [
     MenuDescription: "Cool off with our assortment of ice creams, sundaes, and frozen delights.",
     SeatingCapacity: 50,
     hasCrud: false,
+    Menulist:["Bannana Split"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/media/blog/wp-content/uploads/2016/07/DLICM499875.jpg"
   },
   {
@@ -187,6 +191,7 @@ const fakeRestaurants: Restaurant[] = [
     MenuDescription: "Hearty barbecue favorites with a western spin.",
     SeatingCapacity: 130,
     hasCrud: false,
+    Menulist: ["Texas Toast"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/1920/1080/75/dam/wdpro-assets/gallery/dining/downtown-disney/smokehouse/smokehouse-gallery00.jpg?1692734886976"
   },
   // Add more fake restaurants as needed
@@ -227,6 +232,7 @@ const RestaurantsPage: React.FC = () => {
         ClosingTime: formData.ClosingTime || "",
         MenuDescription: formData.MenuDescription || "",
         SeatingCapacity: formData.SeatingCapacity || 0,
+        Menulist: formData.Menulist ||[""],
         imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
       };
 
@@ -339,6 +345,23 @@ const RestaurantsPage: React.FC = () => {
                 >
                   <Typography variant="body2">{restaurant.MenuDescription}</Typography>
                 </Box>
+                <Box
+                sx={{
+                  maxHeight: 200,
+                  overflow: "auto",
+                  padding: 1,
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                  marginY: 1,
+                }}
+              >
+                <Typography variant="body2">Menu:</Typography>
+                {restaurant.Menulist.map((menuItem, index) => (
+                  <Typography key={index} variant="body2">
+                    - {menuItem}
+                  </Typography>
+                ))}
+              </Box>
               </CardContent>
               {restaurant.hasCrud && (
                 <CardActions>
