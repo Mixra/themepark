@@ -85,6 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, menuItems }) => {
                     minWidth: 0,
                     mr: open ? 3 : "auto",
                     justifyContent: "center",
+                    animation: 'clownColorAnimation 5s infinite',//making the icons have color instead of the text
                   }}
                 >
                   {item.icon}
@@ -96,10 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, menuItems }) => {
                   orientation="horizontal"
                 >
                   <ListItemText
-                    primary={
-                      <Typography variant="body1" fontWeight="bold" sx={{
-                        animation: 'clownColorAnimation 5s infinite',
-                      }}>
+                    primary={//if i want to add color to text, put the sx code here
+                      <Typography variant="body1" fontWeight="bold">
                         {item.text}
                       </Typography>
                     }
