@@ -35,7 +35,6 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
   onClose,
   onSubmit,
   formData,
-  setFormData,
   isEditing,
 }) => {
   const [localFormData, setLocalFormData] = useState<Partial<ParkArea>>(formData);

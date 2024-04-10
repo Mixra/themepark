@@ -1,3 +1,49 @@
+/*<TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Log ID</TableCell>
+                            <TableCell>Area ID</TableCell>
+                            <TableCell>Type</TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Start Date Time</TableCell>
+                            <TableCell>End Date Time</TableCell>
+                            <TableCell>Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {maintenanceList.map((maintenance) => (
+                            <TableRow key={maintenance.LogID}>
+                                <TableCell>{maintenance.LogID}</TableCell>
+                                <TableCell>{maintenance.AreaID}</TableCell>
+                                <TableCell>{maintenance.Type}</TableCell>
+                                <TableCell>{maintenance.Description}</TableCell>
+                                <TableCell>{maintenance.StartDateTime.toLocaleString()}</TableCell>
+                                <TableCell>{maintenance.EndDateTime.toLocaleString()}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={() => openPopupToEdit(maintenance)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton onClick={() => deleteRow(maintenance.LogID)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            {popupOpen && (
+                <MaintenancePopup
+                    open={popupOpen}
+                    onClose={closePopup}
+                    onSubmit={handleAddOrEditMaintenance}
+                    formData={currentMaintenance || {}}
+                />
+            )}*/
+
+
+
 import React, { useState, useCallback } from 'react';
 import { Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
 import DeleteIcon from "@mui/icons-material/Delete";

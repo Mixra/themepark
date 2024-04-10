@@ -135,7 +135,7 @@ interface Restaurant {
   ClosingTime: string;
   MenuDescription: string;
   SeatingCapacity: number;
-  hasCrud?: boolean;
+  //hasCrud?: boolean;
   imageUrl?: string;
   Menulist: string[];
 }
@@ -151,7 +151,7 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "22:00",
     MenuDescription: "A culinary journey around the globe, featuring dishes from various countries.",
     SeatingCapacity: 100,
-    hasCrud: true,
+    //hasCrud: true,
     Menulist:["Blood Pudding"],
     imageUrl: "https://4.bp.blogspot.com/-VLzbxqBg9aI/XJtFo_RQJEI/AAAAAAABmFg/w27B82VpVNsuua7iUdEzZ1Q1I4Xw7zJUACLcBGAs/s1600/2016-12-08_0312.jpg", // Placeholder image URL
   },
@@ -164,7 +164,7 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "21:00",
     MenuDescription: "Fresh seafood and pirate-themed delights in a nautical setting.",
     SeatingCapacity: 80,
-    hasCrud: false,
+    //hasCrud: false,
     Menulist: ["Coconut Curry"],
     imageUrl: "https://blog.discoveruniversal.com/wp-content/uploads/2023/06/Lombards-Seafood-Grille-full-scope.jpg"
   },
@@ -177,7 +177,7 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "20:00",
     MenuDescription: "Cool off with our assortment of ice creams, sundaes, and frozen delights.",
     SeatingCapacity: 50,
-    hasCrud: false,
+    //hasCrud: false,
     Menulist:["Bannana Split"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/media/blog/wp-content/uploads/2016/07/DLICM499875.jpg"
   },
@@ -190,7 +190,7 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "20:00",
     MenuDescription: "Hearty barbecue favorites with a western spin.",
     SeatingCapacity: 130,
-    hasCrud: false,
+    //hasCrud: false,
     Menulist: ["Texas Toast"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/1920/1080/75/dam/wdpro-assets/gallery/dining/downtown-disney/smokehouse/smokehouse-gallery00.jpg?1692734886976"
   },
@@ -363,7 +363,7 @@ const RestaurantsPage: React.FC = () => {
                 ))}
               </Box>
               </CardContent>
-              {restaurant.hasCrud && (
+              {displayCrud && (
                 <CardActions>
                   <IconButton
                     aria-label="edit"

@@ -90,7 +90,7 @@ interface GiftShop {
   openingTime: string;
   closingTime: string;
   merchandiseType: string;
-  hasCrud?: boolean;
+  //hasCrud?: boolean;
   imageUrl?: string;
   merchlist: { [item: string]: number };
 }
@@ -104,7 +104,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "09:00",
     closingTime: "17:00",
     merchandiseType: "Souvenirs & Apparel",
-    hasCrud: true,
+    //hasCrud: true,
     imageUrl: "https://i.ytimg.com/vi/1OvtQiAgI58/maxresdefault.jpg",
     merchlist: {
       "T-Shirt": 10,
@@ -120,7 +120,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "10:00",
     closingTime: "20:00",
     merchandiseType: "Magic Supplies & Novelties",
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl: "https://images.fineartamerica.com/images/artworkimages/mediumlarge/1/magic-castle-gift-shop-denise-mazzocco.jpg",
     merchlist: {
       "T-Shirt": 10,
@@ -136,7 +136,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "10:00",
     closingTime: "20:00",
     merchandiseType: "Toys and Wands",
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl: "https://www.pier39.com/wp-content/uploads/2021/11/Fairytales-1-Retouched.png",
     merchlist: {
       "T-Shirt": 10,
@@ -152,7 +152,7 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "08:00",
     closingTime: "18:00",
     merchandiseType: "Educational Toys and Books", //update this in the database
-    hasCrud: false,
+    //hasCrud: false,
     imageUrl: "https://render.fineartamerica.com/images/rendered/default/poster/8/5.5/break/images/artworkimages/medium/1/gift-shop-dinosaur-route-66-garry-gay.jpg",
     merchlist: {
       "T-Shirt": 10,
@@ -173,7 +173,7 @@ const GiftShopsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const level = Number(localStorage.getItem("level"));
-  const display_crud = level === 999;
+  const display_CRUD = level === 999 ? true : false;
 
   const handleCreateClick = () => {
     setFormData({});
@@ -198,7 +198,6 @@ const GiftShopsPage: React.FC = () => {
         closingTime: formData.closingTime || "",
         merchandiseType: formData.merchandiseType || "",
         merchlist: formData.merchlist || {},
-        hasCrud: formData.hasCrud || false,
         imageUrl: formData.imageUrl || "https://via.placeholder.com/300x200.png",
       };
 
@@ -231,7 +230,7 @@ const GiftShopsPage: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {display_crud && (
+      {display_CRUD && (
         <Box sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
           <Button variant="contained" onClick={handleCreateClick}>
             Create
@@ -341,7 +340,7 @@ const GiftShopsPage: React.FC = () => {
 </CardContent>
 
 
-            {shop.hasCrud && (
+            {display_CRUD && (
               <CardActions>
                 <IconButton
                   aria-label="edit"
