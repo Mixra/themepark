@@ -17,6 +17,7 @@ interface Restaurant {
   ClosingTime?: string;
   MenuDescription?: string;
   SeatingCapacity?: number;
+  imageUrl?: string;
   Menulist?: string[];
 }
 
@@ -59,6 +60,14 @@ const RestaurantPopup: React.FC<RestaurantPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Restaurant" : "Create Restaurant"}</DialogTitle>
       <DialogContent>
+      <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           name="Name"
           label="Name"

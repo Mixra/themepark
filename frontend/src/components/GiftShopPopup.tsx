@@ -16,6 +16,7 @@ interface GiftShop {
   openingTime?: string;
   closingTime?: string;
   merchandiseType?: string;
+  imageUrl?: string;
   merchlist?: { [item: string]: number };
 }
 
@@ -63,6 +64,14 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Gift Shop" : "Create Gift Shop"}</DialogTitle>
       <DialogContent>
+      <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           name="name"
           label="Name"
