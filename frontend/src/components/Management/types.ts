@@ -1,14 +1,16 @@
 export interface User {
   username: string;
+  password: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
+  isStaff: boolean;
   position: Position | null;
   hourlyRate: number | null;
   ssn: string | null;
-  startDate: string | null;
-  endDate: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
   address: string | null;
   emergencyContactName: string | null;
   emergencyContactPhone: string | null;
@@ -28,6 +30,6 @@ export enum PrivilegeLevel {
 }
 
 export interface ParkArea {
-  id: number;
   name: string;
+  id: number;
 }

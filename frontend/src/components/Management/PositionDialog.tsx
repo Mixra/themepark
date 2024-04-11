@@ -11,32 +11,42 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Position, PrivilegeLevel } from "./types";
+import db from "../../components/db";
 
 interface PositionDialogProps {
   open: boolean;
   onClose: () => void;
-  onSavePosition: (position: Position) => void;
+  onPositionCreated: (position: Position) => void;
   position: Position | null;
 }
 
 const PositionDialog: React.FC<PositionDialogProps> = ({
   open,
   onClose,
-  onSavePosition,
+  onPositionCreated,
   position,
 }) => {
   const [name, setName] = useState(position?.name || "");
   const [level, setLevel] = useState(
-    position?.level || PrivilegeLevel.NoPrivilege
+    position?.level ?? PrivilegeLevel.NoPrivilege
   );
 
-  const handleSavePosition = () => {
-    const updatedPosition: Position = {
+  const handleCreatePosition = async () => {
+    const newPosition: Position = {
       name,
       level,
     };
-    onSavePosition(updatedPosition);
-    onClose();
+
+    try {
+      const response = await db.post<Position>(
+        "/create/positions",
+        newPosition
+      );
+      onPositionCreated(response.data);
+      onClose();
+    } catch (error) {
+      console.error("Error creating position:", error);
+    }
   };
 
   return (
@@ -70,7 +80,7 @@ const PositionDialog: React.FC<PositionDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSavePosition}>
+        <Button onClick={handleCreatePosition}>
           {position ? "Update" : "Create"}
         </Button>
       </DialogActions>

@@ -90,8 +90,9 @@ interface GiftShop {
   openingTime: string;
   closingTime: string;
   merchandiseType: string;
-  hasCrud?: boolean;
+  //hasCrud?: boolean;
   imageUrl?: string;
+  merchlist: { [item: string]: number };
 }
 
 const fakeGiftShops: GiftShop[] = [
@@ -103,8 +104,13 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "09:00",
     closingTime: "17:00",
     merchandiseType: "Souvenirs & Apparel",
-    hasCrud: true,
-    imageUrl: "https://i.ytimg.com/vi/1OvtQiAgI58/maxresdefault.jpg"
+    //hasCrud: true,
+    imageUrl: "https://i.ytimg.com/vi/1OvtQiAgI58/maxresdefault.jpg",
+    merchlist: {
+      "T-Shirt": 10,
+      "Mug": 20,
+      "Keychain": 30,
+    },
   },
   {
     shopID: 2,
@@ -114,8 +120,13 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "10:00",
     closingTime: "20:00",
     merchandiseType: "Magic Supplies & Novelties",
-    hasCrud: false,
-    imageUrl: "https://images.fineartamerica.com/images/artworkimages/mediumlarge/1/magic-castle-gift-shop-denise-mazzocco.jpg"
+    //hasCrud: false,
+    imageUrl: "https://images.fineartamerica.com/images/artworkimages/mediumlarge/1/magic-castle-gift-shop-denise-mazzocco.jpg",
+    merchlist: {
+      "T-Shirt": 10,
+      "Mug": 20,
+      "Keychain": 30,
+    },
   },
   {
     shopID: 5,
@@ -125,8 +136,13 @@ const fakeGiftShops: GiftShop[] = [
     openingTime: "10:00",
     closingTime: "20:00",
     merchandiseType: "Toys and Wands",
-    hasCrud: false,
-    imageUrl: "https://www.pier39.com/wp-content/uploads/2021/11/Fairytales-1-Retouched.png"
+    //hasCrud: false,
+    imageUrl: "https://www.pier39.com/wp-content/uploads/2021/11/Fairytales-1-Retouched.png",
+    merchlist: {
+      "T-Shirt": 10,
+      "Mug": 20,
+      "Keychain": 30,
+    },
   },
   {
     shopID: 7,
@@ -135,12 +151,18 @@ const fakeGiftShops: GiftShop[] = [
     description: "Discover prehistoric toys, games, and apparel.",
     openingTime: "08:00",
     closingTime: "18:00",
-    merchandiseType: "Educational Toys and Books",//update this in the database
-    hasCrud: false,
-    imageUrl: "https://render.fineartamerica.com/images/rendered/default/poster/8/5.5/break/images/artworkimages/medium/1/gift-shop-dinosaur-route-66-garry-gay.jpg"
+    merchandiseType: "Educational Toys and Books", //update this in the database
+    //hasCrud: false,
+    imageUrl: "https://render.fineartamerica.com/images/rendered/default/poster/8/5.5/break/images/artworkimages/medium/1/gift-shop-dinosaur-route-66-garry-gay.jpg",
+    merchlist: {
+      "T-Shirt": 10,
+      "Mug": 20,
+      "Keychain": 30,
+    },
   },
   // Add more fake data as needed
 ];
+
 
 const GiftShopsPage: React.FC = () => {
   const [giftShops, setGiftShops] = useState<GiftShop[]>(fakeGiftShops);
@@ -151,7 +173,7 @@ const GiftShopsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const level = Number(localStorage.getItem("level"));
-  const display_crud = level === 999 ? true : false;
+  const display_CRUD = level === 999 ? true : false;
 
   const handleCreateClick = () => {
     setFormData({});
@@ -169,14 +191,14 @@ const GiftShopsPage: React.FC = () => {
       const newId = giftShops.length + 1;
       const newGiftShop: GiftShop = {
         shopID: newId,
-        areaID: formData.areaID || 0, // Default to 0 or handle appropriately
+        areaID: formData.areaID || 0,
         name: formData.name || "",
         description: formData.description || "",
         openingTime: formData.openingTime || "",
         closingTime: formData.closingTime || "",
         merchandiseType: formData.merchandiseType || "",
-        hasCrud: formData.hasCrud || false,
-        imageUrl: formData.imageUrl || "https://via.placeholder.com/300x200.png"
+        merchlist: formData.merchlist || {},
+        imageUrl: formData.imageUrl || "https://via.placeholder.com/300x200.png",
       };
 
       setGiftShops([...giftShops, newGiftShop]);
@@ -207,13 +229,9 @@ const GiftShopsPage: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      {display_crud && (
-        <Box
-          sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
-        >
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {display_CRUD && (
+        <Box sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
           <Button variant="contained" onClick={handleCreateClick}>
             Create
           </Button>
@@ -236,89 +254,125 @@ const GiftShopsPage: React.FC = () => {
               height: 500, // Adjusted for content
               display: "flex",
               flexDirection: "column",
-              }}
-              >
-                <img
+            }}
+          >
+            <img
               src={shop.imageUrl}
               alt="Shop Image"
               style={{ width: "100%", objectFit: "cover", height: "150px" }}
             />
-              <CardContent
-              sx={{
-              overflowY: "auto",
-              padding: 1,
-              flexGrow: 1,
-              }}
-              >
-              <Typography variant="h5" component="div" gutterBottom>
-              {shop.name}
-              </Typography>
-              <Divider sx={{ marginY: 1 }} />
-              <Typography color="text.secondary" gutterBottom>
-              Merchandise Type: {shop.merchandiseType}
-              </Typography>
-              <Box
-              sx={{
-              maxHeight: 120,
-              overflow: "auto",
-              padding: 1,
-              border: "1px solid #ccc",
-              borderRadius: 1,
-              marginY: 1,
-              }}
-              >
-              <Typography variant="body2">{shop.description}</Typography>
-              </Box>
-              <Divider sx={{ marginY: 1 }} />
-              <Box
-              sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              }}
-              >
-              <Typography variant="body2" fontWeight="bold">
-              Opening Time: {shop.openingTime}
-              </Typography>
-              <Typography variant="body2" fontWeight="bold">
-              Closing Time: {shop.closingTime}
-              </Typography>
-              </Box>
-              </CardContent>
-              {shop.hasCrud && (
+           <CardContent
+  sx={{
+    overflowY: "auto",
+    padding: 1,
+    flexGrow: 1,
+  }}
+>
+  <Typography variant="h5" component="div" gutterBottom>
+    {shop.name}
+  </Typography>
+  <Divider sx={{ marginY: 1 }} />
+  <Box>
+    <Typography color="text.secondary" gutterBottom>
+      Merchandise Type: {shop.merchandiseType}
+    </Typography>
+    <Box
+      sx={{
+        maxHeight: 120,
+        overflow: "auto",
+        padding: 1,
+        border: "1px solid #ccc",
+        borderRadius: 1,
+        marginY: 1,
+      }}
+    >
+      <Typography variant="body2" color="text.secondary">
+        <span style={{ fontWeight: 'bold' }}>Description:</span>
+        </Typography>
+      <Typography variant="body2">{shop.description}</Typography>
+      <Box sx={{ marginTop: 1 }}>
+        
+
+      </Box>
+    </Box>
+  </Box>
+  <Divider sx={{ marginY: 1 }} />
+  <Box>
+    <Typography color="text.secondary" gutterBottom>
+      Merchandise:
+    </Typography>
+    <Box
+      sx={{
+        maxHeight: 120,
+        overflowY: "auto",
+        padding: 1,
+        border: "1px solid #ccc",
+        borderRadius: 1,
+        marginY: 1,
+      }}
+    >
+     <Box sx={{ maxHeight: 200, overflowY: "auto" }}>
+          <ul style={{ margin: 0, paddingInlineStart: "20px" }}>
+            {Object.entries(shop.merchlist).map(([itemName, quantity]) => (
+              <li key={itemName}>
+                {itemName}: {quantity}
+              </li>
+            ))}
+          </ul>
+        </Box>
+    </Box>
+  </Box>
+  <Divider sx={{ marginY: 1 }} />
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <Typography variant="body2" fontWeight="bold">
+      Opening Time: {shop.openingTime}
+    </Typography>
+    <Typography variant="body2" fontWeight="bold">
+      Closing Time: {shop.closingTime}
+    </Typography>
+  </Box>
+</CardContent>
+
+            {display_CRUD && (
               <CardActions>
-              <IconButton
-              aria-label="edit"
-              onClick={() => handleEditClick(shop)}
-              >
-              <EditIcon />
-              </IconButton>
-              <IconButton
-              aria-label="delete"
-              onClick={() => handleDeleteClick(shop)}
-              >
-              <DeleteIcon />
-              </IconButton>
+                <IconButton
+                  aria-label="edit"
+                  onClick={() => handleEditClick(shop)}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => handleDeleteClick(shop)}
+                >
+                  <DeleteIcon />
+                </IconButton>
               </CardActions>
-              )}
-              </Card>
-              ))}
-              </Box>
-              <GiftShopPopup
-              open={openPopup}
-              onClose={() => setOpenPopup(false)}
-              onSubmit={handleFormSubmit}
-              formData={formData}
-              setFormData={setFormData}
-              isEditing={isEditing}
-              />
-              <DeleteConfirmationPopup
-              open={openDeleteDialog}
-              onClose={() => setOpenDeleteDialog(false)}
-              onConfirm={handleDeleteConfirm}
-              />
-              </Box>
-              );
-              };
-              
-              export default GiftShopsPage;
+            )}
+          </Card>
+        ))}
+      </Box>
+      <GiftShopPopup
+        open={openPopup}
+        onClose={() => setOpenPopup(false)}
+        onSubmit={handleFormSubmit}
+        formData={formData}
+        setFormData={setFormData}
+        isEditing={isEditing}
+      />
+      <DeleteConfirmationPopup
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+      />
+    </Box>
+  );
+};
+
+export default GiftShopsPage;

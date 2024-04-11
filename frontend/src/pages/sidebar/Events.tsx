@@ -224,18 +224,8 @@ const EventsPage: React.FC = () => {
                 Closing Time: {thisevent.EndDateTime}
               </Typography>
             </Box>
-            <Divider sx={{ marginY: 1 }} />
-            <Box
-              sx={{
-                maxHeight: 140,
-                minHeight: 140,
-                overflow: "auto",
-                padding: 1,
-                border: "1px solid #ccc",
-                borderRadius: 1,
-              }}
-            >
-            </Box>
+            
+           
 
           </CardContent>
           {display_Crud && (
