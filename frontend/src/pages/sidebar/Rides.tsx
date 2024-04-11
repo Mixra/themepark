@@ -38,7 +38,8 @@ const fakeRides: Rides[] = [
   {
     id: 1,
     name: "Jungle Expedition",
-    description: "Experience a thrilling ride through a jungle full of twists, turns, and lifelike animals on the Jungle Expedition rollercoaster.",
+    description:
+      "Experience a thrilling ride through a jungle full of twists, turns, and lifelike animals on the Jungle Expedition rollercoaster.",
     minHeight: 120,
     maxCapacity: 24,
     type: "Rollercoaster",
@@ -52,7 +53,8 @@ const fakeRides: Rides[] = [
   {
     id: 2,
     name: "Mystic River",
-    description: "A captivating water ride that takes adventurers on a thrilling journey through enchanting landscapes and mysterious caves, sprinkled with unexpected splashes and serene moments, perfect for family fun",
+    description:
+      "A captivating water ride that takes adventurers on a thrilling journey through enchanting landscapes and mysterious caves, sprinkled with unexpected splashes and serene moments, perfect for family fun",
     minHeight: 100,
     maxCapacity: 30,
     type: "Water Ride",
@@ -66,7 +68,8 @@ const fakeRides: Rides[] = [
   {
     id: 3,
     name: "Sky High Adventure",
-    description: "Takes you and your family on a gentle ride up high, where you can see beautiful views all around, making it a fun and memorable experience for everyone.",
+    description:
+      "Takes you and your family on a gentle ride up high, where you can see beautiful views all around, making it a fun and memorable experience for everyone.",
     minHeight: 0,
     maxCapacity: 144,
     type: "Ferris Wheel",
@@ -80,7 +83,8 @@ const fakeRides: Rides[] = [
   {
     id: 4,
     name: "Fairy Tale Carousel",
-    description: "Whisks riders away on a whimsical journey atop enchanting steeds, gliding through a realm of classic stories and magical dreams come to life, perfect for children and the young at heart.",
+    description:
+      "Whisks riders away on a whimsical journey atop enchanting steeds, gliding through a realm of classic stories and magical dreams come to life, perfect for children and the young at heart.",
     minHeight: 0,
     maxCapacity: 50,
     type: "Carousel",
@@ -117,7 +121,7 @@ const RidesPage: React.FC = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
-  }
+  };
 
   const handleFormSubmit = (formData: Partial<Rides>) => {
     if (isEditing && selectedRide) {
@@ -126,7 +130,7 @@ const RidesPage: React.FC = () => {
       );
       setSelectedRides(updatedRestaurants);
     } else {
-      const newId = Math.max(...selectedRides.map(r => r.id)) + 1; // Simplistic approach to generate a new ID
+      const newId = Math.max(...selectedRides.map((r) => r.id)) + 1; // Simplistic approach to generate a new ID
 
       const newRestaurant: Rides = {
         id: newId,
@@ -170,17 +174,43 @@ const RidesPage: React.FC = () => {
   };
 
   //end of admin section
-
   const handleConfirmPurchase = () => {
-    if (!selectedRide) return;
+    if (!selectedRide || quantity < 1) return;
 
+    // Generate ticket codes
+    const purchaseId = Date.now(); // Simple unique ID based on the current timestamp
     const codes = Array.from(
       { length: quantity },
-      () => `${selectedRide.id}-${Math.random().toString(36).substring(2, 15)}`
+      (_, index) =>
+        `${selectedRide.id}-${Math.random()
+          .toString(36)
+          .substring(2, 15)}-${index}`
     );
+
+    // Create purchase object
+    const purchase = {
+      rideId: selectedRide.id,
+      name: selectedRide.name, // Including ride name for display purposes
+      quantity,
+      ticketCodes: codes,
+      purchaseDate: new Date().toISOString(),
+    };
+
+    // Retrieve existing purchases from localStorage
+    const existingPurchases = JSON.parse(
+      localStorage.getItem("purchaseHistory") || "[]"
+    );
+
+    // Save new purchase along with existing ones back to localStorage
+    localStorage.setItem(
+      "purchaseHistory",
+      JSON.stringify([...existingPurchases, purchase])
+    );
+
+    // Show QR codes for the purchased tickets
     setTicketCodes(codes);
-    setCurrentTicketIndex(0); // Start showing tickets from the first one
-    // Do not close the dialog here, change logic to show QR codes next
+    setCurrentTicketIndex(0); // Ready to display the first ticket code
+    setShowTicketDialog(true);
   };
 
   const handleNextTicket = () => {
@@ -258,7 +288,7 @@ const RidesPage: React.FC = () => {
                   padding: 1,
                   border: "1px solid #ccc",
                   borderRadius: 1,
-                  display: "inline-block"
+                  display: "inline-block",
                 }}
               >
                 <Typography variant="body2">{ride.description}</Typography>
@@ -291,13 +321,13 @@ const RidesPage: React.FC = () => {
               </Typography>
 
               <CardActions>
-              <Button
-                variant="contained"
-                onClick={() => handleOpenPurchaseDialog(ride)}
-              >
-                Purchase
-              </Button>
-            </CardActions>
+                <Button
+                  variant="contained"
+                  onClick={() => handleOpenPurchaseDialog(ride)}
+                >
+                  Purchase
+                </Button>
+              </CardActions>
             </CardContent>
             {displayCrud && (
               <CardActions>
@@ -308,30 +338,30 @@ const RidesPage: React.FC = () => {
                   <EditIcon />
                 </IconButton>
                 <IconButton
-                    aria-label="delete"
-                    onClick={() => handleDeleteClick(ride)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  aria-label="delete"
+                  onClick={() => handleDeleteClick(ride)}
+                >
+                  <DeleteIcon />
+                </IconButton>
               </CardActions>
             )}
           </Card>
         ))}
       </Box>
-      
+
       <RidesPopup
-          open={openPopup}
-          onClose={() => setOpenPopup(false)}
-          onSubmit={handleFormSubmit}
-          formData={formData}
-          setFormData={setFormData}
-          isEditing={isEditing}
-        />
-        <DeleteRideConfirmation
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-          onConfirm={handleDeleteConfirm}
-        />    
+        open={openPopup}
+        onClose={() => setOpenPopup(false)}
+        onSubmit={handleFormSubmit}
+        formData={formData}
+        setFormData={setFormData}
+        isEditing={isEditing}
+      />
+      <DeleteRideConfirmation
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+      />
 
       <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
         {ticketCodes.length > 0 ? (
