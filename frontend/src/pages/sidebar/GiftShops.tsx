@@ -287,7 +287,7 @@ const GiftShopsPage: React.FC = () => {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-          Description:
+        <span style={{ fontWeight: 'bold' }}>Description:</span>
         </Typography>
       <Typography variant="body2">{shop.description}</Typography>
       <Box sx={{ marginTop: 1 }}>
@@ -338,7 +338,6 @@ const GiftShopsPage: React.FC = () => {
     </Typography>
   </Box>
 </CardContent>
-
 
             {display_CRUD && (
               <CardActions>

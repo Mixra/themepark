@@ -55,6 +55,7 @@ interface Maintenance {
     LogID: number;
     AreaID: number;
     Type: string;
+    //AreasAffected: string,
     Description: string;
     StartDateTime: Date;
     EndDateTime: Date;
@@ -65,6 +66,7 @@ const initialMaintenance: Maintenance[] = [
         LogID: 1,
         AreaID: 1,
         Type: 'Routine Checkup',
+        //AreasAffected: 'WonderLand',
         Description: 'Regular maintenance checkup for equipment',
         StartDateTime: new Date('2024-04-27T08:00:00'),
         EndDateTime: new Date('2024-04-27T10:00:00'),
@@ -145,6 +147,7 @@ const MaintenancePage: React.FC = () => {
                             <TableCell>Log ID</TableCell>
                             <TableCell>Area ID</TableCell>
                             <TableCell>Type</TableCell>
+                            <TableCell>Areas Affected</TableCell>
                             <TableCell>Description</TableCell>
                             <TableCell>Start Date Time</TableCell>
                             <TableCell>End Date Time</TableCell>

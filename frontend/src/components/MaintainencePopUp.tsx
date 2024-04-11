@@ -16,6 +16,7 @@ interface ParkArea {
   LogID?: number;
   AreaID?: number;
   Type?: string;
+  //AreasAffected?: string;
   Description?: string;
   startDateTime?: Date; // Now a Date object
   endDateTime?: Date; // Now a Date object
