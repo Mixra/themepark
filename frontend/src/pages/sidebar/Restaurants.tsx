@@ -125,6 +125,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestaurantPopup from "../../components/RestaurantsPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import MenuPopup from "../../components/MenuListPopup" 
+
 
 interface Restaurant {
   RestaurantID: number;
@@ -204,16 +206,41 @@ const RestaurantsPage: React.FC = () => {
   const [formData, setFormData] = useState<Partial<Restaurant>>({});
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [openMenuPopup, setOpenMenuPopup] = useState(false);
+
 
   const level = Number(localStorage.getItem("level"));
   const displayCrud = level === 999 ? true : false;
+
+  const handleMenuClick = (restaurant: Restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setOpenPopup(false); // Close the main popup
+    setOpenMenuPopup(true); // Open the menu popup
+  };
+
+    
+  const handleMenuSave = (updatedMenuItems: string[]) => {
+    if (selectedRestaurant) {
+      // Update the menu items for the selected restaurant
+      const updatedRestaurant = {
+        ...selectedRestaurant,
+        Menulist: updatedMenuItems,
+      };
+      // Update the state with the updated restaurant data
+      const updatedRestaurants = restaurants.map((restaurant) =>
+        restaurant.RestaurantID === selectedRestaurant.RestaurantID ? updatedRestaurant : restaurant
+      );
+      setRestaurants(updatedRestaurants);
+    }
+  };
+  
 
   const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
   };
-
+ 
   const handleFormSubmit = (formData: Partial<Restaurant>) => {
     if (isEditing && selectedRestaurant) {
       const updatedRestaurants = restaurants.map((restaurant) =>
@@ -361,6 +388,11 @@ const RestaurantsPage: React.FC = () => {
                     - {menuItem}
                   </Typography>
                 ))}
+                {displayCrud && (
+                  <Button variant="contained" onClick={() => handleMenuClick(restaurant)}>
+                    Edit Menu
+                  </Button>
+                )}
               </Box>
               </CardContent>
               {displayCrud && (
@@ -395,7 +427,14 @@ const RestaurantsPage: React.FC = () => {
           onClose={() => setOpenDeleteDialog(false)}
           onConfirm={handleDeleteConfirm}
         />
+        <MenuPopup
+  open={openMenuPopup}
+  onClose={() => setOpenMenuPopup(false)}
+  menuItems={selectedRestaurant ? selectedRestaurant.Menulist : []} // Pass the menu items
+  onSave ={handleMenuSave}
+/>
       </Box>
+      
 );
 };      
 
