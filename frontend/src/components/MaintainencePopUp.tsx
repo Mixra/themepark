@@ -17,8 +17,8 @@ interface ParkArea {
   AreaID?: number;
   Type?: string;
   Description?: string;
-  startDateTime?: string; // Updated to string to match input format
-  endDateTime?: string;
+  startDateTime?: Date; // Now a Date object
+  endDateTime?: Date; // Now a Date object
 }
 
 interface ParkPopupProps {
@@ -35,12 +35,10 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
   onClose,
   onSubmit,
   formData,
-  setFormData,
   isEditing,
 }) => {
   const [localFormData, setLocalFormData] = useState<Partial<ParkArea>>(formData);
 
-  // Ensure localFormData is updated when formData changes (e.g., when editing an existing item)
   useEffect(() => {
     setLocalFormData(formData);
   }, [formData]);
@@ -49,7 +47,13 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
     const name = event.target.name;
     const value = event.target.value;
     if (name) {
-      setLocalFormData({ ...localFormData, [name]: value });
+      if (name === "startDateTime" || name === "endDateTime") {
+        // Convert the string back to a Date object when changing the date fields
+        const dateValue = value ? new Date(value as string) : new Date();
+        setLocalFormData({ ...localFormData, [name]: dateValue });
+      } else {
+        setLocalFormData({ ...localFormData, [name]: value });
+      }
     }
   };
 
@@ -62,7 +66,7 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Maintenance" : "Create Maintenance"}</DialogTitle>
       <DialogContent>
-        <TextField
+      <TextField
           margin="dense"
           name="LogID"
           label="Log ID"
@@ -113,7 +117,7 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
           label="Start Date Time"
           type="datetime-local"
           fullWidth
-          value={localFormData.startDateTime || ""}
+          value={localFormData.startDateTime ? localFormData.startDateTime.toISOString().slice(0, 16) : ""}
           onChange={handleChange}
           InputLabelProps={{
             shrink: true,
@@ -125,7 +129,7 @@ const MaintenancePopup: React.FC<ParkPopupProps> = ({
           label="End Date Time"
           type="datetime-local"
           fullWidth
-          value={localFormData.endDateTime || ""}
+          value={localFormData.endDateTime ? localFormData.endDateTime.toISOString().slice(0, 16) : ""}
           onChange={handleChange}
           InputLabelProps={{
             shrink: true,

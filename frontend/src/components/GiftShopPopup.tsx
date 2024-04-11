@@ -8,7 +8,6 @@ import {
   TextField,
 } from "@mui/material";
 
-// Adjusting the interface for GiftShop attributes
 interface GiftShop {
   shopID?: number;
   areaID?: number;
@@ -17,9 +16,10 @@ interface GiftShop {
   openingTime?: string;
   closingTime?: string;
   merchandiseType?: string;
+  imageUrl?: string;
+  merchlist?: { [item: string]: number };
 }
 
-// Updating the Props interface to use GiftShop instead of ParkArea
 interface GiftShopPopupProps {
   open: boolean;
   onClose: () => void;
@@ -38,7 +38,21 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
   isEditing,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'merchlist') {
+      // Split the value by newlines and then by colons to create key-value pairs
+      const items = value.split('\n').map((item) => item.split(':'));
+      // Create an object from the key-value pairs
+      const merchlist = items.reduce((acc, [key, val]) => {
+        if (key && val) {
+          acc[key.trim()] = parseInt(val.trim()) || 0;
+        }
+        return acc;
+      }, {});
+      setFormData({ ...formData, [name]: merchlist });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = () => {
@@ -50,6 +64,14 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Gift Shop" : "Create Gift Shop"}</DialogTitle>
       <DialogContent>
+      <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           name="name"
           label="Name"
@@ -109,6 +131,17 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
           onChange={handleChange}
           fullWidth
           margin="normal"
+        />
+        <TextField
+          margin="dense"
+          name="merchlist"
+          label="Merchandise List"
+          type="text"
+          multiline
+          rows={4}
+          fullWidth
+          value={formData.merchlist || ""}
+          onChange={handleChange}
         />
       </DialogContent>
       <DialogActions>

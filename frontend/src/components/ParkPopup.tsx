@@ -50,6 +50,14 @@ const ParkPopup: React.FC<ParkPopupProps> = ({
       </DialogTitle>
       <DialogContent>
         <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
           name="name"
           label="Name"
           value={formData.name || ""}
@@ -65,14 +73,7 @@ const ParkPopup: React.FC<ParkPopupProps> = ({
           fullWidth
           margin="normal"
         />
-        <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
+        
         <TextField
           margin="dense"
           id="description"

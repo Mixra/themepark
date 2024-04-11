@@ -125,6 +125,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestaurantPopup from "../../components/RestaurantsPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import MenuPopup from "../../components/MenuListPopup" 
+
 
 interface Restaurant {
   RestaurantID: number;
@@ -135,8 +137,9 @@ interface Restaurant {
   ClosingTime: string;
   MenuDescription: string;
   SeatingCapacity: number;
-  hasCrud?: boolean;
+  //hasCrud?: boolean;
   imageUrl?: string;
+  Menulist: string[];
 }
 
 const fakeRestaurants: Restaurant[] = [
@@ -150,7 +153,8 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "22:00",
     MenuDescription: "A culinary journey around the globe, featuring dishes from various countries.",
     SeatingCapacity: 100,
-    hasCrud: true,
+    //hasCrud: true,
+    Menulist:["Blood Pudding"],
     imageUrl: "https://4.bp.blogspot.com/-VLzbxqBg9aI/XJtFo_RQJEI/AAAAAAABmFg/w27B82VpVNsuua7iUdEzZ1Q1I4Xw7zJUACLcBGAs/s1600/2016-12-08_0312.jpg", // Placeholder image URL
   },
   {
@@ -162,7 +166,8 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "21:00",
     MenuDescription: "Fresh seafood and pirate-themed delights in a nautical setting.",
     SeatingCapacity: 80,
-    hasCrud: false,
+    //hasCrud: false,
+    Menulist: ["Coconut Curry"],
     imageUrl: "https://blog.discoveruniversal.com/wp-content/uploads/2023/06/Lombards-Seafood-Grille-full-scope.jpg"
   },
   {
@@ -174,7 +179,8 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "20:00",
     MenuDescription: "Cool off with our assortment of ice creams, sundaes, and frozen delights.",
     SeatingCapacity: 50,
-    hasCrud: false,
+    //hasCrud: false,
+    Menulist:["Bannana Split"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/media/blog/wp-content/uploads/2016/07/DLICM499875.jpg"
   },
   {
@@ -186,7 +192,8 @@ const fakeRestaurants: Restaurant[] = [
     ClosingTime: "20:00",
     MenuDescription: "Hearty barbecue favorites with a western spin.",
     SeatingCapacity: 130,
-    hasCrud: false,
+    //hasCrud: false,
+    Menulist: ["Texas Toast"],
     imageUrl: "https://cdn1.parksmedia.wdprapps.disney.com/resize/mwImage/1/1920/1080/75/dam/wdpro-assets/gallery/dining/downtown-disney/smokehouse/smokehouse-gallery00.jpg?1692734886976"
   },
   // Add more fake restaurants as needed
@@ -199,16 +206,41 @@ const RestaurantsPage: React.FC = () => {
   const [formData, setFormData] = useState<Partial<Restaurant>>({});
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [openMenuPopup, setOpenMenuPopup] = useState(false);
+
 
   const level = Number(localStorage.getItem("level"));
   const displayCrud = level === 999 ? true : false;
+
+  const handleMenuClick = (restaurant: Restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setOpenPopup(false); // Close the main popup
+    setOpenMenuPopup(true); // Open the menu popup
+  };
+
+    
+  const handleMenuSave = (updatedMenuItems: string[]) => {
+    if (selectedRestaurant) {
+      // Update the menu items for the selected restaurant
+      const updatedRestaurant = {
+        ...selectedRestaurant,
+        Menulist: updatedMenuItems,
+      };
+      // Update the state with the updated restaurant data
+      const updatedRestaurants = restaurants.map((restaurant) =>
+        restaurant.RestaurantID === selectedRestaurant.RestaurantID ? updatedRestaurant : restaurant
+      );
+      setRestaurants(updatedRestaurants);
+    }
+  };
+  
 
   const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
   };
-
+ 
   const handleFormSubmit = (formData: Partial<Restaurant>) => {
     if (isEditing && selectedRestaurant) {
       const updatedRestaurants = restaurants.map((restaurant) =>
@@ -227,6 +259,7 @@ const RestaurantsPage: React.FC = () => {
         ClosingTime: formData.ClosingTime || "",
         MenuDescription: formData.MenuDescription || "",
         SeatingCapacity: formData.SeatingCapacity || 0,
+        Menulist: formData.Menulist ||[""],
         imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
       };
 
@@ -339,8 +372,30 @@ const RestaurantsPage: React.FC = () => {
                 >
                   <Typography variant="body2">{restaurant.MenuDescription}</Typography>
                 </Box>
+                <Box
+                sx={{
+                  maxHeight: 200,
+                  overflow: "auto",
+                  padding: 1,
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                  marginY: 1,
+                }}
+              >
+                <Typography variant="body2">Menu:</Typography>
+                {restaurant.Menulist.map((menuItem, index) => (
+                  <Typography key={index} variant="body2">
+                    - {menuItem}
+                  </Typography>
+                ))}
+                {displayCrud && (
+                  <Button variant="contained" onClick={() => handleMenuClick(restaurant)}>
+                    Edit Menu
+                  </Button>
+                )}
+              </Box>
               </CardContent>
-              {restaurant.hasCrud && (
+              {displayCrud && (
                 <CardActions>
                   <IconButton
                     aria-label="edit"
@@ -372,7 +427,14 @@ const RestaurantsPage: React.FC = () => {
           onClose={() => setOpenDeleteDialog(false)}
           onConfirm={handleDeleteConfirm}
         />
+        <MenuPopup
+  open={openMenuPopup}
+  onClose={() => setOpenMenuPopup(false)}
+  menuItems={selectedRestaurant ? selectedRestaurant.Menulist : []} // Pass the menu items
+  onSave ={handleMenuSave}
+/>
       </Box>
+      
 );
 };      
 

@@ -53,6 +53,14 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
       </DialogTitle>
       <DialogContent>
         <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
           name="name"
           label="Name"
           value={formData.name || ""}
@@ -92,14 +100,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           fullWidth
           margin="normal"
         />
-        <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
+        
         <TextField
           margin="dense"
           id="description"

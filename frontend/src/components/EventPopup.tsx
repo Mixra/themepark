@@ -17,6 +17,7 @@ interface Event {
     StartDateTime?: string;
     EndDateTime?: string;
     AgeRestriction?: number;
+    ImageUrl?: string;
   }
 
 interface EventPopupProps {
@@ -53,6 +54,14 @@ const EventPopup: React.FC<EventPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Event" : "Create Event"}</DialogTitle>
       <DialogContent>
+      <TextField
+          name="imageUrl"
+          label="Image URL"
+          value={formData.ImageUrl || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           name="Name"
           label="Name"
