@@ -108,15 +108,19 @@ const UserManagement: React.FC = () => {
       <UserDataTable
         users={users.filter(
           (user) =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.position &&
-              user.position.name
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()))
+            user &&
+            user.username &&
+            (user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              user.firstName
+                ?.toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+              user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (user.position &&
+                user.position.name
+                  ?.toLowerCase()
+                  .includes(searchTerm.toLowerCase())))
         )}
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}

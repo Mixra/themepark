@@ -94,9 +94,8 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     };
 
     try {
-      const response = await db.post("/admin/create_user", newUser);
-      onUserCreated(response.data);
-      resetForm();
+      await db.post("/admin/create_user", newUser);
+      onUserCreated(newUser);
     } catch (error) {
       console.error("Error creating user:", error);
     }
@@ -204,6 +203,9 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
               loading={isPositionsLoading}
               value={selectedPosition}
               onChange={(_, newValue) => setSelectedPosition(newValue)}
+              isOptionEqualToValue={(option, value) =>
+                option.name === value.name
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}

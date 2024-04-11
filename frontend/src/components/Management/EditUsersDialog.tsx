@@ -74,6 +74,19 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     };
   };
 
+  const formatDate = (date: Date | null | string) => {
+    if (!date) return "";
+
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+
+    if (isNaN(dateObj.getTime())) return "";
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     fetchPositions();
 
@@ -88,8 +101,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
       setSelectedPosition(user.position || null);
       setHourlyRate(user.hourlyRate || 0);
       setSSN(user.ssn || "");
-      setStartDate(user.startDate ? user.startDate.toString() : "");
-      setEndDate(user.endDate ? user.endDate.toString() : "");
+      setStartDate(formatDate(user.startDate));
+      setEndDate(formatDate(user.endDate));
       setAddress(user.address || "");
       setEmergencyContactName(user.emergencyContactName || "");
       setEmergencyContactPhone(user.emergencyContactPhone || "");
@@ -119,9 +132,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
       };
 
       try {
-        const response = await db.put(`/admin/${user.username}`, updatedUser);
-        onUserUpdated(response.data);
-        onClose();
+        await db.put("/admin/update_user", updatedUser);
+        onUserUpdated(updatedUser);
       } catch (error) {
         console.error("Error updating user:", error);
       }
@@ -208,6 +220,9 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
               loading={isPositionsLoading}
               value={selectedPosition}
               onChange={(_, newValue) => setSelectedPosition(newValue)}
+              isOptionEqualToValue={(option, value) =>
+                option.name === value.name
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -226,6 +241,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
                 />
               )}
             />
+
             <Button onClick={handleCreatePosition}>Create Position</Button>
             <TextField
               label="Hourly Rate"

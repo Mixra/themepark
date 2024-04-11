@@ -23,14 +23,18 @@ namespace backend.Controllers
 
         [Authorize(Roles = "999")]
         [HttpPost("create_user")]
-        public async Task<IActionResult> CreateUser(User user)
+        public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             var existingUser = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { user.Username });
             if (existingUser != null)
             {
                 return Conflict(new { error = "User already exists" });
             }
-            user.Position.Name = string.IsNullOrEmpty(user.Position.Name) ? "Customer" : user.Position.Name;
+
+            if (user.Position == null)
+            {
+                user.Position = new Position { Name = "Customer", Level = 0 };
+            }
 
             var hashed_pass = Argon2.Hash(password: user.Password, timeCost: 1, memoryCost: 4096, parallelism: 1, hashLength: 16);
 
@@ -86,7 +90,7 @@ namespace backend.Controllers
 
         [Authorize(Roles = "999")]
         [HttpPut("update_user")]
-        public async Task<IActionResult> UpdateUser(User user)
+        public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
             var existingUser = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT Username, PasswordHash FROM UserAccounts WHERE Username = @Username", new { user.Username });
             if (existingUser == null)
@@ -104,7 +108,10 @@ namespace backend.Controllers
                 user.Password = existingUser.PasswordHash;
             }
 
-            user.Position.Name = string.IsNullOrEmpty(user.Position.Name) ? "Customer" : user.Position.Name;
+            if (user.Position == null)
+            {
+                user.Position = new Position { Name = "Customer", Level = 0 };
+            }
 
             var newUserData = new
             {
@@ -242,6 +249,124 @@ namespace backend.Controllers
 
             return areas;
         }
+
+        // NEEDS ATTENTION Speak w/ team members
+        [Authorize(Roles = "999")]
+        [HttpDelete("delete_user")]
+        public async Task<IActionResult> DeleteUser([FromBody] User user)
+        {
+            var existingUser = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { user.Username });
+            if (existingUser == null)
+            {
+                return NotFound(new { error = "User not found" });
+            }
+
+            var deleteQuery = "DELETE FROM UserAccounts WHERE Username = @Username";
+            await _databaseService.ExecuteAsync(deleteQuery, new { user.Username });
+
+            return Ok(new { message = "User deleted successfully" });
+        }
+
+        [Authorize(Roles = "999")]
+        [HttpGet("get_assigned_areas/{username}")]
+        public async Task<IActionResult> GetAssignedAreas(string username)
+        {
+            var areas = await _databaseService.QueryAsync<dynamic>(
+                @"
+                SELECT
+                    pa.AreaID,
+                    pa.Name AS AreaName
+                FROM
+                    ParkAreas pa
+                INNER JOIN
+                    AreaManager am ON pa.AreaID = am.AreaID
+                INNER JOIN
+                    Staff s ON am.StaffID = s.StaffID
+                WHERE
+                    s.Username = @Username
+                ORDER BY
+                    pa.AreaID
+                ",
+
+                new { Username = username }
+            );
+            return Ok(areas);
+        }
+
+        [Authorize(Roles = "999")]
+        [HttpPost("assign_area")]
+        public async Task<IActionResult> AssignArea([FromBody] dynamic data)
+        {
+            var areaId = (int)data.AreaId;
+            var username = (string)data.Username;
+
+            var areaExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaId });
+            if (areaExists == 0)
+            {
+                return NotFound(new { error = "Area not found" });
+            }
+
+            var userExists = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { Username = username });
+            if (userExists == null)
+            {
+                return NotFound(new { error = "User not found" });
+            }
+
+            var staffId = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
+            if (staffId == 0)
+            {
+                return NotFound(new { error = "User is not a staff" });
+            }
+
+            var areaManagerExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID", new { AreaID = areaId, StaffID = staffId });
+            if (areaManagerExists != 0)
+            {
+                return Conflict(new { error = "Area already assigned to user" });
+            }
+
+            var insertQuery = "INSERT INTO AreaManager (AreaID, StaffID) VALUES (@AreaID, @StaffID)";
+            await _databaseService.ExecuteAsync(insertQuery, new { AreaID = areaId, StaffID = staffId });
+
+            return Ok(new { message = "Area assigned successfully" });
+        }
+
+        [Authorize(Roles = "999")]
+        [HttpDelete("unassign_area")]
+        public async Task<IActionResult> UnassignArea([FromBody] dynamic data)
+        {
+            var areaId = (int)data.AreaId;
+            var username = (string)data.Username;
+
+            var areaExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaId });
+            if (areaExists == 0)
+            {
+                return NotFound(new { error = "Area not found" });
+            }
+
+            var userExists = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { Username = username });
+            if (userExists == null)
+            {
+                return NotFound(new { error = "User not found" });
+            }
+
+            var staffId = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
+            if (staffId == 0)
+            {
+                return NotFound(new { error = "User is not a staff" });
+            }
+
+            var areaManagerExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID", new { AreaID = areaId, StaffID = staffId });
+            if (areaManagerExists == 0)
+            {
+                return Conflict(new { error = "Area not assigned to user" });
+            }
+
+            var deleteQuery = "DELETE FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID";
+            await _databaseService.ExecuteAsync(deleteQuery, new { AreaID = areaId, StaffID = staffId });
+
+            return Ok(new { message = "Area unassigned successfully" });
+        }
+
 
     }
 }
