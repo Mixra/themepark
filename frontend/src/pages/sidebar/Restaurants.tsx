@@ -339,10 +339,11 @@ const RestaurantsPage: React.FC = () => {
                 </Typography>
                 <Divider sx={{ marginY: 1 }} />
                 <Typography color="text.secondary" gutterBottom>
-                  Cuisine: {restaurant.CuisineType}
+                  <span style={{ fontWeight: 'bold' }}>Cuisine:</span> {restaurant.CuisineType}
                 </Typography>
+
                 <Typography variant="body2" color="text.secondary">
-                  Seating Capacity: {restaurant.SeatingCapacity}
+                <span style={{ fontWeight: 'bold' }}>Seating Capacity:</span> {restaurant.SeatingCapacity}
                 </Typography>
                 <Divider sx={{ marginY: 1 }} />
                 <Box
@@ -352,11 +353,11 @@ const RestaurantsPage: React.FC = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="body2" fontWeight="bold">
-                    Opening Time: {restaurant.OpeningTime}
+                  <Typography variant="body2">
+                  <span style={{ fontWeight: 'bold' }}>Opening Time:</span> {restaurant.OpeningTime}
                   </Typography>
                   <Typography variant="body2" fontWeight="bold">
-                    Closing Time: {restaurant.ClosingTime}
+                  <span style={{ fontWeight: 'bold' }}>Closing Time:</span> {restaurant.ClosingTime}
                   </Typography>
                 </Box>
                 <Divider sx={{ marginY: 1 }} />
@@ -382,7 +383,7 @@ const RestaurantsPage: React.FC = () => {
                   marginY: 1,
                 }}
               >
-                <Typography variant="body2">Menu:</Typography>
+                <Typography variant="body2" fontWeight="bold">Menu:</Typography>
                 {restaurant.Menulist.map((menuItem, index) => (
                   <Typography key={index} variant="body2">
                     - {menuItem}
