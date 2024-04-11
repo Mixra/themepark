@@ -49,8 +49,8 @@ namespace backend.Controllers
             };
 
             var insertQuery = @"
-            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role, Level)
-            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, 'customer', 0)";
+            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role)
+            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, 'Customer')";
 
             try
             {
@@ -83,13 +83,12 @@ namespace backend.Controllers
 
             user.Username = user.Username.ToLower();
 
-            var userData = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT Username, PasswordHash, Level FROM UserAccounts WHERE Username = @Username", new { Username = user.Username });
+            var userData = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT u.Username, u.PasswordHash, r.Level FROM UserAccounts u INNER JOIN UserRoles r ON u.Role = r.RoleName WHERE u.Username = @Username", new { Username = user.Username });
 
             if (userData == null || !Argon2.Verify(userData?.PasswordHash, user.Password))
             {
                 return Unauthorized(new { error = "Invalid username or password" });
             }
-
             try
             {
                 var token = JWT.GenerateToken(user.Username, userData?.Level, _configuration);

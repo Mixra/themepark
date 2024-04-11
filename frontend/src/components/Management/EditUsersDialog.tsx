@@ -8,39 +8,39 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
-  Select,
-  MenuItem,
-  InputLabel,
+  Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 import { User, Position } from "./types";
 import PositionDialog from "./PositionDialog";
+import db from "../../components/db";
+import { PrivilegeLevel } from "./types";
 
-interface UserDialogProps {
+interface EditUserDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreateUser: (newUser: User) => void;
-  onUpdateUser: (updatedUser: User) => void;
-  positions: Position[];
-  onCreatePosition: (position: Position) => void;
+  onUserUpdated: (updatedUser: User) => void;
   user: User | null;
 }
 
-const UserDialog: React.FC<UserDialogProps> = ({
+const EditUserDialog: React.FC<EditUserDialogProps> = ({
   open,
   onClose,
-  onCreateUser,
-  onUpdateUser,
-  positions,
-  onCreatePosition,
+  onUserUpdated,
   user,
 }) => {
+  const [isPositionsLoading, setIsPositionsLoading] = useState(false);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [isStaff, setIsStaff] = useState(false);
-  const [position, setPosition] = useState<Position | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(
+    null
+  );
   const [hourlyRate, setHourlyRate] = useState(0);
   const [ssn, setSSN] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -51,93 +51,107 @@ const UserDialog: React.FC<UserDialogProps> = ({
   const [isFullTime, setIsFullTime] = useState(false);
 
   const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
-  const [editingPosition, setEditingPosition] = useState<Position | null>(null);
+
+  const fetchPositions = async () => {
+    let isMounted = true;
+
+    try {
+      setIsPositionsLoading(true);
+      const response = await db.get<Position[]>("/view/positions");
+      if (isMounted) {
+        setPositions(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+    } finally {
+      if (isMounted) {
+        setIsPositionsLoading(false);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  };
 
   useEffect(() => {
+    fetchPositions();
+
     if (user) {
       setUsername(user.username);
+      setPassword(user.password);
       setFirstName(user.firstName);
       setLastName(user.lastName);
       setEmail(user.email);
       setPhone(user.phone);
       setIsStaff(!!user.position);
-      setPosition(user.position || null);
+      setSelectedPosition(user.position || null);
       setHourlyRate(user.hourlyRate || 0);
       setSSN(user.ssn || "");
-      setStartDate(user.startDate || "");
-      setEndDate(user.endDate || "");
+      setStartDate(user.startDate ? user.startDate.toString() : "");
+      setEndDate(user.endDate ? user.endDate.toString() : "");
       setAddress(user.address || "");
       setEmergencyContactName(user.emergencyContactName || "");
       setEmergencyContactPhone(user.emergencyContactPhone || "");
       setIsFullTime(user.isFullTime || false);
-    } else {
-      resetForm();
     }
   }, [user]);
 
-  const handleSaveUser = () => {
-    const updatedUser: User = {
-      username,
-      firstName,
-      lastName,
-      email,
-      phone,
-      position: isStaff ? position : null,
-      hourlyRate: isStaff ? hourlyRate : 0,
-      ssn: isStaff ? ssn : "",
-      startDate: isStaff ? startDate : "",
-      endDate: isStaff ? endDate : "",
-      address: isStaff ? address : "",
-      emergencyContactName: isStaff ? emergencyContactName : "",
-      emergencyContactPhone: isStaff ? emergencyContactPhone : "",
-      isFullTime: isStaff ? isFullTime : false,
-      parkAreas: user?.parkAreas || [],
-    };
-
+  const handleUpdateUser = async () => {
     if (user) {
-      onUpdateUser(updatedUser);
-    } else {
-      onCreateUser(updatedUser);
+      const updatedUser: User = {
+        ...user,
+        password,
+        firstName,
+        lastName,
+        email,
+        phone,
+        isStaff,
+        position: isStaff ? selectedPosition : null,
+        hourlyRate: isStaff ? hourlyRate : 0,
+        ssn: isStaff ? ssn : "",
+        startDate: isStaff ? new Date(startDate) : null,
+        endDate: isStaff ? new Date(endDate) : null,
+        address: isStaff ? address : "",
+        emergencyContactName: isStaff ? emergencyContactName : "",
+        emergencyContactPhone: isStaff ? emergencyContactPhone : "",
+        isFullTime: isStaff ? isFullTime : false,
+      };
+
+      try {
+        const response = await db.put(`/admin/${user.username}`, updatedUser);
+        onUserUpdated(response.data);
+        onClose();
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
     }
-    onClose();
   };
 
   const handleCreatePosition = () => {
-    setEditingPosition(null);
     setIsPositionDialogOpen(true);
   };
 
-  const handleSavePosition = (position: Position) => {
-    onCreatePosition(position);
-    setPosition(position);
-  };
-
-  const resetForm = () => {
-    setUsername("");
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPhone("");
-    setIsStaff(false);
-    setPosition(null);
-    setHourlyRate(0);
-    setSSN("");
-    setStartDate("");
-    setEndDate("");
-    setAddress("");
-    setEmergencyContactName("");
-    setEmergencyContactPhone("");
-    setIsFullTime(false);
+  const handlePositionCreated = () => {
+    fetchPositions(); // Refetch positions after creating a new one
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{user ? "Edit User" : "Create User"}</DialogTitle>
+      <DialogTitle>Edit User</DialogTitle>
       <DialogContent>
         <TextField
           label="Username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          disabled
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           fullWidth
           margin="normal"
         />
@@ -181,24 +195,37 @@ const UserDialog: React.FC<UserDialogProps> = ({
 
         {isStaff && (
           <>
-            <InputLabel id="position-label">Position</InputLabel>
-            <Select
-              labelId="position-label"
-              value={position?.name || ""}
-              onChange={(e) => {
-                const selectedPosition = positions.find(
-                  (p) => p.name === e.target.value
-                );
-                setPosition(selectedPosition || null);
-              }}
-              fullWidth
-            >
-              {positions.map((p) => (
-                <MenuItem key={p.name} value={p.name}>
-                  {p.name}
-                </MenuItem>
-              ))}
-            </Select>
+            <Autocomplete
+              id="position-autocomplete"
+              options={positions}
+              getOptionLabel={(option) =>
+                `${option.name} (${
+                  option.level !== undefined
+                    ? PrivilegeLevel[option.level]
+                    : "Unknown"
+                })`
+              }
+              loading={isPositionsLoading}
+              value={selectedPosition}
+              onChange={(_, newValue) => setSelectedPosition(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Position"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        {isPositionsLoading ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  }}
+                />
+              )}
+            />
             <Button onClick={handleCreatePosition}>Create Position</Button>
             <TextField
               label="Hourly Rate"
@@ -220,6 +247,7 @@ const UserDialog: React.FC<UserDialogProps> = ({
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               fullWidth
+              type="date"
               margin="normal"
             />
             <TextField
@@ -227,6 +255,7 @@ const UserDialog: React.FC<UserDialogProps> = ({
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               fullWidth
+              type="date"
               margin="normal"
             />
             <TextField
@@ -264,16 +293,16 @@ const UserDialog: React.FC<UserDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSaveUser}>{user ? "Update" : "Create"}</Button>
+        <Button onClick={handleUpdateUser}>Update</Button>
       </DialogActions>
       <PositionDialog
         open={isPositionDialogOpen}
         onClose={() => setIsPositionDialogOpen(false)}
-        onSavePosition={handleSavePosition}
-        position={editingPosition}
+        onPositionCreated={handlePositionCreated}
+        position={null}
       />
     </Dialog>
   );
 };
 
-export default UserDialog;
+export default EditUserDialog;

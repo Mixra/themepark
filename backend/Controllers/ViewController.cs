@@ -64,13 +64,21 @@ namespace backend.Controllers
 
             return Ok(userData);
         }
+
+
         [Authorize(Roles = "999")]
         [HttpGet("positions")]
         public async Task<IActionResult> GetPositions()
         {
-            var positions = await _databaseService.QueryAsync<dynamic>("SELECT * FROM UserRoles");
+            var positions = await _databaseService.QueryAsync<dynamic>("SELECT RoleName, Level FROM UserRoles");
 
-            return Ok(positions);
+            var parsed = positions.Select(p => new
+            {
+                name = p.RoleName,
+                level = p.Level
+            });
+
+            return Ok(parsed);
         }
     }
 }

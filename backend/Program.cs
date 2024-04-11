@@ -59,7 +59,7 @@ builder.Services.AddAuthorization(options =>
     });
     options.AddPolicy("Staff_Admin", policy =>
     {
-        policy.RequireRole("999", "1");
+        policy.RequireRole("1", "999");
     });
 });
 
