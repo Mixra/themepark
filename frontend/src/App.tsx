@@ -17,6 +17,7 @@ import PurchaseTickets from "./pages/PurchaseTick.tsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/sidebar/Profile.tsx";
 import FrontPage from "./pages/sidebar/FrontPage.tsx";
+import ShoppingCart from "./pages/sidebar/ShoppingCart.tsx";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@emotion/react";
 
@@ -114,6 +115,14 @@ function App() {
             element={
               <ProtectedRoute isAllowed>
                 <Layout children={<Tickets />} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shopping_cart"
+            element={
+              <ProtectedRoute isAllowed>
+                <Layout children={<ShoppingCart />} />
               </ProtectedRoute>
             }
           />
