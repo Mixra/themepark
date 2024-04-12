@@ -16,7 +16,7 @@ import {
 } from "@mui/icons-material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BackgroundMusic from "../assets/BackgroundMusic";
+//import BackgroundMusic from "../assets/BackgroundMusic";
 
 interface TopbarProps {
   onDrawerToggle: () => void;
@@ -107,7 +107,6 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
         >
           The Clown Park
         </Typography>
-        <BackgroundMusic />
         <IconButton color="inherit" onClick={handleProfileMenuOpen}>
           <Avatar />
         </IconButton>
