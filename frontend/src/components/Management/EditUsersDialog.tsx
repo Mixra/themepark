@@ -97,7 +97,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
       setLastName(user.lastName);
       setEmail(user.email);
       setPhone(user.phone);
-      setIsStaff(!!user.position);
+      setIsStaff(user.isStaff || false);
       setSelectedPosition(user.position || null);
       setHourlyRate(user.hourlyRate || 0);
       setSSN(user.ssn || "");

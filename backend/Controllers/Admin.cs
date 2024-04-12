@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using backend.Models;
 using backend.Utils;
 using Isopoh.Cryptography.Argon2;
+using Newtonsoft.Json;
 
 namespace backend.Controllers
 {
@@ -167,32 +168,43 @@ namespace backend.Controllers
         [HttpGet("get_users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _databaseService.QueryAsync<dynamic>(
-                @"
-                SELECT
-                    ua.Username,
-                    ua.First_Name AS FirstName,
-                    ua.Last_Name AS LastName,
-                    ua.Email,
-                    ua.Phone,
-                    ua.Role,
-                    s.SSN AS Ssn,
-                    s.Address,
-                    s.HourlyRate,
-                    s.StartDate,
-                    s.EndDate,
-                    s.EmergencyContactName,
-                    s.EmergencyContactPhone,
-                    s.FullTime AS IsFullTime
-                FROM
-                    UserAccounts ua
-                LEFT JOIN
-                    Staff s ON ua.Username = s.Username
-                ORDER BY
-                    ua.Username
-                ");
+            var users = await _databaseService.QueryAsync<dynamic>(@"
+            SELECT
+                ua.Username,
+                ua.First_Name AS FirstName,
+                ua.Last_Name AS LastName,
+                ua.Email,
+                ua.Phone,
+                ua.Role,
+                ur.Level AS RoleLevel,
+                s.SSN AS Ssn,
+                s.Address,
+                s.HourlyRate,
+                s.StartDate,
+                s.EndDate,
+                s.EmergencyContactName,
+                s.EmergencyContactPhone,
+                s.FullTime AS IsFullTime,
+                (
+                    SELECT
+                        pa.AreaID AS Id,
+                        pa.Name AS Name
+                    FROM
+                        AreaManager am
+                        INNER JOIN ParkAreas pa ON am.AreaID = pa.AreaID
+                    WHERE
+                        am.StaffID = s.StaffID
+                    FOR JSON PATH
+                ) AS ParkAreas
+            FROM
+                UserAccounts ua
+                LEFT JOIN Staff s ON ua.Username = s.Username
+                LEFT JOIN UserRoles ur ON ua.Role = ur.RoleName
+            ORDER BY
+                ua.Username
+            ");
 
-            var result = await Task.WhenAll(users.Select(async u => new
+            var result = users.Select(u => new
             {
                 Username = u.Username,
                 Password = "", // Do not return password for security reasons
@@ -204,7 +216,7 @@ namespace backend.Controllers
                 Position = new
                 {
                     Name = u.Role,
-                    Level = await GetRoleLevel(u.Role)
+                    Level = u.RoleLevel
                 },
                 HourlyRate = u.HourlyRate,
                 Ssn = u.Ssn,
@@ -214,40 +226,10 @@ namespace backend.Controllers
                 EmergencyContactName = u.EmergencyContactName,
                 EmergencyContactPhone = u.EmergencyContactPhone,
                 IsFullTime = u.IsFullTime,
-                ParkAreas = await GetUserParkAreas(u.Username)
-            }));
+                ParkAreas = u.ParkAreas != null ? JsonConvert.DeserializeObject<List<ParkArea>>(u.ParkAreas.ToString()) : new List<ParkArea>()
+            });
 
             return Ok(result);
-        }
-
-        private async Task<int> GetRoleLevel(string roleName)
-        {
-            return await _databaseService.QuerySingleOrDefaultAsync<int>(
-                "SELECT Level FROM UserRoles WHERE RoleName = @Role",
-                new { Role = roleName }
-            );
-        }
-
-        private async Task<IEnumerable<dynamic>> GetUserParkAreas(string username)
-        {
-            var areas = await _databaseService.QueryAsync<dynamic>(
-                @"
-                SELECT
-                    pa.AreaID,
-                    pa.Name AS AreaName
-                FROM
-                    ParkAreas pa
-                INNER JOIN
-                    AreaManager am ON pa.AreaID = am.AreaID
-                INNER JOIN
-                    Staff s ON am.StaffID = s.StaffID
-                WHERE
-                    s.Username = @Username
-                ",
-                new { Username = username }
-            );
-
-            return areas;
         }
 
         // NEEDS ATTENTION Speak w/ team members

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { DataGrid, GridColDef, GridInitialState } from "@mui/x-data-grid";
-import { User } from "./types";
+import { ParkArea, User } from "./types";
 import UserActionButtons from "./UserActionButtons";
+import DeleteConfirmationPopup from "../DeleteConfirmationPopup";
 
 interface UserDataTableProps {
   users: User[];
@@ -16,6 +17,29 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
   onDeleteUser,
   onAssignArea,
 }) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  const handleDeleteUser = (user: User) => {
+    if (user.username) {
+      setUserToDelete(user);
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (userToDelete && userToDelete.username) {
+      onDeleteUser(userToDelete.username);
+    }
+    setIsDeleteDialogOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+    setUserToDelete(null);
+  };
+
   const columns: GridColDef[] = [
     { field: "username", headerName: "Username", width: 150 },
     { field: "firstName", headerName: "First Name", width: 150 },
@@ -37,7 +61,9 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
       field: "parkAreas",
       headerName: "Park Areas",
       width: 200,
-      valueGetter: (params) => params.row.parkAreas.join(", "),
+      valueGetter: (params) =>
+        params.row.parkAreas?.map((area: ParkArea) => area.name).join(", ") ||
+        "-",
     },
     {
       field: "hourlyRate",
@@ -96,7 +122,7 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
         <UserActionButtons
           user={params.row}
           onEdit={onEditUser}
-          onDelete={onDeleteUser}
+          onDelete={handleDeleteUser}
           onAssignArea={onAssignArea}
         />
       ),
@@ -121,24 +147,32 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
   };
 
   return (
-    <DataGrid
-      rows={users}
-      getRowId={(row) => row.username}
-      columns={columns}
-      initialState={initialState}
-      sx={{
-        maxHeight: 660,
-        maxWidth: 1200,
-        overflow: "auto",
-        "& .MuiDataGrid-cell": {
-          color: "text.primary",
-        },
-        "& .MuiDataGrid-columnHeader": {
-          backgroundColor: "background.default",
-          color: "text.primary",
-        },
-      }}
-    />
+    <>
+      <DataGrid
+        rows={users}
+        getRowId={(row) => row.username}
+        columns={columns}
+        initialState={initialState}
+        sx={{
+          maxHeight: 660,
+          maxWidth: 1200,
+          overflow: "auto",
+          "& .MuiDataGrid-cell": {
+            color: "text.primary",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "background.default",
+            color: "text.primary",
+          },
+        }}
+      />
+      <DeleteConfirmationPopup
+        open={isDeleteDialogOpen}
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+        message={`Are you sure you want to delete the user "${userToDelete?.username}"?`}
+      />
+    </>
   );
 };
 

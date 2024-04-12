@@ -10,7 +10,7 @@ namespace backend.Utils
         public static string GenerateToken(string username, int level, IConfiguration configuration)
         {
             var secret = configuration["JwtSecret"];
-            Console.WriteLine($"JwtSecret value: {secret}");
+            // Console.WriteLine($"JwtSecret value: {secret}");
             var key = Encoding.ASCII.GetBytes(secret ?? string.Empty);
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
