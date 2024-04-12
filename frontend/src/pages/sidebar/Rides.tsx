@@ -319,15 +319,15 @@ const RidesPage: React.FC = () => {
               <Typography variant="body2" fontWeight="bold">
                 Duration of the ride: {ride.duration} seconds
               </Typography>
+              <CardActions style={{ justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={() => handleOpenPurchaseDialog(ride)}
+            >
+              Purchase
+            </Button>
+          </CardActions>
 
-              <CardActions>
-                <Button
-                  variant="contained"
-                  onClick={() => handleOpenPurchaseDialog(ride)}
-                >
-                  Purchase
-                </Button>
-              </CardActions>
             </CardContent>
             {displayCrud && (
               <CardActions>
