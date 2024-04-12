@@ -50,21 +50,64 @@ const ReportingAnalytics: React.FC = () => {
 export default ReportingAnalytics;*/
 
 import React, { useState, ChangeEvent } from 'react';
-import { Box, Button, Typography, TextField, MenuItem, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import Joker from '../../components/Joker'; // Ensure Joker is properly typed if needed
+import { Box, Button, Typography, TextField, MenuItem } from '@mui/material';
+import Joker from '../../components/Joker';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import { Dayjs } from 'dayjs';  // Ensure dayjs is installed and typed
+import { Dayjs } from 'dayjs';
+
+type SalesReportData = {
+  totalSales: string;
+  bestRide: string;
+};
+
+type MaintenanceReportData = {
+  rideName: string;
+};
+
+type EmployeeReportData = {
+  employee: string;
+}
+
+type ReportType = 'sales' | 'maintenance' | 'employee';
+
+const displaySales = (data: SalesReportData) => (
+  <Box sx={{ padding: 4 }}>
+    <Typography variant="h6">Sales Report</Typography>
+    <Typography>Total Sales: {data.totalSales}</Typography>
+    <Typography>Best Performing Ride: {data.bestRide}</Typography>
+  </Box>
+);
+
+const displayMaintenance = (data: MaintenanceReportData) => (
+  <Box sx={{ padding: 4 }}>
+    <Typography variant="h6">Maintenance Report</Typography>
+    <Typography>Ride Name: {data.rideName}</Typography>
+  </Box>
+);
+
+const displayEmployee = (data: EmployeeReportData) => (
+  <Box sx={{ padding: 4 }}>
+    <Typography variant="h6">Employee Report</Typography>
+    <Typography>Employee Name: {data.employee}</Typography>
+  </Box>
+);
+
+const reportDisplayFunctions: Record<ReportType, (data: any) => JSX.Element> = {
+  sales: displaySales,
+  maintenance: displayMaintenance,
+  // Ensure you define displayEmployee
+  employee: displayEmployee, // This needs to be defined
+};
 
 const ReportingAnalytics: React.FC = () => {
   const theme = useTheme();
   const [showChatbot, setShowChatbot] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
-  const [reportType, setReportType] = useState<string>('');
-  const [openPopup, setOpenPopup] = useState<boolean>(false);
-  const [popupMessage, setPopupMessage] = useState<string>('');
+  const [reportType, setReportType] = useState<ReportType | ''>('');
+  const [reportData, setReportData] = useState<any | null>(null); // Use 'any' or a more specific type if needed
 
   const handleOpenChatbot = () => {
     setShowChatbot(true);
@@ -80,29 +123,36 @@ const ReportingAnalytics: React.FC = () => {
     { value: 'sales', label: 'Sales Report' },
   ];
 
+//handles the selection of reports from the dropdown  //hardcoded for the moment
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setReportType(event.target.value);
+    const type = event.target.value as ReportType | '';
+    setReportType(type);
   };
 
   const handleViewReports = () => {
-    switch (reportType) {
-      case 'maintenance':
-        setPopupMessage('Maintenance');
-        break;
-      case 'employee':
-        setPopupMessage('Employee');
-        break;
-      case 'sales':
-        setPopupMessage('Sales');
-        break;
-      default:
-        setPopupMessage('No report selected.');
+    if (reportType === 'sales') {
+      const salesData: SalesReportData = {
+        totalSales: '100,000',
+        bestRide: 'Roller Coaster',
+      };
+      setReportData(salesData);
     }
-    setOpenPopup(true);
-  };
-
-  const handleClosePopup = () => {
-    setOpenPopup(false);
+    else if (reportType === 'employee') {
+      const employeeData: EmployeeReportData = {
+        employee: 'Timmy Cha',
+      };
+      setReportData(employeeData)
+    }
+    else if (reportType === 'maintenance') {
+      const maintenanceData: MaintenanceReportData = {
+        rideName: 'Ferris Wheel',
+      };
+      setReportData(maintenanceData);
+    }
+  
+    else {
+      setReportData(null);
+    }
   };
 
   return (
@@ -159,15 +209,9 @@ const ReportingAnalytics: React.FC = () => {
           View Reports
         </Button>
       </Box>
-      <Dialog open={openPopup} onClose={handleClosePopup}>
-        <DialogTitle>Report Details</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{popupMessage} Report</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClosePopup}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      
+      {reportType && reportData && reportDisplayFunctions[reportType]?.(reportData)}
+      
       <Joker open={showChatbot} onClose={handleCloseChatbot} />
     </div>
   );
