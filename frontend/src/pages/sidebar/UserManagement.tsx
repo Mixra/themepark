@@ -3,12 +3,7 @@ import { Box, Button, TextField } from "@mui/material";
 import CreateUserDialog from "../../components/Management/CreateUserDialog";
 import UserDataTable from "../../components/Management/UserDataTable";
 import EditUserDialog from "../../components/Management/EditUsersDialog";
-import AssignAreaDialog from "../../components/Management/AssignAreaDialog";
-import {
-  User,
-  ParkArea,
-  PrivilegeLevel,
-} from "../../components/Management/types";
+import { User } from "../../components/Management/types";
 import { useTheme } from "@mui/material/styles";
 import db from "../../components/db";
 
@@ -18,7 +13,6 @@ const UserManagement: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isAssignAreaDialogOpen, setIsAssignAreaDialogOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -66,7 +60,6 @@ const UserManagement: React.FC = () => {
           : user
       )
     );
-    setIsAssignAreaDialogOpen(false);
   };
 
   return (
@@ -124,7 +117,7 @@ const UserManagement: React.FC = () => {
         )}
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
-        onAssignArea={(username) => setIsAssignAreaDialogOpen(true)}
+        onAssignArea={handleAssignArea}
       />
       <CreateUserDialog
         open={isCreateDialogOpen}
@@ -136,12 +129,6 @@ const UserManagement: React.FC = () => {
         onClose={() => setIsEditDialogOpen(false)}
         onUserUpdated={handleUpdateUser}
         user={editingUser}
-      />
-      <AssignAreaDialog
-        open={isAssignAreaDialogOpen}
-        onClose={() => setIsAssignAreaDialogOpen(false)}
-        onAssignArea={handleAssignArea}
-        parkAreas={[]}
       />
     </Box>
   );

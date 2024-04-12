@@ -12,21 +12,20 @@ interface DeleteConfirmationPopupProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  message?: string;
 }
 
 const DeleteConfirmationPopup: React.FC<DeleteConfirmationPopupProps> = ({
   open,
   onClose,
   onConfirm,
+  message = "Are you sure you want to delete this item? This action cannot be undone.",
 }) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Delete Park Area</DialogTitle>
+      <DialogTitle>Delete Item</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          Are you sure you want to delete this park area? This action will also
-          delete all associated rides.
-        </DialogContentText>
+        <DialogContentText>{message}</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

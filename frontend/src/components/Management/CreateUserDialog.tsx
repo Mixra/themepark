@@ -109,24 +109,6 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     fetchPositions(); // Refetch positions after creating a new one
   };
 
-  const resetForm = () => {
-    setUsername("");
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPhone("");
-    setIsStaff(false);
-    setSelectedPosition(null);
-    setHourlyRate(0);
-    setSSN("");
-    setStartDate("");
-    setEndDate("");
-    setAddress("");
-    setEmergencyContactName("");
-    setEmergencyContactPhone("");
-    setIsFullTime(false);
-  };
-
   React.useEffect(() => {
     fetchPositions();
   }, []);
