@@ -89,6 +89,15 @@ const EventPopup: React.FC<EventPopupProps> = ({
           margin="normal"
         />
         <TextField
+          name="areaID"
+          label="Area ID"
+          type="number"
+          value={formData.AreaID || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
           name="Description"
           label="Description"
           value={formData.Description || ""}
