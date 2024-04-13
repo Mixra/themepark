@@ -18,6 +18,7 @@ interface Rides {
   minHeight?: number,
   maxCapacity?: number;
   duration?: number;
+  price?:number;
 }
 
 interface RidesPopupProps {
@@ -100,7 +101,14 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           fullWidth
           margin="normal"
         />
-        
+        <TextField
+          name="price"
+          label="Price"
+          value={formData.price || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           margin="dense"
           id="description"
