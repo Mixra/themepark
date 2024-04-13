@@ -8,6 +8,11 @@ import {
   Typography,
   IconButton,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -26,7 +31,15 @@ interface Event {
   ImageUrl?: string;
   hasCrud?:boolean;
   RequiresTickets?: boolean;
-  Price?: number;
+  Price: number;
+}
+
+interface Purchase {
+  eventID: number;
+  name: string;
+  quantity: number;
+  price:number;
+  ticketCodes: string[];
 }
 
 const initialEvents: Event[] = [
@@ -95,12 +108,63 @@ const EventsPage: React.FC = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [formData, setFormData] = useState<Partial<Event>>({});
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [cartItems, setCartItems] = useState<Purchase[]>([]);
+  const [quantity, setQuantity] = useState<number>(1);
 
   const level = Number(localStorage.getItem("level"));
   const display_Crud = level === 999 ? true : false;
 
-  const handleCreateClick = () => {
+ 
+
+  const handleOpenPurchaseDialog = (event: Event) => {
+    setSelectedEvent(event);
+    setShowTicketDialog(true);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedEvent || quantity < 1) return;
+  
+    const newItem: Purchase = {
+      eventID: selectedEvent.EventID, 
+      name: selectedEvent.Name,
+      price: selectedEvent.Price,
+      quantity,
+      ticketCodes: [], 
+    };
+  
+    // Get existing cart items from local storage
+    const existingCartItems: Purchase[] = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+    // Check if the item already exists in the cart
+    const existingItemIndex = existingCartItems.findIndex(item => item.eventID === selectedEvent.EventID);
+    if (existingItemIndex !== -1) {
+      // If the item already exists, update its quantity
+      existingCartItems[existingItemIndex].quantity += quantity;
+    } else {
+      // If the item doesn't exist, add it to the cart
+      existingCartItems.push(newItem);
+    }
+  
+    // Update cartItems state
+    setCartItems(existingCartItems);
+  
+    // Store updated cartItems in local storage
+    localStorage.setItem('cartItems', JSON.stringify(existingCartItems));
+  
+    // Close the purchase dialog after adding to cart
+    setShowTicketDialog(false);
+  };
+
+  const handleCloseDialog = () => {
+    setShowTicketDialog(false);
+    setQuantity(0); // Reset quantity for future purchases
+  };
+
+
+
+   const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
@@ -235,17 +299,18 @@ const EventsPage: React.FC = () => {
                 </Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
-{thisevent.Price > 0 ? (
-  <div>
-    <h1 style={{ fontSize: "1.5rem" }}>Tickets Required</h1>
-    <Button variant="contained" color="primary">
-      Add to Cart (${thisevent.Price})
-    </Button>
-  </div>
-) : (
-  <h1 style={{ fontSize: "1.5rem" }}>No Tickets Required</h1>
-)}
-
+              {thisevent.Price > 0 ? (
+                <div>
+                  <h1 style={{ fontSize: "1.5rem" }}>Tickets Required</h1>
+                  <Button variant="contained" color="primary"
+                   onClick={() => handleOpenPurchaseDialog(thisevent)}
+                   >
+                    Add to Cart (${thisevent.Price})
+                  </Button>
+                </div>
+              ) : (
+                <h1 style={{ fontSize: "1.5rem" }}>No Tickets Required</h1>
+              )}
             </CardContent>
             {display_Crud && (
               <CardActions>
@@ -280,6 +345,30 @@ const EventsPage: React.FC = () => {
         onClose={() => setOpenDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
       />
+      <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
+         
+         <DialogTitle>Add to Cart </DialogTitle>
+         <DialogContent>
+           <TextField
+             autoFocus
+             margin="dense"
+             id="quantity"
+             label="Quantity"
+             type="number"
+             fullWidth
+             value={quantity}
+             onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+           />
+         </DialogContent>
+         <DialogActions>
+           <Button onClick={handleCloseDialog}>Cancel</Button>
+           <Button onClick={handleAddToCart}>Add to Cart</Button>
+          
+         </DialogActions>
+       <Box/>
+     
+    </Dialog>
+
     </Box>
   );
 };

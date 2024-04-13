@@ -3,6 +3,9 @@ import {
   Button,
   Box,
   Divider,
+  Card,
+  CardContent,
+  CardActions,
   Typography,
   Modal,
   Dialog,
@@ -145,11 +148,15 @@ const ShoppingCartpage: React.FC = () => {
       {/* First Box: Items in the Shopping Cart */}
       <Box sx={{ marginBottom: 2, backgroundColor: "Grey" }}>
         {/* Map through the items in the cart and display them */}
+        <h1 style={{ fontSize: "1.5rem" }}>Ride Tickets</h1>
         {cartItems.map((item) => (
+          
           <div key={item.rideId}>
+            
             <Typography variant="h6">{item.name}</Typography>
-            <Typography>Price: ${item.price}</Typography>
+            <Typography>Price per item: ${item.price}</Typography>
             <Typography>Quantity: {item.quantity}</Typography>
+            <Typography>Total Price: ${item.price * item.quantity}</Typography> {/* Total price calculation */}
             <IconButton
               onClick={() => handleQuantityChange(item.rideId, item.quantity + 1)}
             >
@@ -167,6 +174,7 @@ const ShoppingCartpage: React.FC = () => {
           </div>
         ))}
       </Box>
+      
       {/* Second Box: Checkout Button */}
       <Box sx={{ marginBottom: 2, backgroundColor: "Grey", textAlign: "center" }}>
   {/* Display the final price here */}

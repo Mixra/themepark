@@ -228,49 +228,7 @@ const RidesPage: React.FC = () => {
     setShowTicketDialog(false);
   };
   
-  const handleConfirmPurchase = () => {
-    if (!selectedRide || quantity < 1) return;
   
-  
-    // Generate ticket codes
-    const purchaseId = Date.now(); // Simple unique ID based on the current timestamp
-    const codes = Array.from(
-      { length: quantity },
-      (_, index) =>
-        `${selectedRide.id}-${Math.random()
-          .toString(36)
-          .substring(2, 15)}-${index}`
-    );
-  
-
-    // Create purchase object
-    const purchase = {
-      rideId: selectedRide.id,
-      name: selectedRide.name, // Including ride name for display purposes
-      quantity,
-      ticketCodes: codes,
-      price: selectedRide.price,
-      purchaseDate: new Date().toISOString(),
-    };
-  
-    // Retrieve existing purchases from localStorage
-    const existingPurchases = JSON.parse(
-      localStorage.getItem("purchaseHistory") || "[]"
-    );
-  
-    // Save new purchase along with existing ones back to localStorage
-    localStorage.setItem(
-      "purchaseHistory",
-      JSON.stringify([...existingPurchases, purchase])
-    );
-  
-    // Update the state with the new cart items
-    setCartItems([...cartItems, purchase]);
-  
-    // Show QR codes for the purchased tickets
-  
-    setShowTicketDialog(true);
-  };
 
 
   //Closing Button 
