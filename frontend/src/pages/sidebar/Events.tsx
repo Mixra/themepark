@@ -25,6 +25,8 @@ interface Event {
   AgeRestriction: number;
   ImageUrl?: string;
   hasCrud?:boolean;
+  RequiresTickets?: boolean;
+  Price?: number;
 }
 
 const initialEvents: Event[] = [
@@ -38,6 +40,8 @@ const initialEvents: Event[] = [
     EndDateTime: '(1:00AM) 04-04-24',
     AgeRestriction: 5,
     hasCrud: true,
+    RequiresTickets:false,
+    Price:0,
     ImageUrl:"https://64.media.tumblr.com/304f056d8b08280b24cb75363d0586da/eb3305b9c6f87ab3-f2/s2048x3072/596137a2b5b0f4f30e0d14138b9e80546552a2af.png",
   },
   {
@@ -50,6 +54,8 @@ const initialEvents: Event[] = [
     EndDateTime: '2024-10-31 23:59:00.000',
     AgeRestriction: 12,
     hasCrud: true,
+    RequiresTickets:false,
+    Price:0,
     ImageUrl:"https://cdn.cheapoguides.com/wp-content/uploads/sites/3/2017/09/usj-horror-nights.jpg",
   },
   {
@@ -62,6 +68,8 @@ const initialEvents: Event[] = [
     EndDateTime: '2025-01-05 22:00:00.000',
     AgeRestriction: 0,
     hasCrud: true,
+    RequiresTickets:false,
+    Price:0,
     ImageUrl:"https://live.staticflickr.com/65535/49144435618_0d2b706acf_b.jpg",
   },
   {
@@ -74,6 +82,8 @@ const initialEvents: Event[] = [
     EndDateTime: '2024-03-24 20:00:00.000',
     AgeRestriction: 0,
     hasCrud: true,
+    RequiresTickets:false,
+    Price:0,
     ImageUrl:"https://bringmethenews.com/.image/ar_16:9%2Cc_fill%2Ccs_srgb%2Cfl_progressive%2Cg_faces:center%2Cq_auto:good%2Cw_768/MTkyNTE2MTAwOTA1MjQ4MDU3/image.jpg",
   },
   // Add more events as needed
@@ -99,23 +109,27 @@ const EventsPage: React.FC = () => {
   const handleFormSubmit = (formData: Partial<Event>) => {
     if (isEditing && selectedEvent) {
       const updatedEvent = events.map((thisevent) =>
-      thisevent.EventID === selectedEvent.EventID ? { ...thisevent, ...formData } : thisevent
+        thisevent.EventID === selectedEvent.EventID
+          ? { ...thisevent, ...formData }
+          : thisevent
       );
       setEvents(updatedEvent);
     } else {
-      const newId = Math.max(...events.map(r => r.EventID)) + 1; // Simplistic approach to generate a new ID
-        const newEvent: Event = {
-          EventID: newId,
-          AreaID:formData.AreaID||0,
-          Name: formData.Name||'',
-          Description: formData.Description||'',
-          EventType: formData.EventType||'',
-          StartDateTime: formData.StartDateTime||'',
-          EndDateTime: formData.EndDateTime||'',
-          AgeRestriction: formData.AgeRestriction||0,//No Age Restiction on creation
-          ImageUrl:"https://via.placeholder.com/150",
-        };
-      
+      const newId =
+        Math.max(...events.map((r) => r.EventID)) + 1; // Simplistic approach to generate a new ID
+      const newEvent: Event = {
+        EventID: newId,
+        AreaID: formData.AreaID || 0,
+        Name: formData.Name || "",
+        Description: formData.Description || "",
+        EventType: formData.EventType || "",
+        StartDateTime: formData.StartDateTime || "",
+        EndDateTime: formData.EndDateTime || "",
+        AgeRestriction: formData.AgeRestriction || 0, //No Age Restriction on creation
+        RequiresTickets: formData.RequiresTickets || false,
+        Price: formData.Price || 0,
+        ImageUrl: "https://via.placeholder.com/150",
+      };
 
       setEvents([...events, newEvent]);
     }
@@ -144,125 +158,130 @@ const EventsPage: React.FC = () => {
     setOpenDeleteDialog(false);
   };
 
-  
-
   return (
-  <Box
-    sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-  >
-    {display_Crud && (
-      <Box
-        sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
-      >
-        <Button variant="contained" onClick={handleCreateClick}>
-          Create
-        </Button>
-      </Box>
-    )}
     <Box
-      sx={{
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        maxWidth: "100%",
-      }}
+      sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {events.map((thisevent) => (
-        <Card
-          key={thisevent.EventID}
-          sx={{
-            margin: 1,
-            width: 300,
-            height: 660,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <img
-            src={thisevent.ImageUrl}
-            alt="Event"
-            style={{ width: "100%", objectFit: "cover", height: "150px" }}
-          />
-          <CardContent
+      {display_Crud && (
+        <Box sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
+          <Button variant="contained" onClick={handleCreateClick}>
+            Create
+          </Button>
+        </Box>
+      )}
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          maxWidth: "100%",
+        }}
+      >
+        {events.map((thisevent) => (
+          <Card
+            key={thisevent.EventID}
             sx={{
-              overflowY: "auto",
-              padding: 1,
-              flexGrow: 1,
+              margin: 1,
+              width: 300,
+              height: 660,
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <Typography variant="h5" component="div" gutterBottom>
-              {thisevent.Name}
-            </Typography>
-            <Divider sx={{ marginY: 1 }} />
-            <Typography color="text.secondary" gutterBottom>
-              {thisevent.EventType}
-            </Typography>
-            <Box
+            <img
+              src={thisevent.ImageUrl}
+              alt="Event"
+              style={{ width: "100%", objectFit: "cover", height: "150px" }}
+            />
+            <CardContent
               sx={{
-                maxHeight: 120,
-                minHeight: 120,
-                overflow: "auto",
+                overflowY: "auto",
                 padding: 1,
-                border: "1px solid #ccc",
-                borderRadius: 1,
+                flexGrow: 1,
               }}
             >
-              <Typography variant="body2">{thisevent.Description}</Typography>
-            </Box>
-            <Divider sx={{ marginY: 1 }} />
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="body2" fontWeight="bold">
-                Opening Time: {thisevent.StartDateTime}
+              <Typography variant="h5" component="div" gutterBottom>
+                {thisevent.Name}
               </Typography>
-              <Typography variant="body2" fontWeight="bold">
-                Closing Time: {thisevent.EndDateTime}
+              <Divider sx={{ marginY: 1 }} />
+              <Typography color="text.secondary" gutterBottom>
+                {thisevent.EventType}
               </Typography>
-            </Box>
-            
-           
+              <Box
+                sx={{
+                  maxHeight: 120,
+                  minHeight: 120,
+                  overflow: "auto",
+                  padding: 1,
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="body2">{thisevent.Description}</Typography>
+              </Box>
+              <Divider sx={{ marginY: 1 }} />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body2" fontWeight="bold">
+                  Opening Time: {thisevent.StartDateTime}
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  Closing Time: {thisevent.EndDateTime}
+                </Typography>
+              </Box>
+              <Divider sx={{ marginY: 1 }} />
+{thisevent.Price > 0 ? (
+  <div>
+    <h1 style={{ fontSize: "1.5rem" }}>Tickets Required</h1>
+    <Button variant="contained" color="primary">
+      Add to Cart (${thisevent.Price})
+    </Button>
+  </div>
+) : (
+  <h1 style={{ fontSize: "1.5rem" }}>No Tickets Required</h1>
+)}
 
-          </CardContent>
-          {display_Crud && (
-            <CardActions>
-              <IconButton
-                aria-label="edit"
-                onClick={() => handleEditClick(thisevent)}
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton
-                aria-label="delete"
-                onClick={() => handleDeleteClick(thisevent)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </CardActions>
-          )}
-        </Card>
-      ))}
-      
-    </Box>
-    <EventPopup
-      open={openPopup}
-      onClose={() => setOpenPopup(false)}
-      onSubmit={handleFormSubmit}
-      formData={formData}
-      setFormData={setFormData}
-      isEditing={isEditing}
-    />
-    <DeleteConfirmationPopup
+            </CardContent>
+            {display_Crud && (
+              <CardActions>
+                <IconButton
+                  aria-label="edit"
+                  onClick={() => handleEditClick(thisevent)}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => handleDeleteClick(thisevent)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+    
+              </CardActions>
+            )}
+          </Card>
+        ))}
+      </Box>
+      <EventPopup
+        open={openPopup}
+        onClose={() => setOpenPopup(false)}
+        onSubmit={handleFormSubmit}
+        formData={formData}
+        setFormData={setFormData}
+        isEditing={isEditing}
+      />
+      <DeleteConfirmationPopup
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
       />
-  </Box>
-);
+    </Box>
+  );
 };
 
 export default EventsPage;

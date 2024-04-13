@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,19 +6,23 @@ import {
   DialogActions,
   Button,
   TextField,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 
 interface Event {
-    EventID?: number;
-    AreaID?: number;
-    Name?: string;
-    Description?: string;
-    eventType?: string;
-    StartDateTime?: string;
-    EndDateTime?: string;
-    AgeRestriction?: number;
-    ImageUrl?: string;
-  }
+  EventID?: number;
+  AreaID?: number;
+  Name?: string;
+  Description?: string;
+  eventType?: string;
+  StartDateTime?: string;
+  EndDateTime?: string;
+  AgeRestriction?: number;
+  ImageUrl?: string;
+  RequiresTickets?: boolean;
+  Price?: number;
+}
 
 interface EventPopupProps {
   open: boolean;
@@ -37,12 +41,26 @@ const EventPopup: React.FC<EventPopupProps> = ({
   setFormData,
   isEditing,
 }) => {
+  const [ticketsRequired, setTicketsRequired] = useState<boolean>(
+    formData.RequiresTickets || false
+  );
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: parseInt(e.target.value) || 0 });
+    setFormData({
+      ...formData,
+      [e.target.name]: parseInt(e.target.value) || 0,
+    });
+  };
+
+  const handleCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setTicketsRequired(e.target.checked);
+    setFormData({ ...formData, RequiresTickets: e.target.checked });
   };
 
   const handleSubmit = () => {
@@ -54,7 +72,7 @@ const EventPopup: React.FC<EventPopupProps> = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Event" : "Create Event"}</DialogTitle>
       <DialogContent>
-      <TextField
+        <TextField
           name="imageUrl"
           label="Image URL"
           value={formData.ImageUrl || ""}
@@ -81,19 +99,17 @@ const EventPopup: React.FC<EventPopupProps> = ({
           rows={4}
         />
         <TextField
-        name="AgeRestriction"
+          name="AgeRestriction"
           label="AgeRestriction"
           value={formData.AgeRestriction || ""}
-          onChange={handleChange}
+          onChange={handleNumberChange}
           fullWidth
           margin="normal"
-          multiline
-          rows={4}
         />
         <TextField
-          name="OpeningTime and Date"
-          label="Opening Time and Data"
-          type="time"
+          name="StartDateTime"
+          label="Opening Time and Date"
+          type="datetime-local"
           value={formData.StartDateTime || ""}
           onChange={handleChange}
           fullWidth
@@ -103,9 +119,9 @@ const EventPopup: React.FC<EventPopupProps> = ({
           }}
         />
         <TextField
-          name="ClosingTime and Date"
+          name="EndDateTime"
           label="Closing Time and Date"
-          type="time"
+          type="datetime-local"
           value={formData.EndDateTime || ""}
           onChange={handleChange}
           fullWidth
@@ -114,6 +130,28 @@ const EventPopup: React.FC<EventPopupProps> = ({
             shrink: true,
           }}
         />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={ticketsRequired}
+              onChange={handleCheckboxChange}
+              name="requiresTickets"
+              color="primary"
+            />
+          }
+          label="Requires Tickets"
+        />
+        {ticketsRequired && (
+          <TextField
+            name="Price"
+            label="Price"
+            type="number"
+            value={formData.Price || ""}
+            onChange={handleNumberChange}
+            fullWidth
+            margin="normal"
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
