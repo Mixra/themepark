@@ -76,6 +76,15 @@ const RestaurantPopup: React.FC<RestaurantPopupProps> = ({
           fullWidth
           margin="normal"
         />
+         <TextField
+          name="areaID"
+          label="Area ID"
+          type="number"
+          value={formData.AreaID || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
         <TextField
           name="CuisineType"
           label="Cuisine Type"

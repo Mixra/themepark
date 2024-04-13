@@ -10,6 +10,7 @@ import {
 
 interface Rides {
   name?: string;
+  areaID?: number;
   description?: string;
   openingTime?: string;
   closingTime?: string;
@@ -65,6 +66,15 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           name="name"
           label="Name"
           value={formData.name || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+         <TextField
+          name="areaID"
+          label="Area ID"
+          type="number"
+          value={formData.areaID || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
