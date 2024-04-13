@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Box,
@@ -22,7 +22,7 @@ interface ShoppingCart {
 }
 
 interface Item {
-  purchaseID: number;
+  rideId: number;
   name: string;
   price: number;
   quantity: number;
@@ -32,13 +32,13 @@ let itemIdCounter = 0;
 
 const initialItems: Item[] = [
   {
-    purchaseID: itemIdCounter++,
+    rideId: itemIdCounter++,
     name: "Item 1",
     price: 5,
     quantity: 2,
   },
   {
-    purchaseID: itemIdCounter++,
+    rideId: itemIdCounter++,
     name: "Item 2",
     price: 3,
     quantity: 1,
@@ -48,7 +48,17 @@ const initialItems: Item[] = [
 const ShoppingCartpage: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [cartItems, setCartItems] = useState(initialItems);
-  const [deleteItemId, setDeleteItemId] = useState<number | null>(null);
+  const [deleteItem, setDeleteItem] = useState<Item | null>(null);
+
+  useEffect(() => {
+    // Retrieve cart items from local storage when component initializes
+    const storedCartItems = localStorage.getItem('cartItems');
+    if (storedCartItems) {
+      setCartItems(JSON.parse(storedCartItems));
+    }
+  }, []);
+   
+
 
   const handleCheckout = () => {
     setOpen(true);
@@ -65,29 +75,43 @@ const ShoppingCartpage: React.FC = () => {
   };
 
   const handleDeleteItem = (itemId: number) => {
-    setDeleteItemId(itemId);
+    // Remove the item from local storage
+    const updatedCartItems = cartItems.filter(item => item.rideId !== itemId);
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    
+    // Update the state to reflect the deletion
+    setCartItems(updatedCartItems);
   };
+  
 
   const handleConfirmDelete = () => {
-    if (deleteItemId !== null) {
-      setCartItems((prevItems) =>
-        prevItems.filter((item) => item.purchaseID !== deleteItemId)
+    if (deleteItem) {
+      setCartItems(prevItems =>
+        prevItems.filter(item => item.rideId !== deleteItem.rideId)
       );
     }
-    setDeleteItemId(null);
+    setDeleteItem(null); // Reset the deleteItem state
   };
 
   const handleCancelDelete = () => {
-    setDeleteItemId(null);
+    setDeleteItem(null);
   };
 
   const handleQuantityChange = (itemId: number, newQuantity: number) => {
+    // Update the quantity in the state
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.purchaseID === itemId ? { ...item, quantity: newQuantity } : item
+        item.rideId === itemId ? { ...item, quantity: newQuantity } : item
       )
     );
+  
+    // Update the quantity in local storage
+    const updatedCartItems = cartItems.map((item) =>
+      item.rideId === itemId ? { ...item, quantity: newQuantity } : item
+    );
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
   };
+  
 
   const calculateFinalPrice = () => {
     return cartItems.reduce(
@@ -108,22 +132,22 @@ const ShoppingCartpage: React.FC = () => {
       <Box sx={{ marginBottom: 2, backgroundColor: "Grey" }}>
         {/* Map through the items in the cart and display them */}
         {cartItems.map((item) => (
-          <div key={item.purchaseID}>
+          <div key={item.rideId}>
             <Typography variant="h6">{item.name}</Typography>
             <Typography>Price: ${item.price}</Typography>
             <Typography>Quantity: {item.quantity}</Typography>
             <IconButton
-              onClick={() => handleQuantityChange(item.purchaseID, item.quantity + 1)}
+              onClick={() => handleQuantityChange(item.rideId, item.quantity + 1)}
             >
               <AddIcon />
             </IconButton>
             <IconButton
-              onClick={() => handleQuantityChange(item.purchaseID, item.quantity - 1)}
+              onClick={() => handleQuantityChange(item.rideId, item.quantity - 1)}
               disabled={item.quantity <= 1}
             >
               <RemoveIcon />
             </IconButton>
-            <IconButton onClick={() => handleDeleteItem(item.purchaseID)}>
+            <IconButton onClick={() => handleDeleteItem(item.rideId)}>
               <DeleteIcon />
             </IconButton>
           </div>
@@ -146,26 +170,26 @@ const ShoppingCartpage: React.FC = () => {
 </Box>
       {/* Delete Confirmation Dialog */}
       <Dialog
-        open={deleteItemId !== null}
-        onClose={handleCancelDelete}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Are you sure you want to delete this item?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmDelete} color="primary" autoFocus>
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+  open={deleteItem !== null}
+  onClose={handleCancelDelete}
+  aria-labelledby="alert-dialog-title"
+  aria-describedby="alert-dialog-description"
+>
+  <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+  <DialogContent>
+    <Typography variant="body1">
+      Are you sure you want to delete this item?
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleCancelDelete} color="primary">
+      Cancel
+    </Button>
+    <Button onClick={handleConfirmDelete} color="primary" autoFocus>
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
       <Modal open={open} onClose={handleClose}>
         <div
           style={{

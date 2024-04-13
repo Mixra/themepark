@@ -16,9 +16,9 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import QRCode from "qrcode.react";
 import RidesPopup from "../../components/RidesPopup";
 import DeleteRideConfirmation from "../../components/DeleteRideConfirmation";
+
 
 interface Rides {
   imageUrl: string | undefined;
@@ -31,7 +31,16 @@ interface Rides {
   description: string;
   openingTime: string;
   closingTime: string;
+  price: number; 
   //hasCrud?: boolean;
+}
+
+interface Purchase {
+  rideId: number;
+  name: string;
+  quantity: number;
+  price:number;
+  ticketCodes: string[];
 }
 
 const fakeRides: Rides[] = [
@@ -46,6 +55,7 @@ const fakeRides: Rides[] = [
     duration: 120,
     openingTime: "09:00",
     closingTime: "18:00",
+    price: 25,
     //hasCrud: true,
     imageUrl:
       "https://media.cnn.com/api/v1/images/stellar/prod/210712153839-disneyland-jungle-cruise-ride-0709-restricted.jpg?q=w_3000,h_2000,x_0,y_0,c_fill",
@@ -61,6 +71,7 @@ const fakeRides: Rides[] = [
     duration: 180,
     openingTime: "10:00",
     closingTime: "20:00",
+    price: 20,
     //hasCrud: false,
     imageUrl:
       "https://blooloop.com/wp-content/uploads/2019/03/6-guests-on-Carowinds-Rip-Roarin-Rapids.jpeg",
@@ -76,6 +87,7 @@ const fakeRides: Rides[] = [
     duration: 15,
     openingTime: "10:00",
     closingTime: "20:00",
+    price: 25,
     //hasCrud: false,
     imageUrl:
       "https://media.istockphoto.com/id/517726745/photo/ferris-wheel.jpg?s=612x612&w=0&k=20&c=0PLYAc3BZBzw5plVUlNuCP-IUoSVrDmtDV8bHlqH4wI=",
@@ -91,6 +103,7 @@ const fakeRides: Rides[] = [
     duration: 3,
     openingTime: "10:00",
     closingTime: "20:00",
+    price: 25,
     //hasCrud: false,
     imageUrl:
       "https://www.familypark.at/wp-content/uploads/FP_Maerchenkarussell_cSemeliker_Web1.jpg",
@@ -102,8 +115,9 @@ const RidesPage: React.FC = () => {
   const [selectedRide, setSelectedRide] = useState<Rides | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [ticketCodes, setTicketCodes] = useState<string[]>([]);
-  const [currentTicketIndex, setCurrentTicketIndex] = useState<number>(0);
+  const [cartItems, setCartItems] = useState<Purchase[]>([]);
+  
+
   const level = Number(localStorage.getItem("level"));
   const displayCrud = level === 999;
 
@@ -116,6 +130,7 @@ const RidesPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
 
   const handleCreateClick = () => {
     setFormData({});
@@ -143,6 +158,7 @@ const RidesPage: React.FC = () => {
         description: formData.description || "",
         openingTime: formData.openingTime || "",
         closingTime: formData.closingTime || "",
+        price: formData.price|| 0,
         imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
       };
 
@@ -173,10 +189,39 @@ const RidesPage: React.FC = () => {
     setOpenDeleteDialog(false);
   };
 
+
+  
+
   //end of admin section
-  const handleConfirmPurchase = () => {
+
+  const handleAddToCart = () => {
     if (!selectedRide || quantity < 1) return;
 
+
+    const newItem: Purchase = {
+      rideId: selectedRide.id, // Use rideId instead of ride
+      name: selectedRide.name,
+      price: selectedRide.price,
+      quantity,
+      ticketCodes: [], // This might be empty initially
+    };
+  
+    // Update cartItems state
+    const updatedCartItems = [...cartItems, newItem];
+    setCartItems(updatedCartItems);
+  
+    // Store updated cartItems in local storage
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+  
+    // Close the purchase dialog after adding to cart
+    setShowTicketDialog(false);
+  };
+  
+
+  const handleConfirmPurchase = () => {
+    if (!selectedRide || quantity < 1) return;
+  
+  
     // Generate ticket codes
     const purchaseId = Date.now(); // Simple unique ID based on the current timestamp
     const codes = Array.from(
@@ -186,6 +231,7 @@ const RidesPage: React.FC = () => {
           .toString(36)
           .substring(2, 15)}-${index}`
     );
+  
 
     // Create purchase object
     const purchase = {
@@ -193,40 +239,34 @@ const RidesPage: React.FC = () => {
       name: selectedRide.name, // Including ride name for display purposes
       quantity,
       ticketCodes: codes,
+      price: selectedRide.price,
       purchaseDate: new Date().toISOString(),
     };
-
+  
     // Retrieve existing purchases from localStorage
     const existingPurchases = JSON.parse(
       localStorage.getItem("purchaseHistory") || "[]"
     );
-
+  
     // Save new purchase along with existing ones back to localStorage
     localStorage.setItem(
       "purchaseHistory",
       JSON.stringify([...existingPurchases, purchase])
     );
-
+  
+    // Update the state with the new cart items
+    setCartItems([...cartItems, purchase]);
+  
     // Show QR codes for the purchased tickets
-    setTicketCodes(codes);
-    setCurrentTicketIndex(0); // Ready to display the first ticket code
+  
     setShowTicketDialog(true);
   };
 
-  const handleNextTicket = () => {
-    setCurrentTicketIndex((prevIndex) => (prevIndex + 1) % ticketCodes.length);
-  };
 
-  const handlePrevTicket = () => {
-    setCurrentTicketIndex(
-      (prevIndex) => (prevIndex - 1 + ticketCodes.length) % ticketCodes.length
-    );
-  };
-
+  //Closing Button 
   const handleCloseDialog = () => {
     setShowTicketDialog(false);
-    setTicketCodes([]); // Clear the tickets once the dialog is closed
-    setQuantity(1); // Reset quantity for future purchases
+    setQuantity(0); // Reset quantity for future purchases
   };
 
   return (
@@ -320,13 +360,13 @@ const RidesPage: React.FC = () => {
                 Duration of the ride: {ride.duration} seconds
               </Typography>
               <CardActions style={{ justifyContent: 'center' }}>
-            <Button
-              variant="contained"
-              onClick={() => handleOpenPurchaseDialog(ride)}
-            >
-              Purchase
-            </Button>
-          </CardActions>
+              <Button
+                variant="contained"
+                onClick={() => handleOpenPurchaseDialog(ride)}
+              >
+                Add To Cart (${ride.price})
+              </Button>
+            </CardActions>
 
             </CardContent>
             {displayCrud && (
@@ -364,34 +404,8 @@ const RidesPage: React.FC = () => {
       />
 
       <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
-        {ticketCodes.length > 0 ? (
-          <>
-            <DialogTitle>QR Code</DialogTitle>
-            <DialogContent sx={{ textAlign: "center" }}>
-              <QRCode value={ticketCodes[currentTicketIndex]} size={200} />
-              <Typography>
-                Ticket ID: {ticketCodes[currentTicketIndex]}
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={handlePrevTicket}
-                disabled={ticketCodes.length <= 1}
-              >
-                Prev
-              </Button>
-              <Button
-                onClick={handleNextTicket}
-                disabled={ticketCodes.length <= 1}
-              >
-                Next
-              </Button>
-              <Button onClick={handleCloseDialog}>Close</Button>
-            </DialogActions>
-          </>
-        ) : (
-          <>
-            <DialogTitle>Confirm Purchase</DialogTitle>
+         
+            <DialogTitle>Add to Cart </DialogTitle>
             <DialogContent>
               <TextField
                 autoFocus
@@ -406,11 +420,13 @@ const RidesPage: React.FC = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleConfirmPurchase}>Confirm</Button>
+              <Button onClick={handleAddToCart}>Add to Cart</Button>
+             
             </DialogActions>
-          </>
-        )}
+          <Box/>
+        
       </Dialog>
+       
     </Box>
   );
 };
