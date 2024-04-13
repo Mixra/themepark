@@ -28,6 +28,20 @@ interface Item {
   quantity: number;
 }
 
+interface eventItem {
+  eventId: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface giftItem {
+  giftId: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 let itemIdCounter = 0;
 
 const initialItems: Item[] = [

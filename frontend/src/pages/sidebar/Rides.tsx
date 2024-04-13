@@ -196,28 +196,38 @@ const RidesPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedRide || quantity < 1) return;
-
-
+  
     const newItem: Purchase = {
       rideId: selectedRide.id, // Use rideId instead of ride
       name: selectedRide.name,
       price: selectedRide.price,
       quantity,
-      ticketCodes: [], // This might be empty initially
+      ticketCodes: [], 
     };
   
+    // Get existing cart items from local storage
+    const existingCartItems: Purchase[] = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      
+    // Check if the item already exists in the cart
+    const existingItemIndex = existingCartItems.findIndex(item => item.rideId === selectedRide.id);
+    if (existingItemIndex !== -1) {
+      // If the item already exists, update its quantity
+      existingCartItems[existingItemIndex].quantity += quantity;
+    } else {
+      // If the item doesn't exist, add it to the cart
+      existingCartItems.push(newItem);
+    }
+  
     // Update cartItems state
-    const updatedCartItems = [...cartItems, newItem];
-    setCartItems(updatedCartItems);
+    setCartItems(existingCartItems);
   
     // Store updated cartItems in local storage
-    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    localStorage.setItem('cartItems', JSON.stringify(existingCartItems));
   
     // Close the purchase dialog after adding to cart
     setShowTicketDialog(false);
   };
   
-
   const handleConfirmPurchase = () => {
     if (!selectedRide || quantity < 1) return;
   
