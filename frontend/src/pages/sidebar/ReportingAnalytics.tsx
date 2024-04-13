@@ -1,89 +1,90 @@
-/*import React from "react";
-import { useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
-import Joker from "../../components/Joker";
-import { useTheme } from "@mui/material/styles";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
-const ReportingAnalytics: React.FC = () => {
-  const [showChatbot, setShowChatbot] = useState(false);
-
-  const handleOpenChatbot = () => {
-    setShowChatbot(true);
-  };
-
-  const handleCloseChatbot = () => {
-    setShowChatbot(false);
-  };
-  //this is what i addedd
-  const theme = useTheme();
-  const [date, setDate] = useState(new Date());
-  return (
-    <div>
-      <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
-        <Typography variant="body1">
-          Can't find what you're looking for?{" "}
-          <Button onClick={handleOpenChatbot}>Try asking Joker</Button>
-        </Typography>
-      </Box>
-        <Box
-        sx={{
-          backgroundColor: theme.palette.background.default,
-          color: theme.palette.text.primary,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: 4,
-        }}
-        >
-          <div>
-            
-          </div>
-        </Box>
-      <Joker open={showChatbot} onClose={handleCloseChatbot} />
-    </div>
-  );
-};
-
-export default ReportingAnalytics;*/
-
 import React, { useState, ChangeEvent } from 'react';
-import { Box, Button, Typography, TextField, MenuItem } from '@mui/material';
+import { Box, Button, Typography, TextField, MenuItem, Divider } from '@mui/material';
 import Joker from '../../components/Joker';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { Dayjs } from 'dayjs';
+import dayjs from 'dayjs'; // Ensure dayjs is installed
+import { Budget } from '../../components/ReportTests/Sales/TotalSales';
+import { RideSale } from '../../components/ReportTests/Sales/RideSales';
+import { GiftShopSale } from '../../components/ReportTests/Sales/GiftShopSale';
+import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurauntSale';
 
 type SalesReportData = {
-  totalSales: string;
+  totalSales: number;
+  rideSales: number;
+  giftShopSales: number;
+  restaurantSales: number;
   bestRide: string;
+  leastPerformingRide: string;
+  bestPark: string;
+  leastPerformingPark: string;
+};
+
+type MaintenanceEntry = {
+  entityType: string;
+  entityID: string;
+  maintenanceStartDate: string;
+  maintenanceEndDate: string | 'Ongoing'; // 'Ongoing' if null
+  maintenanceDescription: string;
 };
 
 type MaintenanceReportData = {
-  rideName: string;
+  entries: MaintenanceEntry[];
 };
+
 
 type EmployeeReportData = {
   employee: string;
-}
+};
 
 type ReportType = 'sales' | 'maintenance' | 'employee';
+
+const salesFields = [
+  { label: 'Total Sales', key: 'totalSales', prefix: '$', trend: 'up' },
+  { label: 'Ride Sales', key: 'rideSales', prefix: '$', trend: 'down' },
+  { label: 'Gift Shop Sales', key: 'giftShopSales', prefix: '$', trend: 'up' },
+  { label: 'Restaurant Sales', key: 'restaurantSales', prefix: '$', trend: 'down' },
+];
+
+const SaleComponentMap = {
+  totalSales: Budget,
+  rideSales: RideSale,
+  giftShopSales: GiftShopSale,
+  restaurantSales: RestaurantSale,
+};
 
 const displaySales = (data: SalesReportData) => (
   <Box sx={{ padding: 4 }}>
     <Typography variant="h6">Sales Report</Typography>
-    <Typography>Total Sales: {data.totalSales}</Typography>
-    <Typography>Best Performing Ride: {data.bestRide}</Typography>
+    {salesFields.map((field) => {
+      const SaleComponent = SaleComponentMap[field.key];  // Dynamically select the component based on field key
+      return (
+        <SaleComponent
+          key={field.key}
+          trend={field.trend as 'up' | 'down'}
+          value={`${field.prefix}${data[field.key as keyof SalesReportData]}`}
+          diff={Math.floor(Math.random() * 100) + 1} // Example dynamic difference
+          sx={{ my: 2 }}
+        />
+      );
+    })}
   </Box>
 );
 
-const displayMaintenance = (data: MaintenanceReportData) => (
-  <Box sx={{ padding: 4 }}>
-    <Typography variant="h6">Maintenance Report</Typography>
-    <Typography>Ride Name: {data.rideName}</Typography>
+const displayMaintenance = ({ entries }: MaintenanceReportData) => (
+  <Box sx={{ padding: 4, maxWidth: '1000px', margin: 'auto' }}>
+    <Typography variant="h6" sx={{ mb: 2 }}>Maintenance Report for Specific Date: April 13, 2024</Typography>
+    {entries.map((entry, index) => (
+      <Box key={index} sx={{ marginBottom: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{entry.entityType}: {entry.entityID}</Typography>
+        <Typography variant="body1">Maintenance Start Date: {entry.maintenanceStartDate}</Typography>
+        <Typography variant="body1">Maintenance End Date: {entry.maintenanceEndDate === null ? 'Ongoing' : entry.maintenanceEndDate}</Typography>
+        <Typography variant="body2" sx={{ color: 'gray' }}>Description: {entry.maintenanceDescription}</Typography>
+        {index !== entries.length - 1 && <Divider sx={{ my: 2 }} />}
+      </Box>
+    ))}
   </Box>
 );
 
@@ -97,8 +98,7 @@ const displayEmployee = (data: EmployeeReportData) => (
 const reportDisplayFunctions: Record<ReportType, (data: any) => JSX.Element> = {
   sales: displaySales,
   maintenance: displayMaintenance,
-  // Ensure you define displayEmployee
-  employee: displayEmployee, // This needs to be defined
+  employee: displayEmployee,
 };
 
 const ReportingAnalytics: React.FC = () => {
@@ -107,51 +107,61 @@ const ReportingAnalytics: React.FC = () => {
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [reportType, setReportType] = useState<ReportType | ''>('');
-  const [reportData, setReportData] = useState<any | null>(null); // Use 'any' or a more specific type if needed
+  const [reportData, setReportData] = useState<any | null>(null);
 
-  const handleOpenChatbot = () => {
-    setShowChatbot(true);
-  };
-
-  const handleCloseChatbot = () => {
-    setShowChatbot(false);
-  };
-
-  const reportTypes = [
-    { value: 'maintenance', label: 'Maintenance Report' },
-    { value: 'employee', label: 'Employee Report' },
-    { value: 'sales', label: 'Sales Report' },
-  ];
-
-//handles the selection of reports from the dropdown  //hardcoded for the moment
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const type = event.target.value as ReportType | '';
-    setReportType(type);
+    setReportType(event.target.value as ReportType | '');
   };
 
-  const handleViewReports = () => {
-    if (reportType === 'sales') {
-      const salesData: SalesReportData = {
-        totalSales: '100,000',
-        bestRide: 'Roller Coaster',
-      };
-      setReportData(salesData);
+  const handleViewReports = () => {//this is where i will make the changes to get the data from the db
+    if (!startDate || !endDate) {
+      alert("Please select both start and end dates.");
+      return;
     }
-    else if (reportType === 'employee') {
-      const employeeData: EmployeeReportData = {
-        employee: 'Timmy Cha',
-      };
-      setReportData(employeeData)
-    }
-    else if (reportType === 'maintenance') {
-      const maintenanceData: MaintenanceReportData = {
-        rideName: 'Ferris Wheel',
-      };
-      setReportData(maintenanceData);
-    }
-  
-    else {
-      setReportData(null);
+    switch (reportType) {
+      case 'sales':
+        const salesData: SalesReportData = {
+          totalSales: 100000,
+          rideSales: 40000,
+          giftShopSales: 15000,
+          restaurantSales: 45000,
+          bestRide: 'High Sky Adventure',
+          leastPerformingRide: 'Fairy Tale Carousel',
+          bestPark: 'FutureLand',
+          leastPerformingPark: 'FrontierLand',
+        };
+        setReportData(salesData);
+        break;
+      case 'employee':
+        const employeeData: EmployeeReportData = {
+          employee: 'Timmy Cha',
+        };
+        setReportData(employeeData);
+        break;
+      case 'maintenance':
+        const maintenanceData: MaintenanceReportData = {
+          entries: [
+            {
+              entityType: 'Roller Coaster',
+              entityID: 'RC101',
+              maintenanceStartDate: '2024-04-12',
+              maintenanceEndDate: '2024-04-14',
+              maintenanceDescription: 'Routine annual maintenance check and safety verification.'
+            },
+            {
+              entityType: 'Water Slide',
+              entityID: 'WS205',
+              maintenanceStartDate: '2024-04-13',
+              maintenanceEndDate: 'Ongoing',
+              maintenanceDescription: 'Replacement of water pumps and slide surface resealing due to unexpected leakage.'
+            },
+          ]
+          };
+          setReportData(maintenanceData);
+          break;
+        
+      default:
+        setReportData(null);
     }
   };
 
@@ -160,7 +170,7 @@ const ReportingAnalytics: React.FC = () => {
       <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
         <Typography variant="body1">
           Can't find what you're looking for?{" "}
-          <Button onClick={handleOpenChatbot}>Try asking Joker</Button>
+          <Button onClick={() => setShowChatbot(true)}>Try asking Joker</Button>
         </Typography>
       </Box>
       <Box
@@ -196,9 +206,9 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {reportTypes.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
+          {['sales', 'maintenance', 'employee'].map((type) => (
+            <MenuItem key={type} value={type}>
+              {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
           ))}
         </TextField>
@@ -209,12 +219,30 @@ const ReportingAnalytics: React.FC = () => {
           View Reports
         </Button>
       </Box>
+      <Box
+        sx={{
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.text.primary,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-evenly",
+          padding: 4,
+          width: "100%"
+        }}
+      >
+      {startDate && endDate && (
+        <Typography sx={{ mt: 2, textAlign: 'center' }}>
+          Selected Dates: {dayjs(startDate).format('MM/DD/YYYY')} to {dayjs(endDate).format('MM/DD/YYYY')}
+        </Typography>
+      )}
+      {reportType && reportData && reportDisplayFunctions[reportType](reportData)}
+      </Box>
       
-      {reportType && reportData && reportDisplayFunctions[reportType]?.(reportData)}
-      
-      <Joker open={showChatbot} onClose={handleCloseChatbot} />
+      <Joker open={showChatbot} onClose={() => setShowChatbot(false)} />
     </div>
   );
 };
 
 export default ReportingAnalytics;
+
