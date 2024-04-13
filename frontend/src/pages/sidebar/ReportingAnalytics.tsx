@@ -10,6 +10,7 @@ import { Budget } from '../../components/ReportTests/Sales/TotalSales';
 import { RideSale } from '../../components/ReportTests/Sales/RideSales';
 import { GiftShopSale } from '../../components/ReportTests/Sales/GiftShopSale';
 import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurauntSale';
+import { LatestMaintenance } from '../../components/ReportTests/Maintenance/MaintainReport';
 
 type SalesReportData = {
   totalSales: number;
@@ -75,16 +76,8 @@ const displaySales = (data: SalesReportData) => (
 
 const displayMaintenance = ({ entries }: MaintenanceReportData) => (
   <Box sx={{ padding: 4, maxWidth: '1000px', margin: 'auto' }}>
-    <Typography variant="h6" sx={{ mb: 2 }}>Maintenance Report for Specific Date: April 13, 2024</Typography>
-    {entries.map((entry, index) => (
-      <Box key={index} sx={{ marginBottom: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{entry.entityType}: {entry.entityID}</Typography>
-        <Typography variant="body1">Maintenance Start Date: {entry.maintenanceStartDate}</Typography>
-        <Typography variant="body1">Maintenance End Date: {entry.maintenanceEndDate === null ? 'Ongoing' : entry.maintenanceEndDate}</Typography>
-        <Typography variant="body2" sx={{ color: 'gray' }}>Description: {entry.maintenanceDescription}</Typography>
-        {index !== entries.length - 1 && <Divider sx={{ my: 2 }} />}
-      </Box>
-    ))}
+    <Typography variant="h6" sx={{ mb: 2 }}>Maintenance Report</Typography>
+    <LatestMaintenance entries={entries} />
   </Box>
 );
 
