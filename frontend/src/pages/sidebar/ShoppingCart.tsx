@@ -18,53 +18,23 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
-interface ShoppingCart {
-  finalPrice: number;
-  totalQuantity: number;
-  items: Item[];
-}
+
 
 interface Item {
-  rideId: number;
+  id: number;
+  itemType:string;
   name: string;
   price: number;
   quantity: number;
 }
 
-interface eventItem {
-  eventId: number;
-  name: string;
-  price: number;
-  quantity: number;
-}
 
-interface giftItem {
-  giftId: number;
-  name: string;
-  price: number;
-  quantity: number;
-}
 
-let itemIdCounter = 0;
-
-const initialItems: Item[] = [
-  {
-    rideId: itemIdCounter++,
-    name: "Item 1",
-    price: 5,
-    quantity: 2,
-  },
-  {
-    rideId: itemIdCounter++,
-    name: "Item 2",
-    price: 3,
-    quantity: 1,
-  },
-];
 
 const ShoppingCartpage: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(initialItems);
+  const [cartItems, setCartItems] = useState<Item[]>([]);
+  
   const [deleteItem, setDeleteItem] = useState<Item | null>(null);
 
   useEffect(() => {
@@ -78,9 +48,30 @@ const ShoppingCartpage: React.FC = () => {
 
 
   const handleCheckout = () => {
+    // Extract ride items from cartItems
+    //const rideItems = cartItems.filter(item => item.itemType == 'Ride');
+    
+    // Extract event items from cartItems
+    //const eventItems = cartItems.filter(item => item.itemType == 'Event' );
+   
+    // Calculate total amount
+    const totalAmount = calculateFinalPrice();
+    const currDatetime = new Date().toISOString();
+  
+    // Store order data in local storage
+    const orderData = {
+      totalAmount,
+      cartItems,
+      currDatetime,
+    };
+  
+    localStorage.setItem('orderData', JSON.stringify(orderData));
+  
     setOpen(true);
     clearCart(); // Call the function to clear the cart
   };
+  
+  
 
   const handleClose = () => {
     setOpen(false);
@@ -91,40 +82,52 @@ const ShoppingCartpage: React.FC = () => {
     setCartItems([]);
   };
 
-  const handleDeleteItem = (itemId: number) => {
-    // Remove the item from local storage
-    const updatedCartItems = cartItems.filter(item => item.rideId !== itemId);
-    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+  const handleDeleteItem = (itemType: string, itemId: number) => {
+    // Find the item to delete
+    const itemToDelete = cartItems.find(item => item.itemType === itemType && item.id === itemId);
     
-    // Update the state to reflect the deletion
-    setCartItems(updatedCartItems);
+    // Set the item to delete to the deleteItem state
+    if (itemToDelete) {
+      setDeleteItem(itemToDelete);
+    }
   };
-  
 
   const handleConfirmDelete = () => {
-    if (deleteItem) {
-      setCartItems(prevItems =>
-        prevItems.filter(item => item.rideId !== deleteItem.rideId)
-      );
-    }
-    setDeleteItem(null); // Reset the deleteItem state
-  };
-
-  const handleCancelDelete = () => {
+  if (deleteItem) {
+    // Remove the item from local storage
+    const updatedCartItems = cartItems.filter(item => !(item.itemType === deleteItem.itemType && item.id === deleteItem.id));
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+  
+    // Update the state to reflect the deletion
+    setCartItems(updatedCartItems);
+    
+    // Reset the deleteItem state
     setDeleteItem(null);
-  };
+  }
+};
 
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
+// Function to handle cancelling the deletion
+const handleCancelDelete = () => {
+  // Reset the deleteItem state
+  setDeleteItem(null);
+};
+
+
+  const handleQuantityChange = (itemType: string, itemId: number, newQuantity: number) => {
     // Update the quantity in the state
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.rideId === itemId ? { ...item, quantity: newQuantity } : item
+        item.itemType === itemType && item.id === itemId
+          ? { ...item, quantity: newQuantity }
+          : item
       )
     );
   
     // Update the quantity in local storage
     const updatedCartItems = cartItems.map((item) =>
-      item.rideId === itemId ? { ...item, quantity: newQuantity } : item
+      item.itemType === itemType && item.id === itemId
+        ? { ...item, quantity: newQuantity }
+        : item
     );
     localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
   };
@@ -145,36 +148,100 @@ const ShoppingCartpage: React.FC = () => {
     <div>
       <h1 style={{ fontSize: "1.5rem" }}>Shopping Cart</h1>
       <Divider sx={{ marginY: 1 }} />
-      {/* First Box: Items in the Shopping Cart */}
+      {/* Ride Tickets */}
       <Box sx={{ marginBottom: 2, backgroundColor: "Grey" }}>
-        {/* Map through the items in the cart and display them */}
-        <h1 style={{ fontSize: "1.5rem" }}>Ride Tickets</h1>
-        {cartItems.map((item) => (
-          
-          <div key={item.rideId}>
-            
-            <Typography variant="h6">{item.name}</Typography>
-            <Typography>Price per item: ${item.price}</Typography>
-            <Typography>Quantity: {item.quantity}</Typography>
-            <Typography>Total Price: ${item.price * item.quantity}</Typography> {/* Total price calculation */}
-            <IconButton
-              onClick={() => handleQuantityChange(item.rideId, item.quantity + 1)}
-            >
-              <AddIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => handleQuantityChange(item.rideId, item.quantity - 1)}
-              disabled={item.quantity <= 1}
-            >
-              <RemoveIcon />
-            </IconButton>
-            <IconButton onClick={() => handleDeleteItem(item.rideId)}>
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        ))}
+        {/* Render Ride Tickets Box */}
+        {cartItems.some((item) => item.itemType === 'Ride') && (
+          <>
+            <h1 style={{ fontSize: "1.5rem" }}>Ride Tickets</h1>
+            {cartItems.map((item) => (
+              item.itemType === 'Ride' && (
+                <div key={item.id}>
+                  <Typography variant="h6">{item.name}</Typography>
+                  <Typography>Price per item: ${item.price}</Typography>
+                  <Typography>Quantity: {item.quantity}</Typography>
+                  <Typography>Total Price: ${item.price * item.quantity}</Typography>
+                  <IconButton onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity + 1)}>
+                    <AddIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteItem(item.itemType, item.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              )
+            ))}
+          </>
+        )}
+        </Box>
+
+      <Box sx={{ marginBottom: 2, backgroundColor: "Grey" }}>
+        {/*Event Tickets */}
+        {cartItems.some((item) => item.itemType === 'Event') && (
+          <>
+            <h1 style={{ fontSize: "1.5rem" }}>Event Tickets</h1>
+            {cartItems.map((item) => (
+              item.itemType === 'Event' && (
+                <div key={item.id}>
+                  <Typography variant="h6">{item.name}</Typography>
+                  <Typography>Price per item: ${item.price}</Typography>
+                  <Typography>Quantity: {item.quantity}</Typography>
+                  <Typography>Total Price: ${item.price * item.quantity}</Typography>
+                  <IconButton onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity + 1)}>
+                    <AddIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteItem(item.itemType, item.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              )
+            ))}
+          </>
+        )}
       </Box>
-      
+
+      <Box sx={{ marginBottom: 2, backgroundColor: "Grey" }}>
+        {/* GiftShop Items */}
+        {cartItems.some((item) => item.itemType === 'GiftShop') && (
+          <>
+            <h1 style={{ fontSize: "1.5rem" }}>Gift Shop Items</h1>
+            {cartItems.map((item) => (
+              item.itemType === 'GiftShop' && (
+                <div key={item.id}>
+                  <Typography variant="h6">{item.name}</Typography>
+                  <Typography>Price per item: ${item.price}</Typography>
+                  <Typography>Quantity: {item.quantity}</Typography>
+                  <Typography>Total Price: ${item.price * item.quantity}</Typography>
+                  <IconButton onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity + 1)}>
+                    <AddIcon />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleQuantityChange(item.itemType, item.id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteItem(item.itemType, item.id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              )
+            ))}
+          </>
+        )}
+      </Box>
+
       {/* Second Box: Checkout Button */}
       <Box sx={{ marginBottom: 2, backgroundColor: "Grey", textAlign: "center" }}>
   {/* Display the final price here */}
