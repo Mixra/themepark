@@ -48,12 +48,6 @@ const ShoppingCartpage: React.FC = () => {
 
 
   const handleCheckout = () => {
-    // Extract ride items from cartItems
-    //const rideItems = cartItems.filter(item => item.itemType == 'Ride');
-    
-    // Extract event items from cartItems
-    //const eventItems = cartItems.filter(item => item.itemType == 'Event' );
-   
     // Calculate total amount
     const totalAmount = calculateFinalPrice();
     const currDatetime = new Date().toISOString();
@@ -83,34 +77,30 @@ const ShoppingCartpage: React.FC = () => {
   };
 
   const handleDeleteItem = (itemType: string, itemId: number) => {
-    // Find the item to delete
-    const itemToDelete = cartItems.find(item => item.itemType === itemType && item.id === itemId);
-    
-    // Set the item to delete to the deleteItem state
-    if (itemToDelete) {
-      setDeleteItem(itemToDelete);
+    // Find the index of the item to delete
+    const index = cartItems.findIndex(item => item.itemType === itemType && item.id === itemId);
+
+    if (index !== -1) { // Check if item exists
+        // Create a copy of the cartItems array
+        const updatedCartItems = [...cartItems];
+        // Remove the item at the found index
+        updatedCartItems.splice(index, 1);
+
+        // Update state with the filtered cart items
+        setCartItems(updatedCartItems);
+
+        // Update local storage with the filtered cart items
+        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
     }
-  };
+};
 
-  const handleConfirmDelete = () => {
-  if (deleteItem) {
-    // Remove the item from local storage
-    const updatedCartItems = cartItems.filter(item => !(item.itemType === deleteItem.itemType && item.id === deleteItem.id));
-    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+
   
-    // Update the state to reflect the deletion
-    setCartItems(updatedCartItems);
-    
-    // Reset the deleteItem state
-    setDeleteItem(null);
-  }
-};
+  
+  
 
-// Function to handle cancelling the deletion
-const handleCancelDelete = () => {
-  // Reset the deleteItem state
-  setDeleteItem(null);
-};
+  
+
 
 
   const handleQuantityChange = (itemType: string, itemId: number, newQuantity: number) => {
@@ -258,27 +248,7 @@ const handleCancelDelete = () => {
   </Button>
 </Box>
       {/* Delete Confirmation Dialog */}
-      <Dialog
-  open={deleteItem !== null}
-  onClose={handleCancelDelete}
-  aria-labelledby="alert-dialog-title"
-  aria-describedby="alert-dialog-description"
->
-  <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
-  <DialogContent>
-    <Typography variant="body1">
-      Are you sure you want to delete this item?
-    </Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCancelDelete} color="primary">
-      Cancel
-    </Button>
-    <Button onClick={handleConfirmDelete} color="primary" autoFocus>
-      Confirm
-    </Button>
-  </DialogActions>
-</Dialog>
+      
       <Modal open={open} onClose={handleClose}>
         <div
           style={{
