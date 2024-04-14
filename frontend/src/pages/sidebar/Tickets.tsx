@@ -10,7 +10,7 @@ import {
   IconButton,
   DialogActions,
   Typography,
-  Grid, // Import Grid for layout
+  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import QRCode from "qrcode.react";
@@ -18,8 +18,9 @@ import QRCode from "qrcode.react";
 interface Purchase {
   rideId: number;
   name: string;
+  price: number;
+  itemType: string;
   quantity: number;
-  ticketCodes: string[];
   purchaseDate: string;
 }
 
@@ -29,7 +30,7 @@ const Tickets: React.FC = () => {
 
   useEffect(() => {
     const loadedHistory: Purchase[] = JSON.parse(
-      localStorage.getItem("purchaseHistory") || "[]"
+      localStorage.getItem("cartItems") || "[]"
     );
     setPurchaseHistory(loadedHistory);
   }, [historyOpen]);
@@ -82,11 +83,17 @@ const Tickets: React.FC = () => {
                     ).toLocaleDateString()}`}
                   />
                   <Grid container spacing={2} sx={{ mt: 2 }}>
-                    {purchase.ticketCodes.map((code, codeIndex) => (
-                      <Grid item xs={6} sm={4} md={3} key={codeIndex}>
-                        <QRCode value={code} size={96} />
-                      </Grid>
-                    ))}
+                    {/* Generating QR Codes */}
+                    {Array.from({ length: purchase.quantity }).map(
+                      (_, codeIndex) => (
+                        <Grid item xs={6} sm={4} md={3} key={codeIndex}>
+                          <QRCode
+                            value={`${purchase.name} - ${purchase.itemType} - ${purchase.purchaseDate}`}
+                            size={96}
+                          />
+                        </Grid>
+                      )
+                    )}
                   </Grid>
                 </ListItem>
               ))}
@@ -106,3 +113,6 @@ const Tickets: React.FC = () => {
 };
 
 export default Tickets;
+
+
+

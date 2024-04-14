@@ -38,9 +38,9 @@ interface Rides {
 interface Purchase {
   rideId: number;
   name: string;
+  itemType:'Ride';
   quantity: number;
   price:number;
-  ticketCodes: string[];
 }
 
 const fakeRides: Rides[] = [
@@ -201,8 +201,8 @@ const RidesPage: React.FC = () => {
       rideId: selectedRide.id, // Use rideId instead of ride
       name: selectedRide.name,
       price: selectedRide.price,
+      itemType:'Ride',
       quantity,
-      ticketCodes: [], 
     };
   
     // Get existing cart items from local storage

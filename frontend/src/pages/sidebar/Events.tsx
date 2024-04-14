@@ -36,10 +36,10 @@ interface Event {
 
 interface Purchase {
   eventID: number;
+  itemType:'Event';
   name: string;
   quantity: number;
   price:number;
-  ticketCodes: string[];
 }
 
 const initialEvents: Event[] = [
@@ -53,8 +53,8 @@ const initialEvents: Event[] = [
     EndDateTime: '(1:00AM) 04-04-24',
     AgeRestriction: 5,
     hasCrud: true,
-    RequiresTickets:false,
-    Price:0,
+    RequiresTickets:true,
+    Price:8,
     ImageUrl:"https://64.media.tumblr.com/304f056d8b08280b24cb75363d0586da/eb3305b9c6f87ab3-f2/s2048x3072/596137a2b5b0f4f30e0d14138b9e80546552a2af.png",
   },
   {
@@ -130,8 +130,8 @@ const EventsPage: React.FC = () => {
       eventID: selectedEvent.EventID, 
       name: selectedEvent.Name,
       price: selectedEvent.Price,
+      itemType:'Event',
       quantity,
-      ticketCodes: [], 
     };
   
     // Get existing cart items from local storage
