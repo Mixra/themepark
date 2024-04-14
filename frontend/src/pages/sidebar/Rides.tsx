@@ -42,6 +42,7 @@ const RidesPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchRides = async () => {
@@ -62,7 +63,12 @@ const RidesPage: React.FC = () => {
   };
 
   const handleFormSubmit = async (formData: Partial<Ride>) => {
+    console.log("Form data:", formData);
+    formData.minimumHeight = Number(formData.minimumHeight);
+    formData.maximumCapacity = Number(formData.maximumCapacity);
+    formData.duration = Number(formData.duration);
     try {
+      setIsSubmitting(true);
       if (isEditing && selectedRide) {
         const updatedRide = { ...selectedRide, ...formData };
         await db.put("/edit/rides", updatedRide);
@@ -72,13 +78,15 @@ const RidesPage: React.FC = () => {
           )
         );
       } else {
-        const newRide = { ...formData, hasCrud: true };
-        const response = await db.post("/create/rides", newRide);
-        setRides((prevRides) => [...prevRides, response.data]);
+        const newRide = { ...formData, hasCrud: true } as Ride;
+        await db.post("/create/rides", newRide);
+        setRides((prevRides) => [...prevRides, newRide]);
       }
       setOpenPopup(false);
     } catch (error) {
       console.error("Error saving ride:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -151,7 +159,7 @@ const RidesPage: React.FC = () => {
   //Closing Button
   const handleCloseDialog = () => {
     setShowTicketDialog(false);
-    setQuantity(0); // Reset quantity for future purchases
+    setQuantity(1); // Reset quantity for future purchases
   };
 
   return (
@@ -280,6 +288,7 @@ const RidesPage: React.FC = () => {
         formData={formData}
         setFormData={setFormData}
         isEditing={isEditing}
+        isSubmitting={isSubmitting}
       />
       <DeleteRideConfirmation
         open={openDeleteDialog}
