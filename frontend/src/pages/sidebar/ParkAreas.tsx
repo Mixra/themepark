@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -11,80 +11,19 @@ import {
   ListItemText,
   IconButton,
   Divider,
+  Grid,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ParkPopup from "../../components/ParkPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
-
-interface ParkArea {
-  imageUrl: string | undefined;
-  id: number;
-  name: string;
-  theme: string;
-  description: string;
-  openingTime: string;
-  closingTime: string;
-  list_of_rides: string[];
-}
-
-const fakeParkAreas: ParkArea[] = [
-  {
-    id: 1,
-    name: "Adventureland",
-    theme: "Adventure",
-    description:
-      "Explore exotic lands and thrilling adventures! Explore exotic lands and thrilling adventures! Explore exotic lands and thrilling adventures! Explore exotic lands and thrilling adventures! Explore exotic lands and thrilling adventures!",
-    openingTime: "09:00",
-    closingTime: "18:00",
-    list_of_rides: ["Jungle Cruise", "Indiana Jones Adventure", "Dinosaur"],
-    imageUrl:
-      "https://cloudfront-us-east-1.images.arcpublishing.com/gmg/B6ELKWZZT5HIHJY6V7AH3ZVSGI.jpg",
-  },
-  {
-    id: 2,
-    name: "FantasyLand",
-    theme: "Fantasy",
-    description:
-      "Step into a world of enchantment and fairy tales!",
-    openingTime: "08:30",
-    closingTime: "22:00",
-    list_of_rides: ["Fill with Rides in Database"],
-    imageUrl:
-      "https://farm66.static.flickr.com/65535/52151137553_be9f29c533_b.jpg",
-  },
-  {
-    id: 3,
-    name: "Tomorrowland",
-    theme: "Futuristic",
-    description:
-      "Step into the exciting world of the future! Step into the exciting world of the future! Step into the exciting world of the future! Step into the exciting world of the future! Step into the exciting world of the future!",
-    openingTime: "10:00",
-    closingTime: "20:00",
-    list_of_rides: ["Space Mountain", "Buzz Lightyear Astro Blasters"],
-    imageUrl:
-      "https://i.pinimg.com/550x/65/bf/1d/65bf1d708f7df38bd1d46e636a7ee1c3.jpg",
-  },
-  {
-    id: 4,
-    name: "FrontierLand",
-    theme: "Western",
-    description:
-      "Discover the rugged wilderness of the Old West",
-    openingTime: "09:30",
-    closingTime: "19:00",
-    list_of_rides: ["Add rides in database"],
-    imageUrl:
-      "https://st.depositphotos.com/1679308/1352/i/450/depositphotos_13523937-stock-photo-saloon-in-the-frontierland.jpg",
-  },
-  // Add more fake data as needed
-];
+import db from "../../components/db";
+import { ParkArea } from "../../models/park.model";
 
 const ParkAreaPage: React.FC = () => {
-  const [parkAreas, setParkAreas] = useState<ParkArea[]>(fakeParkAreas);
+  const [parkAreas, setParkAreas] = useState<ParkArea[]>([]);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [formData, setFormData] = useState<Partial<ParkArea>>({});
   const [selectedParkArea, setSelectedParkArea] = useState<ParkArea | null>(
     null
   );
@@ -93,41 +32,70 @@ const ParkAreaPage: React.FC = () => {
   const level = Number(localStorage.getItem("level"));
   const display_crud = level === 999 ? true : false;
 
+  useEffect(() => {
+    fetchParkAreas();
+  }, []);
+
+  const fetchParkAreas = async () => {
+    try {
+      const response = await db.get("/view/areas");
+      const data = response.data;
+      setParkAreas(data);
+    } catch (error) {
+      console.error("Error fetching park areas:", error);
+    }
+  };
+
+  const fixTime = (time: string) => {
+    const [hour, minute] = time.split(":");
+    return `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:00`;
+  };
+
+  const formatTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(":");
+    const date = new Date();
+    date.setHours(parseInt(hours, 10));
+    date.setMinutes(parseInt(minutes, 10));
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+
+    const period = date.getHours() < 12 ? "AM" : "PM";
+    const formattedHours = (((date.getHours() + 11) % 12) + 1).toString();
+    const formattedMinutes = date.getMinutes().toString().padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes} ${period}`;
+  };
+
   const handleCreateClick = () => {
-    setFormData({});
+    setSelectedParkArea(null);
     setIsEditing(false);
     setOpenPopup(true);
   };
 
-  const handleFormSubmit = (formData: Partial<ParkArea>) => {
-    if (isEditing && selectedParkArea) {
-      const updatedParkAreas = parkAreas.map((area) =>
-        area.id === selectedParkArea.id ? { ...area, ...formData } : area
-      );
-      setParkAreas(updatedParkAreas);
-    } else {
-      // Generate a new ID for the new park area
-      const newId = parkAreas.length + 1;
-
-      // Create a new park area object with the form data and the new ID
-      const newParkArea: ParkArea = {
-        id: newId,
-        name: formData.name || "",
-        theme: formData.theme || "",
-        description: formData.description || "",
-        openingTime: formData.openingTime || "",
-        closingTime: formData.closingTime || "",
-        list_of_rides: [],
-        imageUrl: formData.imageUrl || "https://via.placeholder.com/150",
-      };
-
-      setParkAreas([...parkAreas, newParkArea]);
+  const handleFormSubmit = async (formData: Partial<ParkArea>) => {
+    try {
+      formData.openingTime = fixTime(formData.openingTime as string);
+      formData.closingTime = fixTime(formData.closingTime as string);
+      if (isEditing && selectedParkArea) {
+        const updatedParkArea = { ...selectedParkArea, ...formData };
+        await db.put("/edit/areas", updatedParkArea);
+        setParkAreas((prevParkAreas) =>
+          prevParkAreas.map((area) =>
+            area.areaID === selectedParkArea.areaID ? updatedParkArea : area
+          )
+        );
+      } else {
+        const newParkArea = formData as ParkArea;
+        await db.post("/create/areas", newParkArea);
+        setParkAreas((prevParkAreas) => [...prevParkAreas, newParkArea]);
+      }
+      setOpenPopup(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-    setOpenPopup(false);
   };
 
   const handleEditClick = (parkArea: ParkArea) => {
-    setFormData(parkArea);
     setSelectedParkArea(parkArea);
     setIsEditing(true);
     setOpenPopup(true);
@@ -138,15 +106,22 @@ const ParkAreaPage: React.FC = () => {
     setOpenDeleteDialog(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedParkArea) {
-      const updatedParkAreas = parkAreas.filter(
-        (area) => area.id !== selectedParkArea.id
-      );
-      setParkAreas(updatedParkAreas);
+  const handleDeleteConfirm = async () => {
+    try {
+      if (selectedParkArea) {
+        await db.delete(`/delete/areas/${selectedParkArea.areaID}`);
+        setParkAreas((prevParkAreas) =>
+          prevParkAreas.filter(
+            (area) => area.areaID !== selectedParkArea.areaID
+          )
+        );
+      }
+      setOpenDeleteDialog(false);
+    } catch (error) {
+      console.error("Error deleting park area:", error);
     }
-    setOpenDeleteDialog(false);
   };
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -170,29 +145,27 @@ const ParkAreaPage: React.FC = () => {
       >
         {parkAreas.map((area) => (
           <Card
-            key={area.id}
+            key={area.areaID}
             sx={{
               margin: 1,
               width: 300,
-              height: 660,
+              height: 800,
               display: "flex",
               flexDirection: "column",
             }}
           >
             <img
-              src={area.imageUrl}
+              src={
+                area.imageUrl
+                  ? area.imageUrl
+                  : "https://via.placeholder.com/150"
+              }
               alt="Park Area"
               style={{ width: "100%", objectFit: "cover", height: "150px" }}
             />
-            <CardContent
-              sx={{
-                overflowY: "auto",
-                padding: 1,
-                flexGrow: 1,
-              }}
-            >
+            <CardContent sx={{ overflowY: "auto", padding: 1, flexGrow: 1 }}>
               <Typography variant="h5" component="div" gutterBottom>
-                {area.name}
+                {area.areaName}
               </Typography>
               <Divider sx={{ marginY: 1 }} />
               <Typography color="text.secondary" gutterBottom>
@@ -219,31 +192,116 @@ const ParkAreaPage: React.FC = () => {
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: {area.openingTime}
+                  Opening Time:
                 </Typography>
+                <Typography variant="body2" fontWeight="bold" color="green">
+                  {formatTime(area.openingTime)}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: {area.closingTime}
+                  Closing Time:
+                </Typography>
+                <Typography variant="body2" fontWeight="bold" color="red">
+                  {formatTime(area.closingTime)}
                 </Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
-              <Box
-                sx={{
-                  maxHeight: 140,
-                  minHeight: 140,
-                  overflow: "auto",
-                  padding: 1,
-                  border: "1px solid #ccc",
-                  borderRadius: 1,
-                }}
-              >
-                <List dense>
-                  {area.list_of_rides.map((ride, index) => (
-                    <ListItem key={index}>
-                      <ListItemText primary={ride} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Rides
+                  </Typography>
+                  <Box
+                    sx={{
+                      maxHeight: 100,
+                      minHeight: 100,
+                      overflow: "auto",
+                      padding: 1,
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <List dense>
+                      {area.rides ? (
+                        area.rides.map((ride, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={ride.rideName} />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <ListItem>
+                          <ListItemText primary="No rides available" />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Gift Shops
+                  </Typography>
+                  <Box
+                    sx={{
+                      maxHeight: 100,
+                      minHeight: 100,
+                      overflow: "auto",
+                      padding: 1,
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <List dense>
+                      {area.giftShops ? (
+                        area.giftShops.map((shop, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={shop.shopName} />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <ListItem>
+                          <ListItemText primary="No gift shops available" />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Restaurants
+                  </Typography>
+                  <Box
+                    sx={{
+                      maxHeight: 100,
+                      minHeight: 100,
+                      overflow: "auto",
+                      padding: 1,
+                      border: "1px solid #ccc",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <List dense>
+                      {area.restaurants ? (
+                        area.restaurants.map((restaurant, index) => (
+                          <ListItem key={index}>
+                            <ListItemText primary={restaurant.restaurantName} />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <ListItem>
+                          <ListItemText primary="No restaurants available" />
+                        </ListItem>
+                      )}
+                    </List>
+                  </Box>
+                </Grid>
+              </Grid>
             </CardContent>
             {display_crud && (
               <CardActions>
@@ -268,8 +326,7 @@ const ParkAreaPage: React.FC = () => {
         open={openPopup}
         onClose={() => setOpenPopup(false)}
         onSubmit={handleFormSubmit}
-        formData={formData}
-        setFormData={setFormData}
+        selectedParkArea={selectedParkArea}
         isEditing={isEditing}
       />
       <DeleteConfirmationPopup

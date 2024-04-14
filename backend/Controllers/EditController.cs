@@ -57,6 +57,42 @@ namespace backend.Controllers
             }
         }
 
+        [Authorize(Roles = "999")]
+        [HttpPut("areas")]
+        async public Task<IActionResult> EditArea([FromBody] ParkAreas area)
+        {
+            try
+            {
+                await _databaseService.ExecuteAsync("UPDATE ParkAreas SET Name = @Name, Theme = @Theme, Description = @Description, ImageUrl = @ImageUrl, OpeningTime = @OpeningTime, ClosingTime = @ClosingTime WHERE AreaID = @AreaID",
+                new { Name = area.AreaName, Theme = area.Theme, Description = area.Description, ImageUrl = area.ImageUrl, OpeningTime = area.OpeningTime, ClosingTime = area.ClosingTime, AreaID = area.AreaID });
+
+                return Ok(new { message = "Area updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error has occured: {ex.Message}");
+                return StatusCode(500, new { error = "An error occurred while updating the area." });
+            }
+        }
+
+        [Authorize(Roles = "999, 1")]
+        [HttpPut("rides")]
+        async public Task<IActionResult> EditRide([FromBody] RidesModel ride)
+        {
+            // HAVE NOT DONE AUTH CHECKING
+            try
+            {
+                await _databaseService.ExecuteAsync("UPDATE Rides SET ImageUrl = @ImageUrl, Name = @Name, Type = @Type, AreaID = @AreaID, MaximumCapacity = @MaximumCapacity, MinimumHeight = @MinimumHeight, Duration = @Duration, UnitPrice = @UnitPrice, Description = @Description, OpeningTime = @OpeningTime, ClosingTime = @ClosingTime WHERE RideID = @RideID",
+                new { ImageUrl = ride.ImageUrl, Name = ride.RideName, Type = ride.Type, AreaID = ride.Area.AreaID, MaximumCapacity = ride.MaximumCapacity, MinimumHeight = ride.MinimumHeight, Duration = ride.Duration, UnitPrice = ride.UnitPrice, Description = ride.Description, OpeningTime = ride.OpeningTime, ClosingTime = ride.ClosingTime, RideID = ride.RideID });
+
+                return Ok(new { message = "Ride updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error has occured: {ex.Message}");
+                return StatusCode(500, new { error = "An error occurred while updating the ride." });
+            }
+        }
 
 
     }

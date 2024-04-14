@@ -1,7 +1,8 @@
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-
+using backend.Models;
+using Newtonsoft.Json;
 
 namespace backend.Controllers
 {
@@ -76,6 +77,172 @@ namespace backend.Controllers
             {
                 name = p.RoleName,
                 level = p.Level
+            });
+
+            return Ok(parsed);
+        }
+
+        [HttpGet("areas")]
+        public async Task<IActionResult> GetAreas()
+        {
+            var query =
+                @"
+                SELECT
+                pa.AreaID,
+                pa.Name AS AreaName,
+                pa.Theme,
+                pa.ImageUrl,
+                pa.Description,
+                pa.OpeningTime,
+                pa.ClosingTime,
+                pa.ClosureStatus,
+                (
+                    SELECT
+                        r.RideID,
+                        r.Name AS RideName
+                    FROM
+                        Rides r
+                    WHERE
+                        r.AreaID = pa.AreaID
+                    FOR JSON PATH
+                ) AS Rides,
+                (
+                    SELECT
+                        gs.ShopID,
+                        gs.Name AS ShopName
+                    FROM
+                        GiftShops gs
+                    WHERE
+                        gs.AreaID = pa.AreaID
+                    FOR JSON PATH
+                ) AS GiftShops,
+                (
+                    SELECT
+                        r.RestaurantID,
+                        r.Name AS RestaurantName
+                    FROM
+                        Restaurants r
+                    WHERE
+                        r.AreaID = pa.AreaID
+                    FOR JSON PATH
+                ) AS Restaurants
+
+                FROM
+                ParkAreas pa
+
+                WHERE
+                pa.ClosureStatus IS NULL OR pa.ClosureStatus != 1
+                
+                ";
+
+            var areas = await _databaseService.QueryAsync<dynamic>(query);
+
+            var parsed = areas.Select(a => new
+            {
+                AreaID = a.AreaID,
+                AreaName = a.AreaName,
+                Theme = a.Theme,
+                ImageUrl = a.ImageUrl,
+                Description = a.Description,
+                OpeningTime = a.OpeningTime,
+                ClosingTime = a.ClosingTime,
+
+                Rides = a.Rides != null ? JsonConvert.DeserializeObject<List<RideViewModel>>(a.Rides) : null,
+                GiftShops = a.GiftShops != null ? JsonConvert.DeserializeObject<List<GiftShopViewModel>>(a.GiftShops) : null,
+                Restaurants = a.Restaurants != null ? JsonConvert.DeserializeObject<List<RestaurantViewModel>>(a.Restaurants) : null
+            });
+
+            return Ok(parsed);
+        }
+
+        [Authorize(Roles = "999, 1")]
+        [HttpGet("allowed_areas")]
+        public async Task<IActionResult> GetAllowedAreas()
+        {
+            var username = HttpContext.Items["Username"];
+
+            var staffId = await _databaseService.QuerySingleOrDefaultAsync<int?>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
+
+            if (!staffId.HasValue)
+            {
+                return BadRequest(new { error = "User is not a staff member" });
+            }
+
+            var areas = await _databaseService.QueryAsync<dynamic>("SELECT pa.AreaID, pa.Name FROM AreaManager am JOIN ParkAreas pa ON am.AreaID = pa.AreaID WHERE am.StaffID = @StaffID", new { StaffID = staffId });
+
+            var parsed = areas.Select(a => new
+            {
+                AreaID = a.AreaID,
+                AreaName = a.Name
+            });
+
+            return Ok(parsed);
+        }
+
+
+        [Authorize]
+        [HttpGet("rides")]
+        public async Task<IActionResult> GetRides()
+        {
+            var query = @"
+            SELECT
+                Rides.ImageUrl,
+                Rides.RideID,
+                Rides.Name,
+                Rides.Description,
+                Rides.Type,
+                Rides.MinimumHeight,
+                Rides.MaximumCapacity,
+                Rides.OpeningTime,
+                Rides.ClosingTime,
+                Rides.Duration,
+                Rides.AccessibilityOptions,
+                Rides.MaintenanceSchedule,
+                Rides.ClosureStatus,
+                Rides.UnitPrice,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM AreaManager
+                        INNER JOIN Staff ON AreaManager.StaffID = Staff.StaffID
+                        WHERE Staff.Username = @Username AND AreaManager.AreaID = Rides.AreaID
+                    )
+                    THEN 1
+                    ELSE 0
+                END AS hasCrud,
+                (
+                    SELECT
+                        AreaID,
+                        Name AS AreaName
+                    FROM
+                        ParkAreas
+                    WHERE
+                        AreaID = Rides.AreaID
+                    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+                ) AS Area
+            FROM
+                Rides
+            ";
+
+            var username = HttpContext.Items["Username"];
+
+            var rides = await _databaseService.QueryAsync<dynamic>(query, new { Username = username });
+
+            var parsed = rides.Select(r => new
+            {
+                ImageUrl = r.ImageUrl,
+                RideID = r.RideID,
+                RideName = r.Name,
+                Description = r.Description,
+                Type = r.Type,
+                MinimumHeight = r.MinimumHeight,
+                MaximumCapacity = r.MaximumCapacity,
+                OpeningTime = r.OpeningTime,
+                ClosingTime = r.ClosingTime,
+                Duration = r.Duration,
+                UnitPrice = r.UnitPrice,
+                Area = JsonConvert.DeserializeObject<ParkViewModel>(r.Area),
+                hasCrud = r.hasCrud == 1 || (int)HttpContext.Items["Level"] == 999
             });
 
             return Ok(parsed);

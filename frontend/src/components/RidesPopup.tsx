@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,28 +6,38 @@ import {
   DialogActions,
   Button,
   TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
+import db from "./db";
 
-interface Rides {
-  name?: string;
-  areaID?: number;
-  description?: string;
-  openingTime?: string;
-  closingTime?: string;
-  imageUrl?: string;
-  type?: string;
-  minHeight?: number,
-  maxCapacity?: number;
-  duration?: number;
-  price?:number;
+interface Ride {
+  imageUrl: string | null;
+  rideID: number;
+  rideName: string;
+  description: string | null;
+  type: string;
+  minimumHeight: number;
+  maximumCapacity: number;
+  openingTime: string | null;
+  closingTime: string | null;
+  duration: number;
+  unitPrice: number | null;
+  area: {
+    areaID: number;
+    areaName: string;
+  };
+  hasCrud: boolean;
 }
 
 interface RidesPopupProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: Partial<Rides>) => void;
-  formData: Partial<Rides>;
-  setFormData: (formData: Partial<Rides>) => void;
+  onSubmit: (formData: Partial<Ride>) => void;
+  formData: Partial<Ride>;
+  setFormData: (formData: Partial<Ride>) => void;
   isEditing: boolean;
 }
 
@@ -39,8 +49,37 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
   setFormData,
   isEditing,
 }) => {
+  const [areas, setAreas] = useState<{ areaID: number; areaName: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const response = await db.get("/view/allowed_areas");
+        setAreas(response.data);
+      } catch (error) {
+        console.error("Error fetching areas:", error);
+      }
+    };
+    fetchAreas();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedArea = areas.find(
+      (area) => area.areaID === parseInt(e.target.value)
+    );
+    setFormData({
+      ...formData,
+      area: {
+        areaID: parseInt(e.target.value),
+        areaName: selectedArea?.areaName || "",
+      },
+    });
   };
 
   const handleSubmit = () => {
@@ -50,9 +89,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>
-        {isEditing ? "Edit Rides" : "Create Rides"}
-      </DialogTitle>
+      <DialogTitle>{isEditing ? "Edit Ride" : "Create Ride"}</DialogTitle>
       <DialogContent>
         <TextField
           name="imageUrl"
@@ -61,24 +98,32 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
-          name="name"
+          name="rideName"
           label="Name"
-          value={formData.name || ""}
+          value={formData.rideName || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
-         <TextField
-          name="areaID"
-          label="Area ID"
-          type="number"
-          value={formData.areaID || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="area-select-label">Area</InputLabel>
+          <Select
+            labelId="area-select-label"
+            id="area-select"
+            value={formData.area?.areaID?.toString() || ""}
+            onChange={handleAreaChange}
+          >
+            {areas.map((area) => (
+              <MenuItem key={area.areaID} value={area.areaID.toString()}>
+                {area.areaName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <TextField
           name="type"
           label="Type"
@@ -86,38 +131,46 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
-          name="minHeight"
-          label="Minimum Height Required"
-          value={formData.minHeight || ""}
+          name="minimumHeight"
+          type="number"
+          label="Minimum Height Required(cm)"
+          value={formData.minimumHeight || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
-          name="max Seating"
-          label="Maximum seating on ride"
-          value={formData.maxCapacity || ""}
+          name="maximumCapacity"
+          type="number"
+          label="Maximum Capacity"
+          value={formData.maximumCapacity || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
         />
         <TextField
           name="duration"
-          label="Duration of the ride"
+          type="number"
+          label="Duration in Seconds"
           value={formData.duration || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
-          name="price"
+          name="unitPrice"
           label="Price"
-          value={formData.price || ""}
+          type="number"
+          value={formData.unitPrice || ""}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           margin="dense"
@@ -131,6 +184,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
+          required
         />
         <TextField
           margin="dense"
@@ -145,6 +199,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           InputLabelProps={{
             shrink: true,
           }}
+          required
         />
         <TextField
           margin="dense"
@@ -159,6 +214,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
           InputLabelProps={{
             shrink: true,
           }}
+          required
         />
       </DialogContent>
       <DialogActions>

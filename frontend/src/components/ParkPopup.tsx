@@ -1,28 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   TextField,
+  Button,
 } from "@mui/material";
-
-interface ParkArea {
-  name?: string;
-  theme?: string;
-  description?: string;
-  openingTime?: string;
-  closingTime?: string;
-  imageUrl?: string;
-}
+import { ParkArea } from "../models/park.model";
 
 interface ParkPopupProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (formData: Partial<ParkArea>) => void;
-  formData: Partial<ParkArea>;
-  setFormData: (formData: Partial<ParkArea>) => void;
+  selectedParkArea: ParkArea | null;
   isEditing: boolean;
 }
 
@@ -30,17 +21,30 @@ const ParkPopup: React.FC<ParkPopupProps> = ({
   open,
   onClose,
   onSubmit,
-  formData,
-  setFormData,
+  selectedParkArea,
   isEditing,
 }) => {
+  const [formData, setFormData] = useState<Partial<ParkArea>>({});
+
+  useEffect(() => {
+    if (selectedParkArea) {
+      setFormData(selectedParkArea);
+    } else {
+      setFormData({});
+    }
+  }, [selectedParkArea]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     onSubmit(formData);
-    onClose();
   };
 
   return (
@@ -48,80 +52,83 @@ const ParkPopup: React.FC<ParkPopupProps> = ({
       <DialogTitle>
         {isEditing ? "Edit Park Area" : "Create Park Area"}
       </DialogTitle>
-      <DialogContent>
-        <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="name"
-          label="Name"
-          value={formData.name || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="theme"
-          label="Theme"
-          value={formData.theme || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        
-        <TextField
-          margin="dense"
-          id="description"
-          label="Description"
-          type="text"
-          multiline
-          rows={4}
-          fullWidth
-          value={formData.description || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-        />
-        <TextField
-          margin="dense"
-          id="openingTime"
-          label="Opening Time"
-          type="time"
-          fullWidth
-          value={formData.openingTime || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, openingTime: e.target.value })
-          }
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          margin="dense"
-          id="closingTime"
-          label="Closing Time"
-          type="time"
-          fullWidth
-          value={formData.closingTime || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, closingTime: e.target.value })
-          }
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
-        </Button>
-      </DialogActions>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            name="imageUrl"
+            label="Image URL"
+            type="text"
+            required
+            fullWidth
+            value={formData.imageUrl || ""}
+            onChange={handleChange}
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            name="areaName"
+            label="Area Name"
+            type="text"
+            required
+            fullWidth
+            value={formData.areaName || ""}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="theme"
+            label="Theme"
+            type="text"
+            required
+            fullWidth
+            value={formData.theme || ""}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="description"
+            label="Description"
+            type="text"
+            required
+            fullWidth
+            multiline
+            rows={4}
+            value={formData.description || ""}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="openingTime"
+            label="Opening Time"
+            type="time"
+            fullWidth
+            required
+            value={formData.openingTime || ""}
+            onChange={handleChange}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <TextField
+            margin="dense"
+            name="closingTime"
+            label="Closing Time"
+            type="time"
+            required
+            fullWidth
+            value={formData.closingTime || ""}
+            onChange={handleChange}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit">{isEditing ? "Save" : "Create"}</Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };
