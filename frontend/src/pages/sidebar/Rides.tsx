@@ -227,6 +227,7 @@ const RidesPage: React.FC = () => {
                   padding: 1,
                   border: "1px solid #ccc",
                   borderRadius: 1,
+                  maxHeight: 100,
                 }}
               >
                 <Typography variant="body2" style={{ wordBreak: "break-word" }}>
