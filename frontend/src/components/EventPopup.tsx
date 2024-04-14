@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,22 +7,10 @@ import {
   Button,
   TextField,
   Checkbox,
+  MenuItem,
   FormControlLabel,
 } from "@mui/material";
-
-interface Event {
-  EventID?: number;
-  AreaID?: number;
-  Name?: string;
-  Description?: string;
-  eventType?: string;
-  StartDateTime?: string;
-  EndDateTime?: string;
-  AgeRestriction?: number;
-  ImageUrl?: string;
-  RequiresTickets?: boolean;
-  Price?: number;
-}
+import { Event } from "../models/event.model";
 
 interface EventPopupProps {
   open: boolean;
@@ -42,132 +30,158 @@ const EventPopup: React.FC<EventPopupProps> = ({
   isEditing,
 }) => {
   const [ticketsRequired, setTicketsRequired] = useState<boolean>(
-    formData.RequiresTickets || false
+    formData.requireTicket || false
   );
+
+  useEffect(() => {
+    setTicketsRequired(formData.requireTicket || false);
+  }, [formData.requireTicket]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
     setFormData({
       ...formData,
-      [e.target.name]: parseInt(e.target.value) || 0,
+      [e.target.name]: isNaN(value) ? 0 : value,
     });
   };
 
-  const handleCheckboxChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTicketsRequired(e.target.checked);
-    setFormData({ ...formData, RequiresTickets: e.target.checked });
+    setFormData({
+      ...formData,
+      requireTicket: e.target.checked,
+      unitPrice: e.target.checked ? 0 : undefined,
+    });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     onSubmit(formData);
     onClose();
   };
 
+  const ageOptions = ["13+", "18+", "21+", "All Age"];
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Event" : "Create Event"}</DialogTitle>
-      <DialogContent>
-        <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.ImageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="Name"
-          label="Name"
-          value={formData.Name || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="areaID"
-          label="Area ID"
-          type="number"
-          value={formData.AreaID || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="Description"
-          label="Description"
-          value={formData.Description || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          multiline
-          rows={4}
-        />
-        <TextField
-          name="AgeRestriction"
-          label="AgeRestriction"
-          value={formData.AgeRestriction || ""}
-          onChange={handleNumberChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="StartDateTime"
-          label="Opening Time and Date"
-          type="datetime-local"
-          value={formData.StartDateTime || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          name="EndDateTime"
-          label="Closing Time and Date"
-          type="datetime-local"
-          value={formData.EndDateTime || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={ticketsRequired}
-              onChange={handleCheckboxChange}
-              name="requiresTickets"
-              color="primary"
-            />
-          }
-          label="Requires Tickets"
-        />
-        {ticketsRequired && (
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
           <TextField
-            name="Price"
-            label="Price"
-            type="number"
-            value={formData.Price || ""}
-            onChange={handleNumberChange}
+            name="imageUrl"
+            label="Image URL"
+            value={formData.imageUrl || ""}
+            onChange={handleChange}
             fullWidth
             margin="normal"
+            required
           />
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
-        </Button>
-      </DialogActions>
+          <TextField
+            name="eventName"
+            label="Name"
+            value={formData.eventName || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="eventType"
+            label="Type"
+            value={formData.eventType || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="description"
+            label="Description"
+            value={formData.description || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={4}
+            required
+          />
+          <TextField
+            name="ageRestriction"
+            label="Age Restriction"
+            select
+            value={formData.ageRestriction || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          >
+            {ageOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            name="startDate"
+            label="Opening Time and Date"
+            type="datetime-local"
+            value={formData.startDate || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          <TextField
+            name="endDate"
+            label="Closing Time and Date"
+            type="datetime-local"
+            value={formData.endDate || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={ticketsRequired}
+                onChange={handleCheckboxChange}
+                name="requireTicket"
+                color="primary"
+              />
+            }
+            label="Requires Tickets"
+          />
+          {ticketsRequired && (
+            <TextField
+              name="unitPrice"
+              label="Price"
+              type="number"
+              value={formData.unitPrice || ""}
+              onChange={handleNumberChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="contained">
+            {isEditing ? "Save" : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };

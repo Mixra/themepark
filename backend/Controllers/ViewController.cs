@@ -247,5 +247,29 @@ namespace backend.Controllers
 
             return Ok(parsed);
         }
+
+        [Authorize]
+        [HttpGet("events")]
+        public async Task<IActionResult> GetEvents()
+        {
+            var query = @"SELECT e.EventID, e.Name, e.Description, e.EventType, e.AgeRestriction, e.ImageUrl, e.StartDate, e.EndDate, e.RequireTicket, e.UnitPrice FROM Events as e WHERE e.ClosureStatus IS NULL OR e.ClosureStatus != 1";
+            var events = await _databaseService.QueryAsync<dynamic>(query);
+
+            var parsed = events.Select(e => new
+            {
+                EventID = e.EventID,
+                EventName = e.Name,
+                Description = e.Description,
+                EventType = e.EventType,
+                AgeRestriction = e.AgeRestriction,
+                ImageUrl = e.ImageUrl,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                RequireTicket = e.RequireTicket,
+                UnitPrice = e.UnitPrice
+            });
+
+            return Ok(parsed);
+        }
     }
 }

@@ -48,5 +48,15 @@ namespace backend.Controllers
             return Ok(new { message = "Ride created successfully" });
         }
 
+        [Authorize(Roles = "999")]
+        [HttpPost("events")]
+        public async Task<IActionResult> CreateEvent([FromBody] EventsModel data)
+        {
+            await _databaseService.ExecuteAsync("INSERT INTO Events (Name, Description, EventType, AgeRestriction, ImageUrl, StartDate, EndDate, RequireTicket, UnitPrice) VALUES (@Name, @Description, @EventType, @AgeRestriction, @ImageUrl, @StartDate, @EndDate, @RequireTicket, @UnitPrice)",
+            new { Name = data.EventName, Description = data.Description, EventType = data.EventType, AgeRestriction = data.AgeRestriction, ImageUrl = data.ImageUrl, StartDate = data.StartDate, EndDate = data.EndDate, RequireTicket = data.RequireTicket, UnitPrice = data.UnitPrice});
+
+            return Ok(new { message = "Event created successfully" });
+        }
+
     }
 }

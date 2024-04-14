@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -18,186 +18,72 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EventPopup from "../../components/EventPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
-
-interface Event {
-  EventID: number;
-  AreaID: number;
-  Name: string;
-  Description: string;
-  EventType: string;
-  StartDateTime: string;
-  EndDateTime: string;
-  AgeRestriction: number;
-  ImageUrl?: string;
-  hasCrud?:boolean;
-  RequiresTickets?: boolean;
-  Price: number;
-}
-
-interface Purchase {
-  eventID: number;
-  itemType:'Event';
-  name: string;
-  quantity: number;
-  price:number;
-}
-
-const initialEvents: Event[] = [
-  {
-    EventID: 1,
-    AreaID:1,
-    Name: 'FireWorks Showing',
-    Description: 'The amazing firework showing with Buggy the Clown!',
-    EventType: 'Showcase',
-    StartDateTime: '(12:00AM) 04-04-24',
-    EndDateTime: '(1:00AM) 04-04-24',
-    AgeRestriction: 5,
-    hasCrud: true,
-    RequiresTickets:true,
-    Price:8,
-    ImageUrl:"https://64.media.tumblr.com/304f056d8b08280b24cb75363d0586da/eb3305b9c6f87ab3-f2/s2048x3072/596137a2b5b0f4f30e0d14138b9e80546552a2af.png",
-  },
-  {
-    EventID: 2,
-    AreaID:2,
-    Name: 'Halloween Spooktacular',
-    Description: 'Experience frights and delights in our annual Halloween event, complete with haunted houses and costume contests!',
-    EventType: 'Seasonal',
-    StartDateTime: '2024-10-31 18:00:00.000',
-    EndDateTime: '2024-10-31 23:59:00.000',
-    AgeRestriction: 12,
-    hasCrud: true,
-    RequiresTickets:false,
-    Price:0,
-    ImageUrl:"https://cdn.cheapoguides.com/wp-content/uploads/sites/3/2017/09/usj-horror-nights.jpg",
-  },
-  {
-    EventID: 3,
-    AreaID:3,
-    Name: 'Winter Wonderland',
-    Description: 'Transforming the park into a magical winter wonderland, complete with ice skating, festive lights, and holiday markets.',
-    EventType: 'Holiday',
-    StartDateTime: '2024-12-01 10:00:00.000',
-    EndDateTime: '2025-01-05 22:00:00.000',
-    AgeRestriction: 0,
-    hasCrud: true,
-    RequiresTickets:false,
-    Price:0,
-    ImageUrl:"https://live.staticflickr.com/65535/49144435618_0d2b706acf_b.jpg",
-  },
-  {
-    EventID: 13,
-    AreaID:10,
-    Name: 'Medieval Festival',
-    Description: 'Step back in time with our medieval festival, featuring jousts, feasts, and more.',
-    EventType: 'Festival',
-    StartDateTime: '2024-03-22 10:00:00.000',
-    EndDateTime: '2024-03-24 20:00:00.000',
-    AgeRestriction: 0,
-    hasCrud: true,
-    RequiresTickets:false,
-    Price:0,
-    ImageUrl:"https://bringmethenews.com/.image/ar_16:9%2Cc_fill%2Ccs_srgb%2Cfl_progressive%2Cg_faces:center%2Cq_auto:good%2Cw_768/MTkyNTE2MTAwOTA1MjQ4MDU3/image.jpg",
-  },
-  // Add more events as needed
-];
+import db from "../../components/db";
+import { Event, Purchase } from "../../models/event.model";
 
 const EventsPage: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>(initialEvents);
-  const [openPopup, setOpenPopup] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [formData, setFormData] = useState<Partial<Event>>({});
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [cartItems, setCartItems] = useState<Purchase[]>([]);
   const [quantity, setQuantity] = useState<number>(1);
+  const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
+  const [cartItems, setCartItems] = useState<Purchase[]>([]);
 
   const level = Number(localStorage.getItem("level"));
-  const display_Crud = level === 999 ? true : false;
-
- 
+  const displayCrud = level === 999;
 
   const handleOpenPurchaseDialog = (event: Event) => {
     setSelectedEvent(event);
     setShowTicketDialog(true);
   };
 
-  const handleAddToCart = () => {
-    if (!selectedEvent || quantity < 1) return;
-  
-    const newItem: Purchase = {
-      eventID: selectedEvent.EventID, 
-      name: selectedEvent.Name,
-      price: selectedEvent.Price,
-      itemType:'Event',
-      quantity,
+  // Fetch events from the API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await db.get("/view/events");
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
     };
-  
-    // Get existing cart items from local storage
-    const existingCartItems: Purchase[] = JSON.parse(localStorage.getItem('cartItems') || '[]');
-      
-    // Check if the item already exists in the cart
-    const existingItemIndex = existingCartItems.findIndex(item => item.eventID === selectedEvent.EventID);
-    if (existingItemIndex !== -1) {
-      // If the item already exists, update its quantity
-      existingCartItems[existingItemIndex].quantity += quantity;
-    } else {
-      // If the item doesn't exist, add it to the cart
-      existingCartItems.push(newItem);
-    }
-  
-    // Update cartItems state
-    setCartItems(existingCartItems);
-  
-    // Store updated cartItems in local storage
-    localStorage.setItem('cartItems', JSON.stringify(existingCartItems));
-  
-    // Close the purchase dialog after adding to cart
-    setShowTicketDialog(false);
-  };
+    fetchEvents();
+  }, []);
 
-  const handleCloseDialog = () => {
-    setShowTicketDialog(false);
-    setQuantity(0); // Reset quantity for future purchases
-  };
+  // This will be the admin portion
+  const [formData, setFormData] = useState<Partial<Event>>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-
-
-   const handleCreateClick = () => {
+  const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
   };
 
-  const handleFormSubmit = (formData: Partial<Event>) => {
-    if (isEditing && selectedEvent) {
-      const updatedEvent = events.map((thisevent) =>
-        thisevent.EventID === selectedEvent.EventID
-          ? { ...thisevent, ...formData }
-          : thisevent
-      );
-      setEvents(updatedEvent);
-    } else {
-      const newId =
-        Math.max(...events.map((r) => r.EventID)) + 1; // Simplistic approach to generate a new ID
-      const newEvent: Event = {
-        EventID: newId,
-        AreaID: formData.AreaID || 0,
-        Name: formData.Name || "",
-        Description: formData.Description || "",
-        EventType: formData.EventType || "",
-        StartDateTime: formData.StartDateTime || "",
-        EndDateTime: formData.EndDateTime || "",
-        AgeRestriction: formData.AgeRestriction || 0, //No Age Restriction on creation
-        RequiresTickets: formData.RequiresTickets || false,
-        Price: formData.Price || 0,
-        ImageUrl: "https://via.placeholder.com/150",
-      };
-
-      setEvents([...events, newEvent]);
+  const handleFormSubmit = async (formData: Partial<Event>) => {
+    try {
+      setIsSubmitting(true);
+      if (isEditing && selectedEvent) {
+        const updatedEvent = { ...selectedEvent, ...formData };
+        await db.put("/edit/events", updatedEvent);
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event.eventID === selectedEvent.eventID ? updatedEvent : event
+          )
+        );
+      } else {
+        const newEvent = { ...formData } as Event;
+        await db.post("/create/events", newEvent);
+        setEvents((prevEvents) => [...prevEvents, newEvent]);
+      }
+      setOpenPopup(false);
+    } catch (error) {
+      console.error("Error saving event:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-    setOpenPopup(false);
   };
 
   const handleEditClick = (event: Event) => {
@@ -212,22 +98,74 @@ const EventsPage: React.FC = () => {
     setOpenDeleteDialog(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedEvent) {
-      const updatedEvent = events.filter(
-        (event) => event.EventID !== selectedEvent?.EventID
-      );
-      setEvents(updatedEvent);
+  const handleDeleteConfirm = async () => {
+    try {
+      if (selectedEvent) {
+        await db.delete(`/delete/events/${selectedEvent.eventID}`);
+        setEvents((prevEvents) =>
+          prevEvents.filter((event) => event.eventID !== selectedEvent.eventID)
+        );
+      }
+      setOpenDeleteDialog(false);
+    } catch (error) {
+      console.error("Error deleting event:", error);
     }
-    setOpenDeleteDialog(false);
+  };
+
+  // End of admin section
+
+  const handleAddToCart = () => {
+    if (!selectedEvent || quantity < 1) return;
+
+    const newItem: Purchase = {
+      eventID: selectedEvent.eventID,
+      name: selectedEvent.eventName,
+      unitPrice: selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
+      itemType: "Event",
+      quantity,
+    };
+
+    // Get existing cart items from local storage
+    const existingCartItems: Purchase[] = JSON.parse(
+      localStorage.getItem("cartItems") || "[]"
+    );
+
+    // Check if the item already exists in the cart
+    const existingItemIndex = existingCartItems.findIndex(
+      (item) => item.eventID === selectedEvent.eventID
+    );
+    if (existingItemIndex !== -1) {
+      // If the item already exists, update its quantity
+      existingCartItems[existingItemIndex].quantity += quantity;
+    } else {
+      // If the item doesn't exist, add it to the cart
+      existingCartItems.push(newItem);
+    }
+
+    // Update cartItems state
+    setCartItems(existingCartItems);
+
+    // Store updated cartItems in local storage
+    localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+
+    // Close the purchase dialog after adding to cart
+    setShowTicketDialog(false);
+  };
+
+  // Closing Button
+  const handleCloseDialog = () => {
+    setShowTicketDialog(false);
+    setQuantity(1); // Reset quantity for future purchases
   };
 
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {display_Crud && (
-        <Box sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}>
+      {displayCrud && (
+        <Box
+          sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
+        >
           <Button variant="contained" onClick={handleCreateClick}>
             Create
           </Button>
@@ -243,7 +181,7 @@ const EventsPage: React.FC = () => {
       >
         {events.map((thisevent) => (
           <Card
-            key={thisevent.EventID}
+            key={thisevent.eventID}
             sx={{
               margin: 1,
               width: 300,
@@ -253,7 +191,7 @@ const EventsPage: React.FC = () => {
             }}
           >
             <img
-              src={thisevent.ImageUrl}
+              src={thisevent.imageUrl}
               alt="Event"
               style={{ width: "100%", objectFit: "cover", height: "150px" }}
             />
@@ -265,11 +203,11 @@ const EventsPage: React.FC = () => {
               }}
             >
               <Typography variant="h5" component="div" gutterBottom>
-                {thisevent.Name}
+                {thisevent.eventName}
               </Typography>
               <Divider sx={{ marginY: 1 }} />
               <Typography color="text.secondary" gutterBottom>
-                {thisevent.EventType}
+                {thisevent.eventType}
               </Typography>
               <Box
                 sx={{
@@ -281,7 +219,7 @@ const EventsPage: React.FC = () => {
                   borderRadius: 1,
                 }}
               >
-                <Typography variant="body2">{thisevent.Description}</Typography>
+                <Typography variant="body2">{thisevent.description}</Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
               <Box
@@ -292,27 +230,29 @@ const EventsPage: React.FC = () => {
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: {thisevent.StartDateTime}
+                  Opening Time: {thisevent.startDate}
                 </Typography>
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: {thisevent.EndDateTime}
+                  Closing Time: {thisevent.endDate}
                 </Typography>
               </Box>
               <Divider sx={{ marginY: 1 }} />
-              {thisevent.Price > 0 ? (
+              {thisevent.requireTicket ? (
                 <div>
                   <h1 style={{ fontSize: "1.5rem" }}>Tickets Required</h1>
-                  <Button variant="contained" color="primary"
-                   onClick={() => handleOpenPurchaseDialog(thisevent)}
-                   >
-                    Add to Cart (${thisevent.Price})
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleOpenPurchaseDialog(thisevent)}
+                  >
+                    Add to Cart (${thisevent.unitPrice || 0})
                   </Button>
                 </div>
               ) : (
                 <h1 style={{ fontSize: "1.5rem" }}>No Tickets Required</h1>
               )}
             </CardContent>
-            {display_Crud && (
+            {displayCrud && (
               <CardActions>
                 <IconButton
                   aria-label="edit"
@@ -326,7 +266,6 @@ const EventsPage: React.FC = () => {
                 >
                   <DeleteIcon />
                 </IconButton>
-    
               </CardActions>
             )}
           </Card>
@@ -346,29 +285,25 @@ const EventsPage: React.FC = () => {
         onConfirm={handleDeleteConfirm}
       />
       <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
-         
-         <DialogTitle>Add to Cart </DialogTitle>
-         <DialogContent>
-           <TextField
-             autoFocus
-             margin="dense"
-             id="quantity"
-             label="Quantity"
-             type="number"
-             fullWidth
-             value={quantity}
-             onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
-           />
-         </DialogContent>
-         <DialogActions>
-           <Button onClick={handleCloseDialog}>Cancel</Button>
-           <Button onClick={handleAddToCart}>Add to Cart</Button>
-          
-         </DialogActions>
-       <Box/>
-     
-    </Dialog>
-
+        <DialogTitle>Add to Cart </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="quantity"
+            label="Quantity"
+            type="number"
+            fullWidth
+            value={quantity}
+            onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleAddToCart}>Add to Cart</Button>
+        </DialogActions>
+        <Box />
+      </Dialog>
     </Box>
   );
 };

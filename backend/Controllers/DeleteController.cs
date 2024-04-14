@@ -27,6 +27,8 @@ namespace backend.Controllers
 
             return Ok(new { message = "Area deleted successfully" });
         }
+
+
         [Authorize(Roles = "1,999")]
         [HttpDelete("rides/{RideID}")]
         public async Task<IActionResult> DeleteRide(int RideID)
@@ -40,5 +42,16 @@ namespace backend.Controllers
 
             return Ok(new { message = "Ride deleted successfully" });
         }
+
+
+        [Authorize(Roles="999")]
+        [HttpDelete("events/{EventID}")]
+        public async Task<IActionResult> DeleteEvent(int EventID)
+        {
+            await _databaseService.ExecuteAsync("DELETE FROM Events WHERE EventID = @EventID", new { EventID });
+
+            return Ok(new { message = "Event deleted successfully" });
+        }
+
     }
 }

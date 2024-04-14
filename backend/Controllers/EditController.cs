@@ -94,6 +94,24 @@ namespace backend.Controllers
             }
         }
 
+        [Authorize(Roles = "999")]
+        [HttpPut("events")]
+        async public Task<IActionResult> EditEvent([FromBody] EventsModel events)
+        {
+            try
+            {
+                await _databaseService.ExecuteAsync("UPDATE Events SET Name = @EventName, Description = @Description, EventType = @EventType, AgeRestriction = @AgeRestriction, ImageUrl = @ImageUrl, StartDate = @StartDate, EndDate = @EndDate, RequireTicket = @RequireTicket, UnitPrice = @UnitPrice WHERE EventID = @EventID",
+                new { EventName = events.EventName, Description = events.Description, EventType = events.EventType, AgeRestriction = events.AgeRestriction, ImageUrl = events.ImageUrl, StartDate = events.StartDate, EndDate = events.EndDate, RequireTicket = events.RequireTicket, UnitPrice = events.UnitPrice, EventID = events.EventID });
+
+                return Ok(new { message = "Event updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error has occured: {ex.Message}");
+                return StatusCode(500, new { error = "An error occurred while updating the event." });
+            }
+        }
+
 
     }
 }
