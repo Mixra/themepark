@@ -203,11 +203,17 @@ const RidesPage: React.FC = () => {
                 overflowY: "auto",
                 padding: 1,
                 flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <Typography variant="h5" component="div" gutterBottom>
                 {ride.rideName}
-                <Chip label={ride.area.areaName} size="small" sx={{ ml: 1 }} />
+                <Chip
+                  label={ride.area.areaName}
+                  size="small"
+                  sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
+                />
               </Typography>
               <Divider sx={{ marginY: 1 }} />
               <Typography color="text.secondary" gutterBottom>
@@ -216,15 +222,16 @@ const RidesPage: React.FC = () => {
 
               <Box
                 sx={{
-                  maxHeight: 60,
-                  overflow: "auto",
+                  flexGrow: 1,
+                  overflowY: "auto",
                   padding: 1,
                   border: "1px solid #ccc",
                   borderRadius: 1,
-                  display: "inline-block",
                 }}
               >
-                <Typography variant="body2">{ride.description}</Typography>
+                <Typography variant="body2" style={{ wordBreak: "break-word" }}>
+                  {ride.description}
+                </Typography>
               </Box>
 
               <Divider sx={{ marginY: 1 }} />
