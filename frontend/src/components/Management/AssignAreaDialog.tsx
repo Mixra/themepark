@@ -11,13 +11,15 @@ import {
   Button,
 } from "@mui/material";
 import { User, ParkArea } from "./types";
+import db from "../db";
+import { DialogActions } from "@mui/material";
 
 interface AssignParkAreasDialogProps {
   open: boolean;
   onClose: () => void;
   user: User | null;
   parkAreas: ParkArea[];
-  onAssignParkAreas: (userId: number, parkAreasIds: number[]) => void;
+  onAssignParkAreas: (username: string, areaIds: number[]) => void;
 }
 
 const AssignParkAreasDialog: React.FC<AssignParkAreasDialogProps> = ({
@@ -27,72 +29,118 @@ const AssignParkAreasDialog: React.FC<AssignParkAreasDialogProps> = ({
   parkAreas,
   onAssignParkAreas,
 }) => {
-  const [selectedParkAreas, setSelectedParkAreas] = useState<number[]>([]);
-  const [availableParkAreas, setAvailableParkAreas] = useState<ParkArea[]>([]);
-  const [newParkAreaId, setNewParkAreaId] = useState<number | null>(null);
+  const [assignedAreas, setAssignedAreas] = useState<ParkArea[]>([]);
+  const [availableAreas, setAvailableAreas] = useState<ParkArea[]>([]);
+  const [newAreaId, setNewAreaId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setSelectedParkAreas(user.parkAreas.map((area) => area.id));
-      setAvailableParkAreas(
-        parkAreas.filter(
-          (area) => !user.parkAreas.some((a) => a.id === area.id)
-        )
-      );
-    }
+    const fetchAssignedAreas = async () => {
+      if (user?.username) {
+        try {
+          const response = await db.get<ParkArea[]>(
+            `/admin/get_assigned_areas/${user.username}`
+          );
+          setAssignedAreas(response.data);
+          setAvailableAreas(
+            parkAreas.filter(
+              (area) =>
+                !response.data.some(
+                  (userArea) => userArea.areaID === area.areaID
+                )
+            )
+          );
+        } catch (error) {
+          console.error("Error fetching assigned areas:", error);
+        }
+      }
+    };
+
+    fetchAssignedAreas();
   }, [user, parkAreas]);
 
-  const handleAddParkArea = () => {
-    if (newParkAreaId) {
-      setSelectedParkAreas([...selectedParkAreas, newParkAreaId]);
-      setAvailableParkAreas(
-        availableParkAreas.filter((area) => area.id !== newParkAreaId)
-      );
-      setNewParkAreaId(null);
+  const handleAddArea = async () => {
+    if (user?.username && newAreaId) {
+      try {
+        await db.post("/admin/assign_area", {
+          areaID: newAreaId,
+          username: user.username,
+        });
+        const addedArea = availableAreas.find(
+          (area) => area.areaID === newAreaId
+        );
+        setAssignedAreas([...assignedAreas, addedArea!]);
+        setAvailableAreas(
+          availableAreas.filter((area) => area.areaID !== newAreaId)
+        );
+        setNewAreaId(null);
+      } catch (error) {
+        console.error("Error assigning area:", error);
+      }
     }
   };
 
-  const handleRemoveParkArea = (areaId: number) => {
-    setSelectedParkAreas(selectedParkAreas.filter((id) => id !== areaId));
-    setAvailableParkAreas([
-      ...availableParkAreas,
-      parkAreas.find((area) => area.id === areaId)!,
-    ]);
+  const handleRemoveArea = async (areaId: number) => {
+    if (user?.username) {
+      try {
+        await db.delete("/admin/unassign_area", {
+          data: {
+            areaID: areaId,
+            username: user.username,
+          },
+        });
+        const removedArea = assignedAreas.find(
+          (area) => area.areaID === areaId
+        );
+        setAssignedAreas(
+          assignedAreas.filter((area) => area.areaID !== areaId)
+        );
+        setAvailableAreas([...availableAreas, removedArea!]);
+      } catch (error) {
+        console.error("Error unassigning area:", error);
+      }
+    }
   };
 
   const handleClose = () => {
-    if (user) {
-      onAssignParkAreas(user.id, selectedParkAreas);
-    }
+    onAssignParkAreas(
+      user?.username || "",
+      assignedAreas.map((area) => area.areaID)
+    );
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Assign Park Areas</DialogTitle>
       <DialogContent>
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            width: "400px",
+            maxHeight: "400px",
+            overflow: "auto",
           }}
         >
           <Box>
             <InputLabel id="new-park-area-label">Add New Park Area</InputLabel>
             <Select
               labelId="new-park-area-label"
-              value={newParkAreaId || ""}
-              onChange={(e) => setNewParkAreaId(parseInt(e.target.value, 10))}
+              value={newAreaId || ""}
+              onChange={(e) =>
+                setNewAreaId(parseInt(e.target.value.toString(), 10))
+              }
               fullWidth
             >
               <MenuItem value="">Select a park area</MenuItem>
-              {availableParkAreas.map((area) => (
-                <MenuItem key={area.id} value={area.id}>
-                  {area.name}
+              {availableAreas.map((area) => (
+                <MenuItem key={area.areaID} value={area.areaID}>
+                  {area.areaName}
                 </MenuItem>
               ))}
             </Select>
-            <Button onClick={handleAddParkArea}>Add</Button>
+            <Button onClick={handleAddArea}>Add</Button>
           </Box>
           <Box>
             <InputLabel>Assigned Park Areas</InputLabel>
@@ -103,19 +151,22 @@ const AssignParkAreasDialog: React.FC<AssignParkAreasDialogProps> = ({
                 gap: 1,
               }}
             >
-              {selectedParkAreas.map((areaId) => (
+              {assignedAreas.map((area) => (
                 <Chip
-                  key={areaId}
-                  label={
-                    parkAreas.find((area) => area.id === areaId)?.name || ""
-                  }
-                  onDelete={() => handleRemoveParkArea(areaId)}
+                  key={area.areaID}
+                  label={area.areaName}
+                  size="small"
+                  sx={{ bgcolor: "primary.main", color: "white" }}
+                  onDelete={() => handleRemoveArea(area.areaID)}
                 />
               ))}
             </Box>
           </Box>
         </Box>
       </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
     </Dialog>
   );
 };

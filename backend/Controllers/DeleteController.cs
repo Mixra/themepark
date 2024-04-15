@@ -33,7 +33,7 @@ namespace backend.Controllers
         [HttpDelete("rides/{RideID}")]
         public async Task<IActionResult> DeleteRide(int RideID)
         {
-            // var user_role = (int)HttpContext.Items["Role"];
+            // var user_role = (int)HttpContext.Items["Level"];
             // Check if user actually has permission to delete rides ill do it later
 
 

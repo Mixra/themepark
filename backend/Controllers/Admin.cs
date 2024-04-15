@@ -137,31 +137,61 @@ namespace backend.Controllers
 
             if (user.IsStaff)
             {
-                var updateStaffQuery =
-                @"
-                UPDATE Staff
-                SET SSN = @SSN, Address = @Address, HourlyRate = @HourlyRate, StartDate = @StartDate, EndDate = @EndDate, EmergencyContactName = @EmergencyContactName, EmergencyContactPhone = @EmergencyContactPhone, FullTime = @FullTime
-                WHERE Username = @Username
-                ";
+                var existingStaff = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT * FROM Staff WHERE Username = @Username", new { user.Username });
 
-                var staffParam = new
+                if (existingStaff == null)
                 {
-                    Username = user.Username,
-                    SSN = user.Ssn,
-                    Address = user.Address,
-                    HourlyRate = user.HourlyRate,
-                    StartDate = user.StartDate,
-                    EndDate = user.EndDate,
-                    EmergencyContactName = user.EmergencyContactName,
-                    EmergencyContactPhone = user.EmergencyContactPhone,
-                    FullTime = user.IsFullTime,
-                };
+                    // Staff doesn't exist, insert new staff record
+                    var insertStaffQuery =
+                    @"
+                    INSERT INTO Staff (Username, SSN, Address, HourlyRate, StartDate, EndDate, EmergencyContactName, EmergencyContactPhone, FullTime)
+                    VALUES (@Username, @SSN, @Address, @HourlyRate, @StartDate, @EndDate, @EmergencyContactName, @EmergencyContactPhone, @FullTime)
+                    ";
 
-                await _databaseService.ExecuteAsync(updateStaffQuery, staffParam);
+                    var staffParam = new
+                    {
+                        Username = user.Username,
+                        SSN = user.Ssn,
+                        Address = user.Address,
+                        HourlyRate = user.HourlyRate,
+                        StartDate = user.StartDate,
+                        EndDate = user.EndDate,
+                        EmergencyContactName = user.EmergencyContactName,
+                        EmergencyContactPhone = user.EmergencyContactPhone,
+                        FullTime = user.IsFullTime,
+                    };
+
+                    await _databaseService.ExecuteAsync(insertStaffQuery, staffParam);
+                }
+                else
+                {
+                    var updateStaffQuery =
+                    @"
+                    UPDATE Staff
+                    SET SSN = @SSN, Address = @Address, HourlyRate = @HourlyRate, StartDate = @StartDate, EndDate = @EndDate, EmergencyContactName = @EmergencyContactName, EmergencyContactPhone = @EmergencyContactPhone, FullTime = @FullTime
+                    WHERE Username = @Username
+                    ";
+
+                    var staffParam = new
+                    {
+                        Username = user.Username,
+                        SSN = user.Ssn,
+                        Address = user.Address,
+                        HourlyRate = user.HourlyRate,
+                        StartDate = user.StartDate,
+                        EndDate = user.EndDate,
+                        EmergencyContactName = user.EmergencyContactName,
+                        EmergencyContactPhone = user.EmergencyContactPhone,
+                        FullTime = user.IsFullTime,
+                    };
+
+                    await _databaseService.ExecuteAsync(updateStaffQuery, staffParam);
+                }
             }
 
             return Ok(new { message = "User updated successfully" });
         }
+
 
 
         [Authorize(Roles = "999")]
@@ -187,8 +217,8 @@ namespace backend.Controllers
                 s.FullTime AS IsFullTime,
                 (
                     SELECT
-                        pa.AreaID AS Id,
-                        pa.Name AS Name
+                        pa.AreaID,
+                        pa.Name as AreaName
                     FROM
                         AreaManager am
                         INNER JOIN ParkAreas pa ON am.AreaID = pa.AreaID
@@ -234,19 +264,42 @@ namespace backend.Controllers
 
         // NEEDS ATTENTION Speak w/ team members
         [Authorize(Roles = "999")]
-        [HttpDelete("delete_user")]
-        public async Task<IActionResult> DeleteUser([FromBody] User user)
+        [HttpDelete("delete_user/{username}")]
+        public async Task<IActionResult> DeleteUser(string username)
         {
-            var existingUser = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { user.Username });
+            var existingUser = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { Username = username });
             if (existingUser == null)
             {
                 return NotFound(new { error = "User not found" });
             }
 
             var deleteQuery = "DELETE FROM UserAccounts WHERE Username = @Username";
-            await _databaseService.ExecuteAsync(deleteQuery, new { user.Username });
+            await _databaseService.ExecuteAsync(deleteQuery, new { Username = username });
 
             return Ok(new { message = "User deleted successfully" });
+        }
+
+        [Authorize(Roles = "999")]
+        [HttpGet("get_park_areas")]
+        public async Task<IActionResult> GetParkAreas()
+        {
+            var areas = await _databaseService.QueryAsync<dynamic>(@"
+            SELECT
+                AreaID AS Id,
+                Name
+            FROM
+                ParkAreas pa
+            ORDER BY
+                AreaID
+            ");
+
+            var result = areas.Select(a => new
+            {
+                AreaID = a.Id,
+                AreaName = a.Name,
+            });
+
+            return Ok(result);
         }
 
         [Authorize(Roles = "999")]
@@ -272,83 +325,79 @@ namespace backend.Controllers
 
                 new { Username = username }
             );
-            return Ok(areas);
+
+            var parsed = areas.Select(a => new
+            {
+                AreaID = a.AreaID,
+                AreaName = a.AreaName
+            });
+
+            return Ok(parsed);
+
         }
 
         [Authorize(Roles = "999")]
         [HttpPost("assign_area")]
-        public async Task<IActionResult> AssignArea([FromBody] dynamic data)
+        public async Task<IActionResult> AssignArea([FromBody] ParkArea data)
         {
-            var areaId = (int)data.AreaId;
-            var username = (string)data.Username;
+            var username = data.Username;
+            var areaID = data.AreaID;
 
-            var areaExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaId });
-            if (areaExists == 0)
+            var staff = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
+            if (staff == null)
+            {
+                return NotFound(new { error = "Staff not found" });
+            }
+
+            var area = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaID });
+            if (area == null)
             {
                 return NotFound(new { error = "Area not found" });
             }
 
-            var userExists = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { Username = username });
-            if (userExists == null)
+            var existingAssignment = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT * FROM AreaManager WHERE StaffID = @StaffID AND AreaID = @AreaID", new { StaffID = staff.StaffID, AreaID = areaID });
+            if (existingAssignment != null)
             {
-                return NotFound(new { error = "User not found" });
+                return Conflict(new { error = "Area already assigned" });
             }
 
-            var staffId = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
-            if (staffId == 0)
-            {
-                return NotFound(new { error = "User is not a staff" });
-            }
-
-            var areaManagerExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID", new { AreaID = areaId, StaffID = staffId });
-            if (areaManagerExists != 0)
-            {
-                return Conflict(new { error = "Area already assigned to user" });
-            }
-
-            var insertQuery = "INSERT INTO AreaManager (AreaID, StaffID) VALUES (@AreaID, @StaffID)";
-            await _databaseService.ExecuteAsync(insertQuery, new { AreaID = areaId, StaffID = staffId });
+            var insertQuery = "INSERT INTO AreaManager (StaffID, AreaID) VALUES (@StaffID, @AreaID)";
+            await _databaseService.ExecuteAsync(insertQuery, new { StaffID = staff.StaffID, AreaID = areaID });
 
             return Ok(new { message = "Area assigned successfully" });
         }
 
         [Authorize(Roles = "999")]
         [HttpDelete("unassign_area")]
-        public async Task<IActionResult> UnassignArea([FromBody] dynamic data)
+        public async Task<IActionResult> UnassignArea([FromBody] ParkArea data)
         {
-            var areaId = (int)data.AreaId;
-            var username = (string)data.Username;
+            var username = data.Username;
+            var areaID = data.AreaID;
 
-            var areaExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaId });
-            if (areaExists == 0)
+            var staff = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
+            if (staff == null)
+            {
+                return NotFound(new { error = "Staff not found" });
+            }
+
+            var area = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT AreaID FROM ParkAreas WHERE AreaID = @AreaID", new { AreaID = areaID });
+            if (area == null)
             {
                 return NotFound(new { error = "Area not found" });
             }
 
-            var userExists = await _databaseService.QuerySingleOrDefaultAsync<string>("SELECT Username FROM UserAccounts WHERE Username = @Username", new { Username = username });
-            if (userExists == null)
+            var existingAssignment = await _databaseService.QuerySingleOrDefaultAsync<dynamic>("SELECT * FROM AreaManager WHERE StaffID = @StaffID AND AreaID = @AreaID", new { StaffID = staff.StaffID, AreaID = areaID });
+            if (existingAssignment == null)
             {
-                return NotFound(new { error = "User not found" });
+                return Conflict(new { error = "Area not assigned" });
             }
 
-            var staffId = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
-            if (staffId == 0)
-            {
-                return NotFound(new { error = "User is not a staff" });
-            }
-
-            var areaManagerExists = await _databaseService.QuerySingleOrDefaultAsync<int>("SELECT AreaID FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID", new { AreaID = areaId, StaffID = staffId });
-            if (areaManagerExists == 0)
-            {
-                return Conflict(new { error = "Area not assigned to user" });
-            }
-
-            var deleteQuery = "DELETE FROM AreaManager WHERE AreaID = @AreaID AND StaffID = @StaffID";
-            await _databaseService.ExecuteAsync(deleteQuery, new { AreaID = areaId, StaffID = staffId });
+            var deleteQuery = "DELETE FROM AreaManager WHERE StaffID = @StaffID AND AreaID = @AreaID";
+            await _databaseService.ExecuteAsync(deleteQuery, new { StaffID = staff.StaffID, AreaID = areaID });
 
             return Ok(new { message = "Area unassigned successfully" });
+
+
         }
-
-
     }
 }

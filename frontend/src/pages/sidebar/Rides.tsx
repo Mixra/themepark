@@ -30,7 +30,7 @@ const RidesPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<Purchase[]>([]);
 
   const level = Number(localStorage.getItem("level"));
-  const displayCrud = level === 999;
+  const displayCreateButton = level === 999 || level === 1;
 
   const handleOpenPurchaseDialog = (ride: Ride) => {
     setSelectedRide(ride);
@@ -166,7 +166,7 @@ const RidesPage: React.FC = () => {
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {displayCrud && (
+      {displayCreateButton && (
         <Box
           sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
         >
@@ -269,7 +269,7 @@ const RidesPage: React.FC = () => {
                 </Button>
               </CardActions>
             </CardContent>
-            {displayCrud && (
+            {ride.hasCrud && (
               <CardActions>
                 <IconButton
                   aria-label="edit"

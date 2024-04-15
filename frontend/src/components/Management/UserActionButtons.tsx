@@ -1,12 +1,12 @@
 import React from "react";
-import { Box, Button } from "@mui/material";
+import { Button, Box } from "@mui/material";
 import { User } from "./types";
 
 interface UserActionButtonsProps {
   user: User;
   onEdit: (user: User) => void;
-  onDelete: (username: string) => void;
-  onAssignArea: (username: string) => void;
+  onDelete: (user: User) => void;
+  onAssignArea?: (user: User) => void;
 }
 
 const UserActionButtons: React.FC<UserActionButtonsProps> = ({
@@ -16,21 +16,30 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
   onAssignArea,
 }) => {
   return (
-    <Box display="flex" justifyContent="space-around">
+    <Box>
+      {onAssignArea && (
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => onAssignArea(user)}
+          sx={{ mr: 1 }}
+        >
+          Assign Area
+        </Button>
+      )}
       <Button
         variant="contained"
-        color="secondary"
-        onClick={() => onAssignArea(user.username)}
+        color="primary"
+        onClick={() => onEdit(user)}
+        sx={{ mr: 1 }}
       >
-        Assign Area
-      </Button>
-      <Button variant="contained" color="primary" onClick={() => onEdit(user)}>
         Edit
       </Button>
       <Button
         variant="contained"
         color="error"
-        onClick={() => onDelete(user.username)}
+        onClick={() => onDelete(user)}
+        sx={{ mr: 1 }}
       >
         Delete
       </Button>

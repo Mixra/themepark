@@ -30,6 +30,6 @@ export enum PrivilegeLevel {
 }
 
 export interface ParkArea {
-  name: string;
-  id: number;
+  areaID: number;
+  areaName: string;
 }

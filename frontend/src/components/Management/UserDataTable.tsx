@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DataGrid, GridColDef, GridInitialState } from "@mui/x-data-grid";
-import { ParkArea, User } from "./types";
+import { ParkArea, User, PrivilegeLevel } from "./types";
 import UserActionButtons from "./UserActionButtons";
 import DeleteConfirmationPopup from "../DeleteConfirmationPopup";
 
@@ -8,7 +8,7 @@ interface UserDataTableProps {
   users: User[];
   onEditUser: (user: User) => void;
   onDeleteUser: (username: string) => void;
-  onAssignArea: (username: string) => void;
+  onAssignArea: (user: User) => void;
 }
 
 const UserDataTable: React.FC<UserDataTableProps> = ({
@@ -62,8 +62,9 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
       headerName: "Park Areas",
       width: 200,
       valueGetter: (params) =>
-        params.row.parkAreas?.map((area: ParkArea) => area.name).join(", ") ||
-        "-",
+        params.row.parkAreas
+          ?.map((area: ParkArea) => area.areaName)
+          .join(", ") || "-",
     },
     {
       field: "hourlyRate",
@@ -117,13 +118,17 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
     {
       field: "actions",
       headerName: "Actions",
-      width: 300,
+      width: 320,
       renderCell: (params) => (
         <UserActionButtons
           user={params.row}
           onEdit={onEditUser}
           onDelete={handleDeleteUser}
-          onAssignArea={onAssignArea}
+          onAssignArea={
+            params.row.position?.level === PrivilegeLevel.EmployeePrivilege
+              ? () => onAssignArea(params.row)
+              : undefined
+          }
         />
       ),
     },
@@ -155,7 +160,7 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
         initialState={initialState}
         sx={{
           maxHeight: 660,
-          maxWidth: 1200,
+          maxWidth: 1300,
           overflow: "auto",
           "& .MuiDataGrid-cell": {
             color: "text.primary",

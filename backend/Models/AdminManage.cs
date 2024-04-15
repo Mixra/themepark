@@ -27,7 +27,8 @@ public class Position
 
 public class ParkArea
 {
-    public string? Name { get; set; }
-    public int? Id { get; set; }
+    public string? Username { get; set; }
+    public int AreaID { get; set; }
+    public string? AreaName { get; set; }
 
 }

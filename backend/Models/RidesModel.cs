@@ -10,7 +10,7 @@ namespace backend.Models
         public int? MaximumCapacity { get; set; }
         public int? MinimumHeight { get; set; }
         public required int Duration { get; set; }
-        public required int UnitPrice { get; set; }
+        public required decimal UnitPrice { get; set; }
         public string? Description { get; set; }
         public required string OpeningTime { get; set; }
         public required string ClosingTime { get; set; }

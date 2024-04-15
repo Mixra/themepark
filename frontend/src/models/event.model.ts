@@ -16,5 +16,5 @@ export interface Purchase {
   itemType: "Event";
   name: string;
   quantity: number;
-  unitPrice: number;
+  price: number;
 }
