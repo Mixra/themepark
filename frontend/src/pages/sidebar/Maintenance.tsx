@@ -41,13 +41,15 @@
                     formData={currentMaintenance || {}}
                 />
             )}*/
-import React, { useState, useCallback } from 'react';
-            import { Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+            import React, { useState, useCallback } from 'react';
+            import { Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Accordion, AccordionSummary, AccordionDetails, Typography, MenuItem, InputLabel, FormControl, Select, TextField } from '@mui/material';
             import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
             import DeleteIcon from "@mui/icons-material/Delete";
             import EditIcon from "@mui/icons-material/Edit";
             import MaintenancePopup from '../../components/MaintainencePopUp';
             import { useTheme } from '@mui/material';
+            import CheckIcon from '@mui/icons-material/Check';
+            import CloseIcon from '@mui/icons-material/Close';
             
             interface AffectedEntity {
                 entityType: string;
@@ -78,6 +80,18 @@ import React, { useState, useCallback } from 'react';
                         { entityType: 'Restaurant', entityId: 3, closureStatus: false }
                     ],
                 },
+                {
+                    MaintenanceID: 2,
+                    MaintenanceStartDate: new Date('2024-04-27T08:00:00'),
+                    MaintenanceEndDate: new Date('2024-04-27T10:00:00'),
+                    Reason: 'Routine Checkup',
+                    Description: 'Regular maintenance checkup for equipment',
+                    RequireClosure: true,
+                    AffectedEntities: [
+                        { entityType: 'GiftShop', entityId: 2, closureStatus: true },
+                        { entityType: 'Restaurant', entityId: 3, closureStatus: false }
+                    ],
+                },
                 // Additional initial maintenance logs
             ];
             
@@ -85,6 +99,9 @@ import React, { useState, useCallback } from 'react';
                 const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>(initialMaintenance);
                 const [popupOpen, setPopupOpen] = useState<boolean>(false);
                 const [currentMaintenance, setCurrentMaintenance] = useState<Partial<Maintenance> | null>(null);
+                const [searchTerm, setSearchTerm] = useState('');
+                const [filterByClosure, setFilterByClosure] = useState('');
+                const [sortDirection, setSortDirection] = useState('asc');
                 const theme = useTheme();
             
                 const openPopupToAdd = useCallback(() => {
@@ -92,7 +109,9 @@ import React, { useState, useCallback } from 'react';
                     setCurrentMaintenance(null);  // Ensure this is null for adding new entries
                     setPopupOpen(true);
                 }, []);
-                
+                const toggleSort = useCallback(() => {
+                    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+                }, []);
                 const openPopupToEdit = useCallback((maintenance) => {
                     console.log("Opening popup to edit maintenance:", maintenance.MaintenanceID);
                     setCurrentMaintenance({
@@ -107,8 +126,25 @@ import React, { useState, useCallback } from 'react';
                     console.log("Closing popup.");
                     setPopupOpen(false);
                 }, []);
+                const handleSearchChange = event => {
+                    setSearchTerm(event.target.value.toLowerCase());
+                };
                 
-            
+                const handleFilterChange = event => {
+                    setFilterByClosure(event.target.value);
+                };
+                
+                const filteredMaintenanceList = maintenanceList.filter(maintenance => {
+                    const maintenanceIDString = maintenance.MaintenanceID.toString();
+                    return (
+                        maintenanceIDString.includes(searchTerm) ||
+                        maintenance.Reason.toLowerCase().includes(searchTerm) ||
+                        maintenance.Description.toLowerCase().includes(searchTerm)
+                    ) && (filterByClosure === '' || (filterByClosure === 'yes' && maintenance.RequireClosure) || (filterByClosure === 'no' && !maintenance.RequireClosure));
+                });
+                
+                
+
                 const handleAddOrEditMaintenance = useCallback((formData: Partial<Maintenance>) => {
                     if (formData.MaintenanceID) {
                         // Edit mode
@@ -131,10 +167,26 @@ import React, { useState, useCallback } from 'react';
                 const deleteRow = useCallback((MaintenanceID: number) => {
                     setMaintenanceList(current => current.filter(item => item.MaintenanceID !== MaintenanceID));
                 }, []);
-
-                // Event handlers and other component methods...
+                const [visibleColumns, setVisibleColumns] = useState({
+                    maintenanceID: true,
+                    startDate: true,
+                    endDate: true,
+                    reason: true,
+                    description: true,
+                    requireClosure: true,
+                    actions: true
+                });
+                
+                const toggleColumnVisibility = (column) => {
+                    setVisibleColumns(prev => ({
+                        ...prev,
+                        [column]: !prev[column]
+                    }));
+                };
+                
             
                 return (
+                    
                   <Box
                     sx={{
                       backgroundColor: theme.palette.background.default,
@@ -158,6 +210,26 @@ import React, { useState, useCallback } from 'react';
                         <Button variant="contained" onClick={openPopupToAdd} sx={{ mb: 2 }}>Add Maintenance</Button>
 
                     </Box>
+                    <Box sx={{ width: "100%", maxWidth: 1200, mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+    <TextField
+        label="Search"
+        variant="outlined"
+        onChange={handleSearchChange}
+        sx={{ mr: 2 }}
+    />
+    <FormControl variant="outlined" sx={{ minWidth: 120 }}>
+        <InputLabel>Require Closure</InputLabel>
+        <Select
+            value={filterByClosure}
+            onChange={handleFilterChange}
+            label="Require Closure"
+        >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="yes">Yes</MenuItem>
+            <MenuItem value="no">No</MenuItem>
+        </Select>
+    </FormControl>
+</Box>
                     <TableContainer component={Paper}>
                       <Table>
                         <TableHead>
@@ -172,7 +244,7 @@ import React, { useState, useCallback } from 'react';
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {maintenanceList.map((maintenance) => (
+                        {filteredMaintenanceList.map((maintenance) => (
                             <React.Fragment key={maintenance.MaintenanceID}>
                               <TableRow>
                                 <TableCell>{maintenance.MaintenanceID}</TableCell>
@@ -180,7 +252,9 @@ import React, { useState, useCallback } from 'react';
                                 <TableCell>{maintenance.MaintenanceEndDate ? maintenance.MaintenanceEndDate.toLocaleString() : 'N/A'}</TableCell>
                                 <TableCell>{maintenance.Reason}</TableCell>
                                 <TableCell>{maintenance.Description}</TableCell>
-                                <TableCell>{maintenance.RequireClosure ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>
+    {maintenance.RequireClosure ? <CheckIcon style={{ color: 'green' }} /> : <CloseIcon style={{ color: 'red' }} />}
+</TableCell>
                                 <TableCell>
                                   <IconButton onClick={() => openPopupToEdit(maintenance)}>
                                     <EditIcon />
@@ -245,4 +319,3 @@ import React, { useState, useCallback } from 'react';
             };
             
             export default MaintenancePage;
-            
