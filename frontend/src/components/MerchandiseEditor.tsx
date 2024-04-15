@@ -70,6 +70,7 @@ const MerchandiseEditor: React.FC<Props> = ({
   const handleAddNewItem = () => {
     setEditedMerchandise((prevMerchandise) => ({
       ...prevMerchandise,
+      // Placeholder values for new item
       "New Item": 0,
     }));
   };
@@ -91,13 +92,15 @@ const MerchandiseEditor: React.FC<Props> = ({
           <div key={item}>
             <TextField
               label="Name"
-              defaultValue={item}
+              defaultValue={item.startsWith("New Item") ? "" : item}
+              placeholder={item.startsWith("New Item") ? "New Item" : ""}
               onBlur={(e) => handleNameBlur(item, e.target.value)}
             />
             <TextField
               label="Price"
               type="number"
-              value={price}
+              value={price === 0 ? "" : price.toString()}
+              placeholder={price === 0 ? "Price" : ""}
               onChange={(e) => handleChange(item, e.target.value)}
               inputProps={{ inputMode: "numeric" }}
             />
