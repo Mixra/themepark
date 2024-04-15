@@ -186,6 +186,38 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
+  // Dynamically render date pickers based on the selected report type
+  const renderDatePickers = () => {
+    if (reportType === 'sales') {
+      return (
+        <>
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={setStartDate}
+            renderInput={(params) => <TextField {...params} />}
+          />
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={setEndDate}
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </>
+      );
+    } else if (reportType === 'maintenance') {
+      return (
+        <DatePicker
+          label="Start Date"
+          value={startDate}
+          onChange={setStartDate}
+          renderInput={(params) => <TextField {...params} />}
+        />
+      );
+    }
+    return null;
+  };
+
   return (
     <div>
       <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
@@ -206,20 +238,6 @@ const ReportingAnalytics: React.FC = () => {
           width: "100%"
         }}
       >
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            label="Start Date"
-            value={startDate}
-            onChange={setStartDate}
-            renderInput={(params) => <TextField {...params} />}
-          />
-          <DatePicker
-            label="End Date"
-            value={endDate}
-            onChange={setEndDate}
-            renderInput={(params) => <TextField {...params} />}
-          />
-        </LocalizationProvider>
         <TextField
           select
           label="Report Type"
@@ -233,6 +251,9 @@ const ReportingAnalytics: React.FC = () => {
             </MenuItem>
           ))}
         </TextField>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          {renderDatePickers()}
+        </LocalizationProvider>
         <Button
           variant="contained"
           onClick={handleViewReports}
@@ -252,16 +273,12 @@ const ReportingAnalytics: React.FC = () => {
           width: "100%"
         }}
       >
-      {reportType === 'sales' && startDate && endDate && (
-          <Typography sx={{ mt:2, textAlign: 'center' }}>
-            Selected Dates: {dayjs(startDate).format('MM/DD/YYYY')} to {dayjs(endDate).format('MM/DD/YYYY')}
+      {reportType && startDate && (
+          <Typography sx={{ mt: 2, textAlign: 'center' }}>
+            Selected Date: {dayjs(startDate).format('MM/DD/YYYY')}
+            {endDate && ` to ${dayjs(endDate).format('MM/DD/YYYY')}`}
           </Typography>
         )}
-      {reportType === 'maintenance' && startDate && (
-          <Typography sx={{ mt:2, textAlign: 'center' }}>
-            Selected Date: {dayjs(startDate).format('MM/DD/YYYY')}
-          </Typography>
-      )}
       {reportType && reportData && reportDisplayFunctions[reportType](reportData)}
       </Box>
       
@@ -270,4 +287,4 @@ const ReportingAnalytics: React.FC = () => {
   );
 };
 
-export default ReportingAnalytics;
+export default ReportingAnalytics; 
