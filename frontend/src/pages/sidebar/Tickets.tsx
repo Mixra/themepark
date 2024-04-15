@@ -32,19 +32,21 @@ const Tickets: React.FC = () => {
     const loadedDataString = localStorage.getItem("orderData") || "{}";
     const loadedData = JSON.parse(loadedDataString);
   
-    // Extract purchase history from cartItems
-    const purchaseHistory: Purchase[] = loadedData.cartItems.map((item: any) => {
-      return {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        itemType: item.itemType,
-        quantity: item.quantity,
-        purchaseDate: loadedData.currDatetime // Using the currDatetime from the outer object
-      };
-    });
+    // Check if cartItems exist before extracting purchase history
+    if (loadedData.cartItems) {
+      const purchaseHistory: Purchase[] = loadedData.cartItems.map((item: any) => {
+        return {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          itemType: item.itemType,
+          quantity: item.quantity,
+          purchaseDate: loadedData.currDatetime // Using the currDatetime from the outer object
+        };
+      });
   
-    setPurchaseHistory(purchaseHistory);
+      setPurchaseHistory(purchaseHistory);
+    }
   }, [historyOpen]);
   
 
