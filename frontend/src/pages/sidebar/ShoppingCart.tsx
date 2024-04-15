@@ -52,7 +52,7 @@ const ShoppingCartpage: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [cartItems, setCartItems] = useState<Item[]>([]);
   
-  const [deleteItem, setDeleteItem] = useState<Item | null>(null);
+  
 
   useEffect(() => {
     // Retrieve cart items from local storage when component initializes
@@ -79,7 +79,7 @@ const ShoppingCartpage: React.FC = () => {
     localStorage.setItem('orderData', JSON.stringify(orderData));
   
     setOpen(true);
-    clearCart(); // Call the function to clear the cart
+    //clearCart(); // Call the function to clear the cart
   };
   
   
@@ -207,19 +207,20 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
     {cartItems.some((item) => item.itemType === 'Ride') && (
   <>
     <h1 style={{ fontSize: "1.5rem" }}>Ride Tickets</h1>
+    <Divider sx={{ marginY: 1 ,border:"1px solid #ccc"}} />
     {cartItems.map((item) => {
       if (item.itemType === 'Ride') {
         const rideItem = item as RideItem; // Cast item to RideItem
         return (
           <Box key={rideItem.rideId}>
-            <Typography fontSize="1rem">{rideItem.name}: ${rideItem.unitPrice}</Typography>
+            <Typography fontSize="1.2rem">{rideItem.name}: ${rideItem.unitPrice}</Typography>
             
             <Typography fontSize="1rem">Item Total: ${(rideItem.unitPrice * rideItem.quantity).toFixed(2)}</Typography>
-            <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
+            <Box sx={{ alignItems: 'center' }}>
               <IconButton onClick={() => handleQuantityChange(rideItem.itemType, rideItem.rideId, rideItem.quantity + 1)}>
                 <AddIcon />
               </IconButton>
-              <Typography marginTop='9px'>{rideItem.quantity}</Typography>
+              <Typography  >{rideItem.quantity}</Typography>
               <IconButton
                 onClick={() => handleQuantityChange(rideItem.itemType, rideItem.rideId, rideItem.quantity - 1)}
                 disabled={rideItem.quantity <= 1}
@@ -227,7 +228,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
                 <RemoveIcon />
               </IconButton>
             </Box>
-            <Box marginLeft='-25px'>
+            <Box sx={{  alignItems: 'center'  }}>
               <IconButton onClick={() => handleDeleteItem(rideItem.itemType, rideItem.rideId)}>
                 <DeleteIcon />
               </IconButton>
@@ -243,19 +244,20 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
     {cartItems.some((item) => item.itemType === 'Event') && (
   <>
     <h1 style={{ fontSize: "1.5rem" }}>Event Tickets</h1>
+    <Divider sx={{ marginY: 1 ,border:"1px solid #ccc"}} />
     {cartItems.map((item) => {
       if (item.itemType === 'Event') {
         const eventItem = item as EventItem; // Cast item to EventItem
         return (
           <Box key={eventItem.eventID}>
-            <Typography fontSize="1rem">{eventItem.name}: ${eventItem.unitPrice}</Typography>
+            <Typography fontSize="1.2rem">{eventItem.name}: ${eventItem.unitPrice}</Typography>
             
             <Typography fontSize="1rem">Item Total: ${(eventItem.unitPrice * eventItem.quantity).toFixed(2)}</Typography>
-            <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
+            <Box sx={{ alignItems: 'center' }}>
               <IconButton onClick={() => handleQuantityChange(eventItem.itemType, eventItem.eventID, eventItem.quantity + 1)}>
                 <AddIcon />
               </IconButton>
-              <Typography marginTop='9px'>{eventItem.quantity}</Typography>
+              <Typography >{eventItem.quantity}</Typography>
               <IconButton
                 onClick={() => handleQuantityChange(eventItem.itemType, eventItem.eventID, eventItem.quantity - 1)}
                 disabled={eventItem.quantity <= 1}
@@ -263,7 +265,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
                 <RemoveIcon />
               </IconButton>
             </Box>
-            <Box marginLeft='-25px'>
+            <Box sx={{ alignItems: 'center'  }}>
               <IconButton onClick={() => handleDeleteItem(eventItem.itemType, eventItem.eventID)}>
                 <DeleteIcon />
               </IconButton>
@@ -279,19 +281,20 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
     {cartItems.some((item) => item.itemType === 'GiftShop') && (
   <>
     <h1 style={{ fontSize: "1.5rem" }}>Gift Shop Items</h1>
+    
     {cartItems.map((item) => {
       if (item.itemType === 'GiftShop') {
         const giftShopItem = item as GiftShopItem; // Cast item to GiftShopItem
         return (
           <Box key={giftShopItem.itemId}>
-            <Typography fontSize="1rem">{giftShopItem.name}: ${giftShopItem.unitPrice}</Typography>
+            <Typography fontSize="1.2rem">{giftShopItem.name}: ${giftShopItem.unitPrice}</Typography>
             
             <Typography fontSize="1rem">Item Total: ${(giftShopItem.unitPrice * giftShopItem.quantity).toFixed(2)}</Typography>
-            <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
+            <Box sx={{ alignItems: 'center' }}>
               <IconButton onClick={() => handleQuantityChange(giftShopItem.itemType, giftShopItem.itemId, giftShopItem.quantity + 1)}>
                 <AddIcon />
               </IconButton>
-              <Typography marginTop='9px'>{giftShopItem.quantity}</Typography>
+              <Typography   >{giftShopItem.quantity}</Typography>
               <IconButton
                 onClick={() => handleQuantityChange(giftShopItem.itemType, giftShopItem.itemId, giftShopItem.quantity - 1)}
                 disabled={giftShopItem.quantity <= 1}
@@ -299,7 +302,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
                 <RemoveIcon />
               </IconButton>
             </Box>
-            <Box marginLeft='-25px'>
+            <Box sx={{alignItems: 'center' }}>
               <IconButton onClick={() => handleDeleteItem(giftShopItem.itemType, giftShopItem.itemId)}>
                 <DeleteIcon />
               </IconButton>
@@ -330,7 +333,27 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
       >
         Checkout
       </Button>
+      <Modal open={open} onClose={handleClose} >
+  <Card
+    style={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
       
+      padding: "2rem",
+      textAlign: "center",
+    }}
+  >
+    <Typography fontSize="2rem" color="textPrimary">
+      Thank you for your purchase!
+    </Typography>
+    <Typography  fontSize="1rem"  color="textPrimary">
+      Find your Tickets in Purchase History 
+    </Typography>
+    <Button  onClick={handleClose}>Close</Button>
+  </Card>
+</Modal>
   
   </Box>
 
