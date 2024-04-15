@@ -41,150 +41,208 @@
                     formData={currentMaintenance || {}}
                 />
             )}*/
-
-
-
 import React, { useState, useCallback } from 'react';
-import { Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import MaintenancePopup from '../../components/MaintainencePopUp';
-import { useTheme } from '@mui/material';
-interface Maintenance {
-    LogID: number;
-    AreaID: number;
-    Type: string;
-    //AreasAffected: string,
-    Description: string;
-    StartDateTime: Date;
-    EndDateTime: Date;
-}
+            import { Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+            import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+            import DeleteIcon from "@mui/icons-material/Delete";
+            import EditIcon from "@mui/icons-material/Edit";
+            import MaintenancePopup from '../../components/MaintainencePopUp';
+            import { useTheme } from '@mui/material';
+            
+            interface AffectedEntity {
+                entityType: string;
+                entityId: number;
+                closureStatus: boolean;
+            }
+            
+            interface Maintenance {
+                MaintenanceID: number;
+                MaintenanceStartDate: Date;
+                MaintenanceEndDate?: Date;
+                Reason: string;
+                Description: string;
+                RequireClosure: boolean;
+                AffectedEntities: AffectedEntity[];
+            }
+            
+            const initialMaintenance: Maintenance[] = [
+                {
+                    MaintenanceID: 1,
+                    MaintenanceStartDate: new Date('2024-04-27T08:00:00'),
+                    MaintenanceEndDate: new Date('2024-04-27T10:00:00'),
+                    Reason: 'Routine Checkup',
+                    Description: 'Regular maintenance checkup for equipment',
+                    RequireClosure: false,
+                    AffectedEntities: [
+                        { entityType: 'GiftShop', entityId: 2, closureStatus: true },
+                        { entityType: 'Restaurant', entityId: 3, closureStatus: false }
+                    ],
+                },
+                // Additional initial maintenance logs
+            ];
+            
+            const MaintenancePage: React.FC = () => {
+                const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>(initialMaintenance);
+                const [popupOpen, setPopupOpen] = useState<boolean>(false);
+                const [currentMaintenance, setCurrentMaintenance] = useState<Partial<Maintenance> | null>(null);
+                const theme = useTheme();
+            
+                const openPopupToAdd = useCallback(() => {
+                    console.log("Opening popup to add new maintenance.");
+                    setCurrentMaintenance(null);  // Ensure this is null for adding new entries
+                    setPopupOpen(true);
+                }, []);
+                
+                const openPopupToEdit = useCallback((maintenance) => {
+                    console.log("Opening popup to edit maintenance:", maintenance.MaintenanceID);
+                    setCurrentMaintenance({
+                        ...maintenance,
+                        MaintenanceStartDate: new Date(maintenance.MaintenanceStartDate),
+                        MaintenanceEndDate: maintenance.MaintenanceEndDate ? new Date(maintenance.MaintenanceEndDate) : null
+                    });
+                    setPopupOpen(true);
+                }, []);
+                
+                const closePopup = useCallback(() => {
+                    console.log("Closing popup.");
+                    setPopupOpen(false);
+                }, []);
+                
+            
+                const handleAddOrEditMaintenance = useCallback((formData: Partial<Maintenance>) => {
+                    if (formData.MaintenanceID) {
+                        // Edit mode
+                        setMaintenanceList(current => current.map(item =>
+                            item.MaintenanceID === formData.MaintenanceID ? { ...item, ...formData, MaintenanceStartDate: new Date(formData.MaintenanceStartDate!), MaintenanceEndDate: formData.MaintenanceEndDate ? new Date(formData.MaintenanceEndDate) : undefined } : item
+                        ));
+                    } else {
+                        // Add mode
+                        const newMaintenance = {
+                            ...formData,
+                            MaintenanceID: maintenanceList.reduce((max, item) => Math.max(max, item.MaintenanceID), 0) + 1,
+                            MaintenanceStartDate: new Date(formData.MaintenanceStartDate!),
+                            MaintenanceEndDate: formData.MaintenanceEndDate ? new Date(formData.MaintenanceEndDate) : undefined
+                        } as Maintenance;
+                        setMaintenanceList(current => [...current, newMaintenance]);
+                    }
+                    closePopup();
+                }, [closePopup, maintenanceList]);
+            
+                const deleteRow = useCallback((MaintenanceID: number) => {
+                    setMaintenanceList(current => current.filter(item => item.MaintenanceID !== MaintenanceID));
+                }, []);
 
-const initialMaintenance: Maintenance[] = [
-    {
-        LogID: 1,
-        AreaID: 1,
-        Type: 'Routine Checkup',
-        //AreasAffected: 'WonderLand',
-        Description: 'Regular maintenance checkup for equipment',
-        StartDateTime: new Date('2024-04-27T08:00:00'),
-        EndDateTime: new Date('2024-04-27T10:00:00'),
-    },
-    // Additional initial maintenance logs
-];
+                // Event handlers and other component methods...
+            
+                return (
+                  <Box
+                    sx={{
+                      backgroundColor: theme.palette.background.default,
+                      color: theme.palette.text.primary,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      padding: 4,
+                    }}
+                  >
+                    <Box
+                        sx={{
+                            width: "100%",
+                            maxWidth: 1200,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 2,
+                        }}
+                    >
+                        <Button variant="contained" onClick={openPopupToAdd} sx={{ mb: 2 }}>Add Maintenance</Button>
 
-const MaintenancePage: React.FC = () => {
-    const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>(initialMaintenance);
-    const [popupOpen, setPopupOpen] = useState<boolean>(false);
-    const [currentMaintenance, setCurrentMaintenance] = useState<Partial<Maintenance> | null>(null);
-    const theme = useTheme();
-    const openPopupToAdd = useCallback(() => {
-        setCurrentMaintenance(null);
-        setPopupOpen(true);
-    }, []);
-
-    const openPopupToEdit = useCallback((maintenance: Maintenance) => {
-        setCurrentMaintenance(maintenance);
-        setPopupOpen(true);
-    }, []);
-
-    const closePopup = useCallback(() => {
-        setPopupOpen(false);
-    }, []);
-
-    const handleAddOrEditMaintenance = useCallback((maintenance: Partial<Maintenance>) => {
-        const updatedOrNewMaintenance = {
-            ...currentMaintenance,
-            ...maintenance,
-            LogID: currentMaintenance?.LogID ?? maintenanceList.reduce((max, item) => Math.max(max, item.LogID), 0) + 1,
-            StartDateTime: new Date(maintenance.StartDateTime || new Date()),
-            EndDateTime: new Date(maintenance.EndDateTime || new Date()),
-        };
-
-        if (currentMaintenance) {
-            const updatedList = maintenanceList.map((item) =>
-                item.LogID === currentMaintenance.LogID ? updatedOrNewMaintenance as Maintenance : item
-            );
-            setMaintenanceList(updatedList);
-        } else {
-            setMaintenanceList(prevList => [...prevList, updatedOrNewMaintenance as Maintenance]);
-        }
-        closePopup();
-    }, [currentMaintenance, maintenanceList, closePopup]);
-
-    const deleteRow = useCallback((logID: number) => {
-        setMaintenanceList(current => current.filter(item => item.LogID !== logID));
-    }, []);
-
-    return (
-      <Box
-      sx={{
-        backgroundColor: theme.palette.background.default,
-        color: theme.palette.text.primary,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: 4,
-      }}
-      >
-        <Box
-        sx={{
-          width: "100%",
-          maxWidth: 1200,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-        >
-          <Button variant="contained" onClick={openPopupToAdd} sx={{ mb: 2 }}>Add Maintenance</Button>
-        </Box>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Log ID</TableCell>
-                            <TableCell>Area ID</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>Areas Affected</TableCell>
-                            <TableCell>Description</TableCell>
+                    </Box>
+                    <TableContainer component={Paper}>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Maintenance ID</TableCell>
                             <TableCell>Start Date Time</TableCell>
                             <TableCell>End Date Time</TableCell>
+                            <TableCell>Reason</TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Require Closure</TableCell>
                             <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {maintenanceList.map((maintenance) => (
-                            <TableRow key={maintenance.LogID}>
-                                <TableCell>{maintenance.LogID}</TableCell>
-                                <TableCell>{maintenance.AreaID}</TableCell>
-                                <TableCell>{maintenance.Type}</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {maintenanceList.map((maintenance) => (
+                            <React.Fragment key={maintenance.MaintenanceID}>
+                              <TableRow>
+                                <TableCell>{maintenance.MaintenanceID}</TableCell>
+                                <TableCell>{maintenance.MaintenanceStartDate.toLocaleString()}</TableCell>
+                                <TableCell>{maintenance.MaintenanceEndDate ? maintenance.MaintenanceEndDate.toLocaleString() : 'N/A'}</TableCell>
+                                <TableCell>{maintenance.Reason}</TableCell>
                                 <TableCell>{maintenance.Description}</TableCell>
-                                <TableCell>{maintenance.StartDateTime.toLocaleString()}</TableCell>
-                                <TableCell>{maintenance.EndDateTime.toLocaleString()}</TableCell>
+                                <TableCell>{maintenance.RequireClosure ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={() => openPopupToEdit(maintenance)}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => deleteRow(maintenance.LogID)}>
-                                        <DeleteIcon />
-                                    </IconButton>
+                                  <IconButton onClick={() => openPopupToEdit(maintenance)}>
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton onClick={() => deleteRow(maintenance.MaintenanceID)}>
+                                    <DeleteIcon />
+                                  </IconButton>
                                 </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            {popupOpen && (
-                <MaintenancePopup
-                    open={popupOpen}
-                    onClose={closePopup}
-                    onSubmit={handleAddOrEditMaintenance}
-                    formData={currentMaintenance || {}}
-                />
-            )}
-        </Box>
-    );
-};
-
-export default MaintenancePage;
+                              </TableRow>
+                              <TableRow>
+                                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+                                  <Accordion>
+                                    <AccordionSummary
+                                      expandIcon={<ExpandMoreIcon />}
+                                      aria-controls="panel1a-content"
+                                      id="panel1a-header"
+                                    >
+                                      <Typography>Affected Entities</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                      <Table size="small" aria-label="purchases">
+                                        <TableHead>
+                                          <TableRow>
+                                            <TableCell>Entity Type</TableCell>
+                                            <TableCell>Entity ID</TableCell>
+                                            <TableCell>Closure Status</TableCell>
+                                          </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                          {maintenance.AffectedEntities.map((entity, index) => (
+                                            <TableRow key={index}>
+                                              <TableCell component="th" scope="row">
+                                                {entity.entityType}
+                                              </TableCell>
+                                              <TableCell>{entity.entityId}</TableCell>
+                                              <TableCell>{entity.closureStatus ? 'Closed' : 'Open'}</TableCell>
+                                            </TableRow>
+                                          ))}
+                                        </TableBody>
+                                      </Table>
+                                    </AccordionDetails>
+                                  </Accordion>
+                                </TableCell>
+                              </TableRow>
+                            </React.Fragment>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                    {popupOpen && (
+                        <MaintenancePopup
+                        open={popupOpen}
+                        onClose={closePopup}
+                        onSubmit={handleAddOrEditMaintenance}
+                        formData={currentMaintenance || {}}
+                        isEditing={!!currentMaintenance?.MaintenanceID}
+                    />
+                    
+                    )}
+                  </Box>
+                );
+            };
+            
+            export default MaintenancePage;
+            

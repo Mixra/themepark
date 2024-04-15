@@ -1,150 +1,181 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, MenuItem, Box } from '@mui/material';
 
-interface ParkArea {
-  LogID?: number;
-  AreaID?: number;
-  Type?: string;
-  //AreasAffected?: string;
-  Description?: string;
-  startDateTime?: Date; // Now a Date object
-  endDateTime?: Date; // Now a Date object
+interface AffectedEntity {
+    entityType: string;
+    entityId: number;
+    closureStatus: boolean;
 }
 
-interface ParkPopupProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (formData: Partial<ParkArea>) => void;
-  formData: Partial<ParkArea>;
-  setFormData: (formData: Partial<ParkArea>) => void;
-  isEditing: boolean;
+interface Maintenance {
+    MaintenanceID?: number;
+    MaintenanceStartDate: Date;
+    MaintenanceEndDate?: Date;
+    Reason: string;
+    Description: string;
+    RequireClosure: boolean;
+    AffectedEntities: AffectedEntity[];
 }
 
-const MaintenancePopup: React.FC<ParkPopupProps> = ({
-  open,
-  onClose,
-  onSubmit,
-  formData,
-  isEditing,
-}) => {
-  const [localFormData, setLocalFormData] = useState<Partial<ParkArea>>(formData);
+interface MaintenancePopupProps {
+    open: boolean;
+    onClose: () => void;
+    onSubmit: (data: Partial<Maintenance>) => void;
+    formData: Partial<Maintenance>;
+    isEditing: boolean;
+}
+
+const formatDate = (date) => {
+  return date.toISOString().slice(0, 16);
+};
+
+const MaintenancePopup = ({ open, onClose, onSubmit, formData, isEditing }) => {
+  const [maintenanceData, setMaintenanceData] = useState(() => ({
+      MaintenanceID: formData.MaintenanceID || undefined,
+      MaintenanceStartDate: formData.MaintenanceStartDate || new Date(),
+      MaintenanceEndDate: formData.MaintenanceEndDate || new Date(),
+      Reason: formData.Reason || '',
+      Description: formData.Description || '',
+      RequireClosure: formData.RequireClosure || false,
+      AffectedEntities: formData.AffectedEntities || []
+  }));
 
   useEffect(() => {
-    setLocalFormData(formData);
-  }, [formData]);
-
-  const handleChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    if (name) {
-      if (name === "startDateTime" || name === "endDateTime") {
-        // Convert the string back to a Date object when changing the date fields
-        const dateValue = value ? new Date(value as string) : new Date();
-        setLocalFormData({ ...localFormData, [name]: dateValue });
-      } else {
-        setLocalFormData({ ...localFormData, [name]: value });
+      if (open) {
+          setMaintenanceData({
+              ...formData,
+              MaintenanceStartDate: formData.MaintenanceStartDate || new Date(),
+              MaintenanceEndDate: formData.MaintenanceEndDate || new Date(),
+              AffectedEntities: formData.AffectedEntities && formData.AffectedEntities.length > 0 ? formData.AffectedEntities : []
+          });
       }
-    }
-  };
+  }, [formData, open]);  // Depending on how formData is managed, you might adjust this
 
-  const handleSubmit = () => {
-    onSubmit(localFormData);
-    onClose();
-  };
+    const handleChange = (event) => {
+        const { name, value, type, checked } = event.target;
+        setMaintenanceData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
 
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{isEditing ? "Edit Maintenance" : "Create Maintenance"}</DialogTitle>
-      <DialogContent>
-      <TextField
-          margin="dense"
-          name="LogID"
-          label="Log ID"
-          type="number"
-          fullWidth
-          value={localFormData.LogID || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="AreaID"
-          label="Area ID"
-          type="number"
-          fullWidth
-          value={localFormData.AreaID || ""}
-          onChange={handleChange}
-        />
-        <FormControl fullWidth margin="dense">
-          <InputLabel id="type-select-label">Type</InputLabel>
-          <Select
-            labelId="type-select-label"
-            id="Type"
-            name="Type"
-            value={localFormData.Type || ''}
-            label="Type"
-            onChange={handleChange}
-          >
-            <MenuItem value={"Routine Checkup"}>Routine Checkup</MenuItem>
-            <MenuItem value={"Emergency Repair"}>Emergency Repair</MenuItem>
-            <MenuItem value={"Scheduled Upgrade"}>Scheduled Upgrade</MenuItem>
-            {/* Add more types as needed */}
-          </Select>
-        </FormControl>
-        <TextField
-          margin="dense"
-          name="Description"
-          label="Description"
-          type="text"
-          multiline
-          rows={4}
-          fullWidth
-          value={localFormData.Description || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="startDateTime"
-          label="Start Date Time"
-          type="datetime-local"
-          fullWidth
-          value={localFormData.startDateTime ? localFormData.startDateTime.toISOString().slice(0, 16) : ""}
-          onChange={handleChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          margin="dense"
-          name="endDateTime"
-          label="End Date Time"
-          type="datetime-local"
-          fullWidth
-          value={localFormData.endDateTime ? localFormData.endDateTime.toISOString().slice(0, 16) : ""}
-          onChange={handleChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+    const handleEntityChange = (index, event) => {
+        const { name, type, value, checked } = event.target;
+        const updatedEntities = maintenanceData.AffectedEntities.map((entity, idx) =>
+            idx === index ? { ...entity, [name]: type === 'checkbox' ? checked : value } : entity
+        );
+        setMaintenanceData(prev => ({ ...prev, AffectedEntities: updatedEntities }));
+    };
+
+    const addEntity = () => {
+        setMaintenanceData(prev => ({
+            ...prev,
+            AffectedEntities: [...prev.AffectedEntities, { entityType: '', entityId: 0, closureStatus: false }]
+        }));
+    };
+
+    const removeEntity = (index) => {
+        setMaintenanceData(prev => ({
+            ...prev,
+            AffectedEntities: prev.AffectedEntities.filter((_, idx) => idx !== index)
+        }));
+    };
+
+    const handleSubmit = () => {
+        onSubmit(maintenanceData);
+        onClose();
+    };
+
+    return (
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+          <DialogTitle>{isEditing ? 'Edit Maintenance' : 'Add Maintenance'}</DialogTitle>
+          <DialogContent>
+              {/* Format dates properly for input */}
+              <TextField
+                  margin="dense"
+                  label="Start Date and Time"
+                  type="datetime-local"
+                  fullWidth
+                  variant="outlined"
+                  name="MaintenanceStartDate"
+                  value={formatDate(maintenanceData.MaintenanceStartDate)}
+                  onChange={handleChange}
+              />
+              <TextField
+                  margin="dense"
+                  label="End Date and Time"
+                  type="datetime-local"
+                  fullWidth
+                  variant="outlined"
+                  name="MaintenanceEndDate"
+                  value={maintenanceData.MaintenanceEndDate ? formatDate(maintenanceData.MaintenanceEndDate) : ''}
+                  onChange={handleChange}
+              />
+                <TextField
+                    margin="dense"
+                    label="Reason"
+                    fullWidth
+                    variant="outlined"
+                    name="Reason"
+                    value={maintenanceData.Reason}
+                    onChange={handleChange}
+                />
+                <TextField
+                    margin="dense"
+                    label="Description"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                    name="Description"
+                    value={maintenanceData.Description}
+                    onChange={handleChange}
+                />
+                <FormControlLabel
+                    control={<Checkbox checked={maintenanceData.RequireClosure} onChange={handleChange} name="RequireClosure" />}
+                    label="Require Closure"
+                />
+                {maintenanceData.AffectedEntities.map((entity, index) => (
+                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <TextField
+                            margin="dense"
+                            label="Entity Type"
+                            select
+                            fullWidth
+                            variant="outlined"
+                            name="entityType"
+                            value={entity.entityType}
+                            onChange={(event) => handleEntityChange(index, event)}
+                        >
+                            {['Ride', 'Events', 'Giftshops', 'Areas'].map((type) => (
+                                <MenuItem key={type} value={type}>{type}</MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            margin="dense"
+                            label="Entity ID"
+                            type="number"
+                            fullWidth
+                            variant="outlined"
+                            name="entityId"
+                            value={entity.entityId}
+                            onChange={(event) => handleEntityChange(index, event)}
+                        />
+                        <FormControlLabel
+                            control={<Checkbox checked={entity.closureStatus} onChange={(event) => handleEntityChange(index, event)} name="closureStatus" />}
+                            label="Closure Status"
+                        />
+                        <Button onClick={() => removeEntity(index)} color="secondary">Remove</Button>
+                    </Box>
+                ))}
+                <Button onClick={addEntity} color="primary">Add Entity</Button>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose} color="secondary">Cancel</Button>
+                <Button onClick={handleSubmit} color="primary">{isEditing ? 'Update' : 'Add'}</Button>
+            </DialogActions>
+        </Dialog>
+    );
 };
 
 export default MaintenancePopup;
