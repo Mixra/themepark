@@ -22,5 +22,5 @@ export interface Purchase {
   name: string;
   itemType: "Ride";
   quantity: number;
-  price: number;
+  unitPrice: number;
 }
