@@ -124,7 +124,7 @@ const RidesPage: React.FC = () => {
     const newItem: Purchase = {
       rideId: selectedRide.rideID,
       name: selectedRide.rideName,
-      price: selectedRide.unitPrice || 0,
+      unitPrice: selectedRide.unitPrice || 0,
       itemType: "Ride",
       quantity,
     };
