@@ -213,7 +213,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
         return (
           <Box key={rideItem.rideId}>
             <Typography fontSize="1rem">{rideItem.name}: ${rideItem.unitPrice}</Typography>
-            <Typography>ID: {rideItem.rideId}</Typography>
+            
             <Typography fontSize="1rem">Item Total: ${(rideItem.unitPrice * rideItem.quantity).toFixed(2)}</Typography>
             <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
               <IconButton onClick={() => handleQuantityChange(rideItem.itemType, rideItem.rideId, rideItem.quantity + 1)}>
@@ -249,7 +249,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
         return (
           <Box key={eventItem.eventID}>
             <Typography fontSize="1rem">{eventItem.name}: ${eventItem.unitPrice}</Typography>
-            <Typography>ID: {eventItem.eventID}</Typography>
+            
             <Typography fontSize="1rem">Item Total: ${(eventItem.unitPrice * eventItem.quantity).toFixed(2)}</Typography>
             <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
               <IconButton onClick={() => handleQuantityChange(eventItem.itemType, eventItem.eventID, eventItem.quantity + 1)}>
@@ -285,7 +285,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
         return (
           <Box key={giftShopItem.itemId}>
             <Typography fontSize="1rem">{giftShopItem.name}: ${giftShopItem.unitPrice}</Typography>
-            <Typography>ID: {giftShopItem.itemId}</Typography>
+            
             <Typography fontSize="1rem">Item Total: ${(giftShopItem.unitPrice * giftShopItem.quantity).toFixed(2)}</Typography>
             <Box sx={{ display: "flex", marginLeft: '25%', marginRight: '50%' }}>
               <IconButton onClick={() => handleQuantityChange(giftShopItem.itemType, giftShopItem.itemId, giftShopItem.quantity + 1)}>
