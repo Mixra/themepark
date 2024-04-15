@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
-import { Box, Button, Typography, TextField, MenuItem, Divider } from '@mui/material';
+import { Box, Button, Typography, TextField, MenuItem } from '@mui/material';
 import Joker from '../../components/Joker';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -11,6 +11,7 @@ import { RideSale } from '../../components/ReportTests/Sales/RideSales';
 import { GiftShopSale } from '../../components/ReportTests/Sales/GiftShopSale';
 import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurauntSale';
 import { LatestMaintenance } from '../../components/ReportTests/Maintenance/MaintainReport';
+import { EmployeeReport } from '../../components/ReportTests/Employee/EmployeeReport';
 
 type SalesReportData = {
   totalSales: number;
@@ -23,6 +24,7 @@ type SalesReportData = {
   leastPerformingPark: string;
 };
 
+//update so that the dates not a string if needed
 type MaintenanceEntry = {
   entityType: string;
   entityID: string;
@@ -37,7 +39,15 @@ type MaintenanceReportData = {
 
 
 type EmployeeReportData = {
-  employee: string;
+  employeeName: string;
+  employeeID: string;
+  employeePark: string;
+  employeePosition: string;
+  employeeActive: string | 'Active'; //active if null
+};
+
+type EmployeeData = {
+  employees: EmployeeReportData[];
 };
 
 type ReportType = 'sales' | 'maintenance' | 'employee';
@@ -81,10 +91,10 @@ const displayMaintenance = ({ entries }: MaintenanceReportData) => (
   </Box>
 );
 
-const displayEmployee = (data: EmployeeReportData) => (
+const displayEmployee = ({ employees }: EmployeeData) => (
   <Box sx={{ padding: 4 }}>
     <Typography variant="h6">Employee Report</Typography>
-    <Typography>Employee Name: {data.employee}</Typography>
+    <EmployeeReport employees={employees} />
   </Box>
 );
 
@@ -107,10 +117,13 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {//this is where i will make the changes to get the data from the db
-    if (!startDate || !endDate) {
-      alert("Please select both start and end dates.");
+    if (reportType === 'sales' && (!startDate || !endDate)) {
+      alert("Please select both start and end dates for the sales report.");
       return;
-    }
+  } else if (reportType === 'maintenance' && !startDate) {
+      alert("Please select a start date for the maintenance report.");
+      return;
+  }
     switch (reportType) {
       case 'sales':
         const salesData: SalesReportData = {
@@ -126,8 +139,23 @@ const ReportingAnalytics: React.FC = () => {
         setReportData(salesData);
         break;
       case 'employee':
-        const employeeData: EmployeeReportData = {
-          employee: 'Timmy Cha',
+        const employeeData: EmployeeData = {
+          employees: [
+            {
+              employeeName: 'Timmy Chra',
+              employeeID: '2dd4dg4g',
+              employeePark: 'FutureLand',
+              employeePosition: 'Manager',
+              employeeActive: 'Active'
+            },
+            {
+              employeeName: 'Billy Baker',
+              employeeID: '1145ffds',
+              employeePark: 'FrontierLand',
+              employeePosition: 'Admin',
+              employeeActive: 'Inactive'
+            }
+          ]
         };
         setReportData(employeeData);
         break;
@@ -224,10 +252,15 @@ const ReportingAnalytics: React.FC = () => {
           width: "100%"
         }}
       >
-      {startDate && endDate && (
-        <Typography sx={{ mt: 2, textAlign: 'center' }}>
-          Selected Dates: {dayjs(startDate).format('MM/DD/YYYY')} to {dayjs(endDate).format('MM/DD/YYYY')}
-        </Typography>
+      {reportType === 'sales' && startDate && endDate && (
+          <Typography sx={{ mt:2, textAlign: 'center' }}>
+            Selected Dates: {dayjs(startDate).format('MM/DD/YYYY')} to {dayjs(endDate).format('MM/DD/YYYY')}
+          </Typography>
+        )}
+      {reportType === 'maintenance' && startDate && (
+          <Typography sx={{ mt:2, textAlign: 'center' }}>
+            Selected Date: {dayjs(startDate).format('MM/DD/YYYY')}
+          </Typography>
       )}
       {reportType && reportData && reportDisplayFunctions[reportType](reportData)}
       </Box>
@@ -238,4 +271,3 @@ const ReportingAnalytics: React.FC = () => {
 };
 
 export default ReportingAnalytics;
-
