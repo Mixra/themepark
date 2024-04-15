@@ -13,6 +13,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import GiftShopPopup from "../../components/GiftShopPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import SaveIcon from "@mui/icons-material/Save"; // For saving edited items
+import CancelIcon from "@mui/icons-material/Cancel"; // For canceling an edit
+import AddIcon from "@mui/icons-material/Add";
+import MerchandiseEditor from "../../components/MerchandiseEditor";
 
 interface GiftShop {
   shopID: number;
@@ -104,6 +108,9 @@ const GiftShopsPage: React.FC = () => {
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [formData, setFormData] = useState<Partial<GiftShop>>({});
+  const [openMerchPopup, setOpenMerchPopup] = useState(false); // State for merchandise editing popup
+  const [selectedGiftShopForMerch, setSelectedGiftShopForMerch] =
+    useState<GiftShop | null>(null); // State to store selected gift shop for merchandise editing
   const [selectedGiftShop, setSelectedGiftShop] = useState<GiftShop | null>(
     null
   );
@@ -166,6 +173,30 @@ const GiftShopsPage: React.FC = () => {
       setGiftShops(updatedGiftShops);
     }
     setOpenDeleteDialog(false);
+  };
+
+  const handleMerchEditClick = (giftShop: GiftShop) => {
+    setSelectedGiftShopForMerch(giftShop);
+    setOpenMerchPopup(true);
+  };
+
+  const handleMerchPopupClose = () => {
+    setOpenMerchPopup(false);
+  };
+
+  const handleMerchandiseSave = (updatedMerchandise: {
+    [item: string]: number;
+  }) => {
+    if (selectedGiftShopForMerch) {
+      // Update merchandise items for the selected gift shop
+      const updatedGiftShops = giftShops.map((shop) =>
+        shop.shopID === selectedGiftShopForMerch.shopID
+          ? { ...shop, merchlist: updatedMerchandise }
+          : shop
+      );
+      setGiftShops(updatedGiftShops);
+    }
+    setOpenMerchPopup(false);
   };
 
   return (
@@ -237,8 +268,23 @@ const GiftShopsPage: React.FC = () => {
                 >
                   <DeleteIcon />
                 </IconButton>
+                <Button
+                  variant="outlined"
+                  onClick={() => handleMerchEditClick(shop)} // This line triggers merchandise editing dialog
+                >
+                  Edit Merchandise
+                </Button>
               </CardActions>
             )}
+            <MerchandiseEditor
+              open={
+                openMerchPopup &&
+                selectedGiftShopForMerch?.shopID === shop.shopID
+              }
+              onClose={handleMerchPopupClose}
+              initialMerchandise={shop.merchlist}
+              onSave={handleMerchandiseSave}
+            />
           </Card>
         ))}
       </Box>

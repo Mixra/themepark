@@ -39,20 +39,28 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'merchlist') {
-      // Split the value by newlines and then by colons to create key-value pairs
-      const items = value.split('\n').map((item) => item.split(':'));
-      // Create an object from the key-value pairs
+    if (name === "merchlist") {
+      // Convert string to merchlist object
+      const items = value.split("\n").map((item) => item.split(":"));
       const merchlist = items.reduce((acc, [key, val]) => {
         if (key && val) {
-          acc[key.trim()] = parseInt(val.trim()) || 0;
+          acc[key.trim()] = parseInt(val.trim(), 10) || 0;
         }
         return acc;
-      }, {});
+      }, {} as { [item: string]: number });
       setFormData({ ...formData, [name]: merchlist });
     } else {
       setFormData({ ...formData, [name]: value });
     }
+  };
+
+  // Function to convert the merchlist object to a string for the TextField
+  const merchlistToString = (merchlist?: { [item: string]: number }) => {
+    return merchlist
+      ? Object.entries(merchlist)
+          .map(([item, price]) => `${item}: ${price}`)
+          .join("\n")
+      : "";
   };
 
   const handleSubmit = () => {
@@ -62,42 +70,38 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{isEditing ? "Edit Gift Shop" : "Create Gift Shop"}</DialogTitle>
+      <DialogTitle>
+        {isEditing ? "Edit Gift Shop" : "Create Gift Shop"}
+      </DialogTitle>
       <DialogContent>
-      <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
         <TextField
+          autoFocus
+          margin="dense"
           name="name"
           label="Name"
+          type="text"
+          fullWidth
           value={formData.name || ""}
           onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="areaID"
-          label="Area ID"
-          type="number"
-          value={formData.areaID || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
         />
         <TextField
           margin="dense"
           name="description"
           label="Description"
           type="text"
+          fullWidth
           multiline
           rows={4}
-          fullWidth
           value={formData.description || ""}
+          onChange={handleChange}
+        />
+        <TextField
+          margin="dense"
+          name="areaID"
+          label="Area ID"
+          type="number"
+          fullWidth
+          value={formData.areaID || ""}
           onChange={handleChange}
         />
         <TextField
@@ -125,29 +129,40 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
           }}
         />
         <TextField
+          margin="dense"
           name="merchandiseType"
           label="Merchandise Type"
+          type="text"
+          fullWidth
           value={formData.merchandiseType || ""}
           onChange={handleChange}
+        />
+        <TextField
+          margin="dense"
+          name="imageUrl"
+          label="Image URL"
+          type="text"
           fullWidth
-          margin="normal"
+          value={formData.imageUrl || ""}
+          onChange={handleChange}
         />
         <TextField
           margin="dense"
           name="merchlist"
-          label="Merchandise List"
+          label="Merchandise List (item: price)"
+          helperText="Enter each item on a new line in the format: item: price"
           type="text"
+          fullWidth
           multiline
           rows={4}
-          fullWidth
-          value={formData.merchlist || ""}
+          value={merchlistToString(formData.merchlist)}
           onChange={handleChange}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
+        <Button onClick={handleSubmit} color="primary" variant="contained">
+          {isEditing ? "Save Changes" : "Create"}
         </Button>
       </DialogActions>
     </Dialog>
