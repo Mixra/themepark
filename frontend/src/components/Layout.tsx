@@ -35,7 +35,7 @@ const menuItems = [
   { text: "Events", icon: <EventsIcon />, path: "/events" },
   { text: "Restaurants", icon: <RestaurantIcon />, path: "/restaurants" },
   { text: "Gift Shops", icon: <GiftShopIcon />, path: "/gifts" },
-  { text: "Tickets", icon: <TicketsIcon />, path: "/tickets" },
+  { text: "Purchase History", icon: <TicketsIcon />, path: "/tickets" },
   { text: "Maintenance", icon: <MaintenanceIcon />, path: "/maintenance" },
   {
     text: "Reporting and Analytics",
