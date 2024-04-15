@@ -21,6 +21,8 @@ import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import db from "../../components/db";
 import { Event, Purchase } from "../../models/event.model";
 
+
+
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -49,6 +51,9 @@ const EventsPage: React.FC = () => {
     fetchEvents();
   }, []);
 
+
+
+  
   // This will be the admin portion
   const [formData, setFormData] = useState<Partial<Event>>({});
   const [isEditing, setIsEditing] = useState(false);
@@ -158,6 +163,21 @@ const EventsPage: React.FC = () => {
     setQuantity(1); // Reset quantity for future purchases
   };
 
+   // Function to format date and time
+   const formatDateTime = (dateTime: string) => {
+    const date = new Date(dateTime);
+    return date.toLocaleString('en-US', {
+
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -229,13 +249,28 @@ const EventsPage: React.FC = () => {
                   alignItems: "center",
                 }}
               >
+                
+
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: {thisevent.startDate}
+                  Opening Time: 
+                  <Typography variant="body2" fontWeight="bold">
+                    {formatDateTime(thisevent.startDate)}
+                  </Typography>
+                  
                 </Typography>
+              
+              
+              
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: {thisevent.endDate}
+                  Closing Time: 
+                  <Typography variant="body2" fontWeight="bold">
+                    {formatDateTime(thisevent.endDate)}
+                  </Typography>
                 </Typography>
+             
               </Box>
+
+              
               <Divider sx={{ marginY: 1 }} />
               {thisevent.requireTicket ? (
                 <div>
