@@ -10,27 +10,10 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import db from "./db";
-
-interface Ride {
-  imageUrl: string | null;
-  rideID: number;
-  rideName: string;
-  description: string | null;
-  type: string;
-  minimumHeight: number;
-  maximumCapacity: number;
-  openingTime: string | null;
-  closingTime: string | null;
-  duration: number;
-  unitPrice: number | null;
-  area: {
-    areaID: number;
-    areaName: string;
-  };
-  hasCrud: boolean;
-}
+import { Ride } from "../models/ride.model";
 
 interface RidesPopupProps {
   open: boolean;
@@ -39,6 +22,7 @@ interface RidesPopupProps {
   formData: Partial<Ride>;
   setFormData: (formData: Partial<Ride>) => void;
   isEditing: boolean;
+  isSubmitting: boolean;
 }
 
 const RidesPopup: React.FC<RidesPopupProps> = ({
@@ -48,6 +32,7 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
   formData,
   setFormData,
   isEditing,
+  isSubmitting,
 }) => {
   const [areas, setAreas] = useState<{ areaID: number; areaName: string }[]>(
     []
@@ -69,160 +54,167 @@ const RidesPopup: React.FC<RidesPopupProps> = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedArea = areas.find(
-      (area) => area.areaID === parseInt(e.target.value)
-    );
+  const handleAreaChange = (e: SelectChangeEvent<string>) => {
+    const selectedAreaId = parseInt(e.target.value);
+    const selectedArea =
+      areas.find((area) => area.areaID === selectedAreaId) || null;
+
     setFormData({
       ...formData,
       area: {
-        areaID: parseInt(e.target.value),
+        areaID: selectedAreaId,
         areaName: selectedArea?.areaName || "",
       },
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form data:", formData);
     onSubmit(formData);
-    onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{isEditing ? "Edit Ride" : "Create Ride"}</DialogTitle>
-      <DialogContent>
-        <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          name="rideName"
-          label="Name"
-          value={formData.rideName || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="area-select-label">Area</InputLabel>
-          <Select
-            labelId="area-select-label"
-            id="area-select"
-            value={formData.area?.areaID?.toString() || ""}
-            onChange={handleAreaChange}
-          >
-            {areas.map((area) => (
-              <MenuItem key={area.areaID} value={area.areaID.toString()}>
-                {area.areaName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          name="type"
-          label="Type"
-          value={formData.type || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          name="minimumHeight"
-          type="number"
-          label="Minimum Height Required(cm)"
-          value={formData.minimumHeight || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          name="maximumCapacity"
-          type="number"
-          label="Maximum Capacity"
-          value={formData.maximumCapacity || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="duration"
-          type="number"
-          label="Duration in Seconds"
-          value={formData.duration || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          name="unitPrice"
-          label="Price"
-          type="number"
-          value={formData.unitPrice || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          required
-        />
-        <TextField
-          margin="dense"
-          id="description"
-          label="Description"
-          type="text"
-          multiline
-          rows={4}
-          fullWidth
-          value={formData.description || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          required
-        />
-        <TextField
-          margin="dense"
-          id="openingTime"
-          label="Opening Time"
-          type="time"
-          fullWidth
-          value={formData.openingTime || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, openingTime: e.target.value })
-          }
-          InputLabelProps={{
-            shrink: true,
-          }}
-          required
-        />
-        <TextField
-          margin="dense"
-          id="closingTime"
-          label="Closing Time"
-          type="time"
-          fullWidth
-          value={formData.closingTime || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, closingTime: e.target.value })
-          }
-          InputLabelProps={{
-            shrink: true,
-          }}
-          required
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
-        </Button>
-      </DialogActions>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <TextField
+            name="imageUrl"
+            label="Image URL"
+            value={formData.imageUrl || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="rideName"
+            label="Name"
+            value={formData.rideName || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="area-select-label" required>
+              Area
+            </InputLabel>
+            <Select
+              labelId="area-select-label"
+              id="area-select"
+              required
+              value={formData.area?.areaID?.toString() || ""}
+              onChange={(event: SelectChangeEvent<string>) =>
+                handleAreaChange(event)
+              }
+            >
+              {areas.map((area) => (
+                <MenuItem key={area.areaID} value={area.areaID.toString()}>
+                  {area.areaName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            name="type"
+            label="Type"
+            value={formData.type || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="minimumHeight"
+            type="number"
+            label="Minimum Height Required(cm)"
+            value={formData.minimumHeight || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="maximumCapacity"
+            type="number"
+            label="Maximum Capacity"
+            value={formData.maximumCapacity || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            name="duration"
+            type="number"
+            label="Duration in Seconds"
+            value={formData.duration || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="unitPrice"
+            label="Price"
+            type="number"
+            value={formData.unitPrice || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            margin="dense"
+            id="description"
+            label="Description"
+            type="text"
+            multiline
+            rows={4}
+            fullWidth
+            value={formData.description || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            id="openingTime"
+            label="Opening Time"
+            type="time"
+            fullWidth
+            value={formData.openingTime || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, openingTime: e.target.value })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="closingTime"
+            label="Closing Time"
+            type="time"
+            fullWidth
+            value={formData.closingTime || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, closingTime: e.target.value })
+            }
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {isEditing ? "Save" : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };

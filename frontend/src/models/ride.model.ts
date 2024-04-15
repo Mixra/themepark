@@ -2,10 +2,10 @@ export interface Ride {
   imageUrl: string;
   rideID: number;
   rideName: string;
-  description: string;
+  description: string | null;
   type: string;
-  minimumHeight: number;
-  maximumCapacity: number;
+  minimumHeight: number | null;
+  maximumCapacity: number | null;
   openingTime: string;
   closingTime: string;
   duration: number;

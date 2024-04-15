@@ -160,6 +160,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAllowedAreas()
         {
             var username = HttpContext.Items["Username"];
+            var adminLevel = HttpContext.Items["Level"];
 
             var staffId = await _databaseService.QuerySingleOrDefaultAsync<int?>("SELECT StaffID FROM Staff WHERE Username = @Username", new { Username = username });
 
@@ -168,7 +169,7 @@ namespace backend.Controllers
                 return BadRequest(new { error = "User is not a staff member" });
             }
 
-            var areas = await _databaseService.QueryAsync<dynamic>("SELECT pa.AreaID, pa.Name FROM AreaManager am JOIN ParkAreas pa ON am.AreaID = pa.AreaID WHERE am.StaffID = @StaffID", new { StaffID = staffId });
+            var areas = await _databaseService.QueryAsync<dynamic>("SELECT pa.AreaID, pa.Name FROM ParkAreas pa WHERE EXISTS (SELECT 1 FROM AreaManager am WHERE am.AreaID = pa.AreaID AND am.StaffID = @StaffID) OR @Role = 999", new { StaffID = staffId, Role = adminLevel });
 
             var parsed = areas.Select(a => new
             {
@@ -178,7 +179,6 @@ namespace backend.Controllers
 
             return Ok(parsed);
         }
-
 
         [Authorize]
         [HttpGet("rides")]
@@ -242,7 +242,31 @@ namespace backend.Controllers
                 Duration = r.Duration,
                 UnitPrice = r.UnitPrice,
                 Area = JsonConvert.DeserializeObject<ParkViewModel>(r.Area),
-                hasCrud = r.hasCrud == 1 || (int)HttpContext.Items["Level"] == 999
+                hasCrud = r.hasCrud == 1 || (HttpContext.Items["Level"] != null && ((int)HttpContext.Items["Level"] == 999))
+            });
+
+            return Ok(parsed);
+        }
+
+        [Authorize]
+        [HttpGet("events")]
+        public async Task<IActionResult> GetEvents()
+        {
+            var query = @"SELECT e.EventID, e.Name, e.Description, e.EventType, e.AgeRestriction, e.ImageUrl, e.StartDate, e.EndDate, e.RequireTicket, e.UnitPrice FROM Events as e WHERE e.ClosureStatus IS NULL OR e.ClosureStatus != 1";
+            var events = await _databaseService.QueryAsync<dynamic>(query);
+
+            var parsed = events.Select(e => new
+            {
+                EventID = e.EventID,
+                EventName = e.Name,
+                Description = e.Description,
+                EventType = e.EventType,
+                AgeRestriction = e.AgeRestriction,
+                ImageUrl = e.ImageUrl,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                RequireTicket = e.RequireTicket,
+                UnitPrice = e.UnitPrice
             });
 
             return Ok(parsed);
