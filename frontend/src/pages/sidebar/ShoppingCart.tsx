@@ -17,6 +17,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import db from "../../components/db";
 
 
 
@@ -64,22 +65,50 @@ const ShoppingCartpage: React.FC = () => {
    
 
 
-  const handleCheckout = () => {
-    // Calculate total amount
+  const handleCheckout = async () => {
     const totalAmount = calculateFinalPrice();
     const currDatetime = new Date().toISOString();
   
-    // Store order data in local storage
+    const orderItems = cartItems.map((item) => {
+      if (item.itemType === "Event") {
+        const eventItem = item as EventItem;
+        return {
+          itemType: item.itemType,
+          eventID: eventItem.eventID,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        };
+      } else if (item.itemType === "Ride") {
+        const rideItem = item as RideItem;
+        return {
+          itemType: item.itemType,
+          rideID: rideItem.rideId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        };
+      } else if (item.itemType === "GiftShop") {
+        const giftShopItem = item as GiftShopItem;
+        return {
+          itemType: item.itemType,
+          itemID: giftShopItem.itemId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        };
+      }
+    });
+  
     const orderData = {
-      totalAmount,
-      cartItems,
-      currDatetime,
+      items: orderItems,
     };
   
-    localStorage.setItem('orderData', JSON.stringify(orderData));
-  
-    setOpen(true);
-    //clearCart(); // Call the function to clear the cart
+    try {
+      const response = await db.post("/order/", orderData);
+      console.log("Order placed successfully:", response.data);
+      setOpen(true);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      // Handle error scenario
+    }
   };
   
   

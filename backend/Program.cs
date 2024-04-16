@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOrigin", builder =>
     {
-        builder.WithOrigins("http://localhost:5173")
+        builder.WithOrigins("http://localhost:5173", "http://localhost:5194", "https://theme-park.azurewebsites.net")
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials();
@@ -77,11 +77,11 @@ else
     app.UseHttpsRedirection();
 }
 
-/*app.UseStaticFiles(new StaticFileOptions
+app.UseStaticFiles(new StaticFileOptions
 {
     ServeUnknownFileTypes = true,
     DefaultContentType = "application/octet-stream"
-});*/
+});
 
 app.MapFallbackToFile("index.html");
 
@@ -92,10 +92,13 @@ app.UseAuthentication();
 
 app.UseMiddleware<ExtractJWTMiddleware>();
 
+app.UseCors("AllowOrigin");
+
+
+
 app.UseAuthorization();
 
 
-app.UseCors("AllowOrigin");
 
 app.MapControllers();
 
