@@ -134,7 +134,7 @@ namespace backend.Controllers
             )
             ";
 
-            await _databaseService.ExecuteAsync(query,
+            var restaurantID = await _databaseService.ExecuteInsertAsync(query,
             new
             {
                 ImageURL = restaurant.ImageURL,
@@ -147,7 +147,7 @@ namespace backend.Controllers
                 AreaID = restaurant.Area.AreaID
             });
 
-            return Ok(new { Message = "Restaurant added successfully" });
+            return Ok(new { Message = "Restaurant added successfully", RestaurantID = restaurantID });
         }
 
 
@@ -255,14 +255,14 @@ namespace backend.Controllers
             )
             ";
 
-            await _databaseService.ExecuteAsync(query, new
+            var ItemID = await _databaseService.ExecuteInsertAsync(query, new
             {
                 RestaurantID = restaurantID,
                 ItemName = menuItem.ItemName,
                 Price = menuItem.Price,
             });
 
-            return Ok(new { Message = "Menu item created successfully" });
+            return Ok(new { Message = "Menu item created successfully", ItemID = ItemID });
         }
 
         [Authorize(Roles = "999, 1")]

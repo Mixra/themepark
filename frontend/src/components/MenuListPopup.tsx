@@ -49,9 +49,12 @@ const MenuPopup: React.FC<MenuPopupProps> = ({
           itemName: newMenuItemName.trim(),
           price: newMenuItemPrice,
         };
-        await db.post(`/restaurant/${restaurantId}/menu`, newMenuItem);
+        const response = await db.post(
+          `/restaurant/${restaurantId}/menu`,
+          newMenuItem
+        );
         const newMenuItemWithID: MenuItemModel = {
-          itemID: -1, // Temporary ID for the new item
+          itemID: response.data.itemID,
           itemName: newMenuItem.itemName,
           price: newMenuItem.price,
         };

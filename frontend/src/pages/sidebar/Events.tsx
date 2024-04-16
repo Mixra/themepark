@@ -21,8 +21,6 @@ import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import db from "../../components/db";
 import { Event, Purchase } from "../../models/event.model";
 
-
-
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -51,9 +49,6 @@ const EventsPage: React.FC = () => {
     fetchEvents();
   }, []);
 
-
-
-  
   // This will be the admin portion
   const [formData, setFormData] = useState<Partial<Event>>({});
   const [isEditing, setIsEditing] = useState(false);
@@ -79,8 +74,11 @@ const EventsPage: React.FC = () => {
           )
         );
       } else {
-        const newEvent = { ...formData } as Event;
-        await db.post("/create/events", newEvent);
+        const response = await db.post("/create/events", formData);
+        const newEvent = {
+          ...formData,
+          eventID: response.data.eventID,
+        } as Event;
         setEvents((prevEvents) => [...prevEvents, newEvent]);
       }
       setOpenPopup(false);
@@ -125,7 +123,7 @@ const EventsPage: React.FC = () => {
     const newItem: Purchase = {
       eventID: selectedEvent.eventID,
       name: selectedEvent.eventName,
-      unitPrice: selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
+      price: selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
       itemType: "Event",
       quantity,
     };
@@ -161,21 +159,6 @@ const EventsPage: React.FC = () => {
   const handleCloseDialog = () => {
     setShowTicketDialog(false);
     setQuantity(1); // Reset quantity for future purchases
-  };
-
-   // Function to format date and time
-   const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime);
-    return date.toLocaleString('en-US', {
-
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false,
-
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   return (
@@ -249,28 +232,13 @@ const EventsPage: React.FC = () => {
                   alignItems: "center",
                 }}
               >
-                
-
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: 
-                  <Typography variant="body2" fontWeight="bold">
-                    {formatDateTime(thisevent.startDate)}
-                  </Typography>
-                  
+                  Opening Time: {thisevent.startDate}
                 </Typography>
-              
-              
-              
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: 
-                  <Typography variant="body2" fontWeight="bold">
-                    {formatDateTime(thisevent.endDate)}
-                  </Typography>
+                  Closing Time: {thisevent.endDate}
                 </Typography>
-             
               </Box>
-
-              
               <Divider sx={{ marginY: 1 }} />
               {thisevent.requireTicket ? (
                 <div>

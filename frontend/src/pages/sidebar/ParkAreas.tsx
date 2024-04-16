@@ -85,8 +85,11 @@ const ParkAreaPage: React.FC = () => {
           )
         );
       } else {
-        const newParkArea = formData as ParkArea;
-        await db.post("/create/areas", newParkArea);
+        const response = await db.post("/create/areas", formData);
+        const newParkArea = {
+          ...formData,
+          areaID: response.data.areaID,
+        } as ParkArea;
         setParkAreas((prevParkAreas) => [...prevParkAreas, newParkArea]);
       }
       setOpenPopup(false);

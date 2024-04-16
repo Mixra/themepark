@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,19 +6,15 @@ import {
   DialogActions,
   Button,
   TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
+  FormHelperText,
 } from "@mui/material";
-
-interface GiftShop {
-  shopID?: number;
-  areaID?: number;
-  name?: string;
-  description?: string;
-  openingTime?: string;
-  closingTime?: string;
-  merchandiseType?: string;
-  imageUrl?: string;
-  merchlist?: { [item: string]: number };
-}
+import db from "./db";
+import { GiftShop } from "../models/giftshop.model";
 
 interface GiftShopPopupProps {
   open: boolean;
@@ -37,35 +33,44 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
   setFormData,
   isEditing,
 }) => {
+  const [areas, setAreas] = useState<{ areaID: number; areaName: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const response = await db.get("/view/allowed_areas");
+        setAreas(response.data);
+      } catch (error) {
+        console.error("Error fetching areas:", error);
+      }
+    };
+    fetchAreas();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === "merchlist") {
-      // Convert string to merchlist object
-      const items = value.split("\n").map((item) => item.split(":"));
-      const merchlist = items.reduce((acc, [key, val]) => {
-        if (key && val) {
-          acc[key.trim()] = parseInt(val.trim(), 10) || 0;
-        }
-        return acc;
-      }, {} as { [item: string]: number });
-      setFormData({ ...formData, [name]: merchlist });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Function to convert the merchlist object to a string for the TextField
-  const merchlistToString = (merchlist?: { [item: string]: number }) => {
-    return merchlist
-      ? Object.entries(merchlist)
-          .map(([item, price]) => `${item}: ${price}`)
-          .join("\n")
-      : "";
+  const handleAreaChange = (e: SelectChangeEvent<string>) => {
+    const selectedAreaId = parseInt(e.target.value);
+    const selectedArea =
+      areas.find((area) => area.areaID === selectedAreaId) || null;
+
+    setFormData({
+      ...formData,
+      area: {
+        areaID: selectedAreaId,
+        areaName: selectedArea?.areaName || "",
+      },
+    });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Form data:", formData);
     onSubmit(formData);
-    onClose();
   };
 
   return (
@@ -73,98 +78,98 @@ const GiftShopPopup: React.FC<GiftShopPopupProps> = ({
       <DialogTitle>
         {isEditing ? "Edit Gift Shop" : "Create Gift Shop"}
       </DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Name"
-          type="text"
-          fullWidth
-          value={formData.name || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="description"
-          label="Description"
-          type="text"
-          fullWidth
-          multiline
-          rows={4}
-          value={formData.description || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="areaID"
-          label="Area ID"
-          type="number"
-          fullWidth
-          value={formData.areaID || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="openingTime"
-          label="Opening Time"
-          type="time"
-          fullWidth
-          value={formData.openingTime || ""}
-          onChange={handleChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          margin="dense"
-          name="closingTime"
-          label="Closing Time"
-          type="time"
-          fullWidth
-          value={formData.closingTime || ""}
-          onChange={handleChange}
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          margin="dense"
-          name="merchandiseType"
-          label="Merchandise Type"
-          type="text"
-          fullWidth
-          value={formData.merchandiseType || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="imageUrl"
-          label="Image URL"
-          type="text"
-          fullWidth
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-        />
-        <TextField
-          margin="dense"
-          name="merchlist"
-          label="Merchandise List (item: price)"
-          helperText="Enter each item on a new line in the format: item: price"
-          type="text"
-          fullWidth
-          multiline
-          rows={4}
-          value={merchlistToString(formData.merchlist)}
-          onChange={handleChange}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} color="primary" variant="contained">
-          {isEditing ? "Save Changes" : "Create"}
-        </Button>
-      </DialogActions>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <TextField
+            name="imageURL"
+            label="Image URL"
+            value={formData.imageURL || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="shopName"
+            label="Name"
+            value={formData.shopName || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="merchandiseType"
+            label="Merchandise Type"
+            value={formData.merchandiseType || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="area-select-label">Area</InputLabel>
+            <Select
+              labelId="area-select-label"
+              id="area-select"
+              value={formData.area?.areaID?.toString() || ""}
+              onChange={(event: SelectChangeEvent<string>) =>
+                handleAreaChange(event)
+              }
+            >
+              {areas.map((area) => (
+                <MenuItem key={area.areaID} value={area.areaID.toString()}>
+                  {area.areaName}
+                </MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>Required</FormHelperText>
+          </FormControl>
+          <TextField
+            name="description"
+            label="Description"
+            value={formData.description || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={4}
+            required
+          />
+          <TextField
+            name="openingTime"
+            label="Opening Time"
+            type="time"
+            value={formData.openingTime || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          <TextField
+            name="closingTime"
+            label="Closing Time"
+            type="time"
+            value={formData.closingTime || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="contained">
+            {isEditing ? "Save" : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };

@@ -86,8 +86,12 @@ const RidesPage: React.FC = () => {
           )
         );
       } else {
-        const newRide = { ...formData, hasCrud: true } as Ride;
-        await db.post("/create/rides", newRide);
+        const response = await db.post("/create/rides", formData);
+        const newRide = {
+          ...formData,
+          rideID: response.data.rideID,
+          hasCrud: true,
+        } as Ride;
         setRides((prevRides) => [...prevRides, newRide]);
       }
       setOpenPopup(false);

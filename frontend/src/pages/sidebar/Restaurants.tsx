@@ -98,11 +98,12 @@ const RestaurantsPage: React.FC = () => {
           )
         );
       } else {
+        const response = await db.post("/restaurant", formData);
         const newRestaurant = {
           ...formData,
+          restaurantID: response.data.restaurantID,
           hasCrud: 1, // Set hasCrud to 1 for new restaurants
         } as Restaurant;
-        await db.post("/restaurant", newRestaurant);
         setRestaurants((prevRestaurants) => [
           ...prevRestaurants,
           newRestaurant,

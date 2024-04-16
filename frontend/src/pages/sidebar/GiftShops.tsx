@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,109 +8,20 @@ import {
   Typography,
   IconButton,
   Divider,
+  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import GiftShopPopup from "../../components/GiftShopPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
-import SaveIcon from "@mui/icons-material/Save"; // For saving edited items
-import CancelIcon from "@mui/icons-material/Cancel"; // For canceling an edit
-import AddIcon from "@mui/icons-material/Add";
-import MerchandiseEditor from "../../components/MerchandiseEditor";
-
-interface GiftShop {
-  shopID: number;
-  areaID: number;
-  name: string;
-  description: string;
-  openingTime: string;
-  closingTime: string;
-  merchandiseType: string;
-  imageUrl?: string;
-  merchlist: { [item: string]: number };
-}
-
-const fakeGiftShops: GiftShop[] = [
-  {
-    shopID: 1,
-    areaID: 1,
-    name: "Safari Gifts",
-    description:
-      "Find the perfect souvenir from your Safari Adventure - from plush animals to themed apparel",
-    openingTime: "09:00",
-    closingTime: "17:00",
-    merchandiseType: "Souvenirs & Apparel",
-    //hasCrud: true,
-    imageUrl: "https://i.ytimg.com/vi/1OvtQiAgI58/maxresdefault.jpg",
-    merchlist: {
-      "T-Shirt": 10,
-      Mug: 20,
-      Keychain: 30,
-    },
-  },
-  {
-    shopID: 2,
-    areaID: 2,
-    name: "Mystic Treasures",
-    description:
-      "Discover enchanted gifts and mystical souvenirs that capture the magic of the Mystic Forest.",
-    openingTime: "10:00",
-    closingTime: "20:00",
-    merchandiseType: "Magic Supplies & Novelties",
-    //hasCrud: false,
-    imageUrl:
-      "https://images.fineartamerica.com/images/artworkimages/mediumlarge/1/magic-castle-gift-shop-denise-mazzocco.jpg",
-    merchlist: {
-      "T-Shirt": 10,
-      Mug: 20,
-      Keychain: 30,
-    },
-  },
-  {
-    shopID: 5,
-    areaID: 2,
-    name: "Fairy Tales & More",
-    description: "Magical souvenirs to remember your enchanted visit.",
-    openingTime: "10:00",
-    closingTime: "20:00",
-    merchandiseType: "Toys and Wands",
-    //hasCrud: false,
-    imageUrl:
-      "https://www.pier39.com/wp-content/uploads/2021/11/Fairytales-1-Retouched.png",
-    merchlist: {
-      "T-Shirt": 10,
-      Mug: 20,
-      Keychain: 30,
-    },
-  },
-  {
-    shopID: 7,
-    areaID: 4,
-    name: "Dino Digs Store",
-    description: "Discover prehistoric toys, games, and apparel.",
-    openingTime: "08:00",
-    closingTime: "18:00",
-    merchandiseType: "Educational Toys and Books", //update this in the database
-    //hasCrud: false,
-    imageUrl:
-      "https://render.fineartamerica.com/images/rendered/default/poster/8/5.5/break/images/artworkimages/medium/1/gift-shop-dinosaur-route-66-garry-gay.jpg",
-    merchlist: {
-      "T-Shirt": 10,
-      Mug: 20,
-      Keychain: 30,
-    },
-  },
-  // Add more fake data as needed
-];
+import db from "../../components/db";
+import { GiftShop, Inventory } from "../../models/giftshop.model";
 
 const GiftShopsPage: React.FC = () => {
-  const [giftShops, setGiftShops] = useState<GiftShop[]>(fakeGiftShops);
+  const [giftShops, setGiftShops] = useState<GiftShop[]>([]);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [formData, setFormData] = useState<Partial<GiftShop>>({});
-  const [openMerchPopup, setOpenMerchPopup] = useState(false); // State for merchandise editing popup
-  const [selectedGiftShopForMerch, setSelectedGiftShopForMerch] =
-    useState<GiftShop | null>(null); // State to store selected gift shop for merchandise editing
   const [selectedGiftShop, setSelectedGiftShop] = useState<GiftShop | null>(
     null
   );
@@ -119,38 +30,47 @@ const GiftShopsPage: React.FC = () => {
   const level = Number(localStorage.getItem("level"));
   const display_CRUD = level === 999 ? true : false;
 
+  useEffect(() => {
+    const fetchGiftShops = async () => {
+      try {
+        const response = await db.get("/shop");
+        setGiftShops(response.data);
+      } catch (error) {
+        console.error("Error fetching gift shops:", error);
+      }
+    };
+    fetchGiftShops();
+  }, []);
+
   const handleCreateClick = () => {
     setFormData({});
     setIsEditing(false);
     setOpenPopup(true);
   };
 
-  const handleFormSubmit = (formData: Partial<GiftShop>) => {
-    if (isEditing && selectedGiftShop) {
-      const updatedGiftShops = giftShops.map((shop) =>
-        shop.shopID === selectedGiftShop.shopID
-          ? { ...shop, ...formData }
-          : shop
-      );
-      setGiftShops(updatedGiftShops);
-    } else {
-      const newId = giftShops.length + 1; // Assuming shopID is unique and incrementing
-      const newGiftShop: GiftShop = {
-        shopID: newId,
-        areaID: formData.areaID || 0,
-        name: formData.name || "",
-        description: formData.description || "",
-        openingTime: formData.openingTime || "",
-        closingTime: formData.closingTime || "",
-        merchandiseType: formData.merchandiseType || "",
-        merchlist: formData.merchlist || {},
-        imageUrl:
-          formData.imageUrl || "https://via.placeholder.com/300x200.png",
-      };
-
-      setGiftShops([...giftShops, newGiftShop]);
+  const handleFormSubmit = async (formData: Partial<GiftShop>) => {
+    try {
+      if (isEditing && formData.shopID) {
+        await db.put(`/shop`, formData);
+        const updatedGiftShops = giftShops.map((shop) =>
+          shop.shopID === formData.shopID ? { ...shop, ...formData } : shop
+        );
+        setGiftShops(updatedGiftShops);
+      } else {
+        const response = await db.post("/shop", formData);
+        const newGiftShop = {
+          ...formData,
+          shopID: response.data.shopID,
+          inventory: [],
+          hasCrud: 1,
+        } as GiftShop;
+        setGiftShops((prevGiftShops) => [...prevGiftShops, newGiftShop]);
+        setSelectedGiftShop(null);
+      }
+      setOpenPopup(false);
+    } catch (error) {
+      console.error("Error saving gift shop:", error);
     }
-    setOpenPopup(false);
   };
 
   const handleEditClick = (giftShop: GiftShop) => {
@@ -165,38 +85,20 @@ const GiftShopsPage: React.FC = () => {
     setOpenDeleteDialog(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedGiftShop) {
-      const updatedGiftShops = giftShops.filter(
-        (shop) => shop.shopID !== selectedGiftShop.shopID
-      );
-      setGiftShops(updatedGiftShops);
+  const handleDeleteConfirm = async () => {
+    try {
+      if (selectedGiftShop) {
+        await db.delete(`/shop/${selectedGiftShop.shopID}`);
+        setGiftShops((prevGiftShops) =>
+          prevGiftShops.filter(
+            (shop) => shop.shopID !== selectedGiftShop.shopID
+          )
+        );
+      }
+      setOpenDeleteDialog(false);
+    } catch (error) {
+      console.error("Error deleting gift shop:", error);
     }
-    setOpenDeleteDialog(false);
-  };
-
-  const handleMerchEditClick = (giftShop: GiftShop) => {
-    setSelectedGiftShopForMerch(giftShop);
-    setOpenMerchPopup(true);
-  };
-
-  const handleMerchPopupClose = () => {
-    setOpenMerchPopup(false);
-  };
-
-  const handleMerchandiseSave = (updatedMerchandise: {
-    [item: string]: number;
-  }) => {
-    if (selectedGiftShopForMerch) {
-      // Update merchandise items for the selected gift shop
-      const updatedGiftShops = giftShops.map((shop) =>
-        shop.shopID === selectedGiftShopForMerch.shopID
-          ? { ...shop, merchlist: updatedMerchandise }
-          : shop
-      );
-      setGiftShops(updatedGiftShops);
-    }
-    setOpenMerchPopup(false);
   };
 
   return (
@@ -208,10 +110,11 @@ const GiftShopsPage: React.FC = () => {
           sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
         >
           <Button variant="contained" onClick={handleCreateClick}>
-            Create Gift Shop
+            Create
           </Button>
         </Box>
       )}
+
       <Box
         sx={{
           display: "flex",
@@ -224,36 +127,95 @@ const GiftShopsPage: React.FC = () => {
           <Card
             key={shop.shopID}
             sx={{
-              margin: 2,
-              width: 345, // Width of the card
+              margin: 1,
+              width: 300,
+              height: "auto",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "space-between",
             }}
           >
             <img
-              src={shop.imageUrl}
-              alt={shop.name}
-              style={{ width: "100%", objectFit: "cover", height: "200px" }} // Height of the image
+              src={shop.imageURL || "https://via.placeholder.com/300x200.png"}
+              alt="Gift Shop Image"
+              style={{ width: "100%", objectFit: "cover", height: "150px" }}
             />
-            <CardContent>
+
+            <CardContent
+              sx={{
+                flexGrow: 1,
+                padding: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
               <Typography variant="h5" component="div" gutterBottom>
-                {shop.name}
+                {shop.shopName}
+                <Chip
+                  label={shop.area.areaName}
+                  size="small"
+                  sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
+                />
               </Typography>
+
               <Divider sx={{ marginY: 1 }} />
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Merchandise Type: {shop.merchandiseType}
+
+              <Typography color="text.secondary" gutterBottom>
+                <span style={{ fontWeight: "bold" }}>Merchandise Type:</span>{" "}
+                {shop.merchandiseType}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {shop.description}
               </Typography>
-              {/* Listing merchandise items and prices */}
-              <ul>
-                {Object.entries(shop.merchlist).map(([item, price]) => (
-                  <li key={item}>{`${item}: $${price}`}</li>
-                ))}
-              </ul>
+
+              <Divider sx={{ marginY: 1 }} />
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body2">
+                  <span style={{ fontWeight: "bold" }}>Opening Time:</span>{" "}
+                  {shop.openingTime}
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  <span style={{ fontWeight: "bold" }}>Closing Time:</span>{" "}
+                  {shop.closingTime}
+                </Typography>
+              </Box>
+
+              <Divider sx={{ marginY: 1 }} />
+
+              <Box
+                sx={{
+                  maxHeight: 200,
+                  overflow: "auto",
+                  padding: 1,
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                  marginY: 1,
+                }}
+              >
+                <Typography variant="body2" fontWeight="bold">
+                  Inventory:
+                </Typography>
+                {shop.inventory?.length > 0 ? (
+                  shop.inventory.map((item) => (
+                    <Typography key={item.itemID} variant="body2">
+                      - {item.itemName} (${item.unitPrice})
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography variant="body2">
+                    No inventory available
+                  </Typography>
+                )}
+              </Box>
             </CardContent>
+
             {display_CRUD && (
               <CardActions>
                 <IconButton
@@ -268,27 +230,12 @@ const GiftShopsPage: React.FC = () => {
                 >
                   <DeleteIcon />
                 </IconButton>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleMerchEditClick(shop)} // This line triggers merchandise editing dialog
-                >
-                  Edit Merchandise
-                </Button>
               </CardActions>
             )}
-            <MerchandiseEditor
-              open={
-                openMerchPopup &&
-                selectedGiftShopForMerch?.shopID === shop.shopID
-              }
-              onClose={handleMerchPopupClose}
-              initialMerchandise={shop.merchlist}
-              onSave={handleMerchandiseSave}
-            />
           </Card>
         ))}
       </Box>
-      {/* Popup for editing and adding new gift shop */}
+
       <GiftShopPopup
         open={openPopup}
         onClose={() => setOpenPopup(false)}
@@ -297,7 +244,7 @@ const GiftShopsPage: React.FC = () => {
         setFormData={setFormData}
         isEditing={isEditing}
       />
-      {/* Confirmation dialog for deleting a gift shop */}
+
       <DeleteConfirmationPopup
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}

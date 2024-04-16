@@ -47,5 +47,15 @@ namespace backend.Services
                 return await connection.QuerySingleAsync<T>(sql, param);
             }
         }
+
+        public async Task<int> ExecuteInsertAsync(string sql, object? param = null)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                var result = await connection.QuerySingleAsync<int>(sql + "; SELECT SCOPE_IDENTITY();", param);
+                return result;
+            }
+        }
     }
 }
