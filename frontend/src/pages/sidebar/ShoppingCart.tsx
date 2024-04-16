@@ -281,6 +281,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
     {cartItems.some((item) => item.itemType === 'GiftShop') && (
   <>
     <h1 style={{ fontSize: "1.5rem" }}>Gift Shop Items</h1>
+    <Divider sx={{ marginY: 1 ,border:"1px solid #ccc"}} />
     
     {cartItems.map((item) => {
       if (item.itemType === 'GiftShop') {

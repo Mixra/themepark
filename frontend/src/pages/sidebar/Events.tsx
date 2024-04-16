@@ -125,7 +125,7 @@ const EventsPage: React.FC = () => {
     const newItem: Purchase = {
       eventID: selectedEvent.eventID,
       name: selectedEvent.eventName,
-      price: selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
+      unitPrice : selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
       itemType: "Event",
       quantity,
     };
