@@ -22,6 +22,14 @@ import DeleteRideConfirmation from "../../components/DeleteRideConfirmation";
 import db from "../../components/db";
 import { Ride, Purchase } from "../../models/ride.model";
 
+const formatTime = (time: string): string => {
+  const [hours, minutes] = time.split(":").map((part) => parseInt(part, 10));
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12;
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  return `${formattedHours}:${formattedMinutes} ${meridiem}`;
+};
+
 const RidesPage: React.FC = () => {
   const [rides, setRides] = useState<Ride[]>([]);
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
@@ -244,15 +252,16 @@ const RidesPage: React.FC = () => {
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
-                  Opening Time: {ride.openingTime || "-"}
+                  Opening Time: {formatTime(ride.openingTime) || "-"}
                 </Typography>
                 <Typography variant="body2" fontWeight="bold">
-                  Closing Time: {ride.closingTime || "-"}
+                  Closing Time: {formatTime(ride.closingTime) || "-"}
                 </Typography>
               </Box>
+
               <Divider sx={{ marginY: 1 }} />
               <Typography variant="body2" fontWeight="bold">
-                Minimum Height: {ride.minimumHeight}
+                Minimum Height: {ride.minimumHeight} cm
               </Typography>
               <Typography variant="body2" fontWeight="bold">
                 Max seating per ride: {ride.maximumCapacity}
