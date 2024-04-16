@@ -12,8 +12,10 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import InventoryIcon from "@mui/icons-material/Inventory";
 import GiftShopPopup from "../../components/GiftShopPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
+import InventoryPopup from "../../components/InventoryPopup";
 import db from "../../components/db";
 import { GiftShop, Inventory } from "../../models/giftshop.model";
 
@@ -21,6 +23,7 @@ const GiftShopsPage: React.FC = () => {
   const [giftShops, setGiftShops] = useState<GiftShop[]>([]);
   const [openPopup, setOpenPopup] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openInventoryPopup, setOpenInventoryPopup] = useState(false);
   const [formData, setFormData] = useState<Partial<GiftShop>>({});
   const [selectedGiftShop, setSelectedGiftShop] = useState<GiftShop | null>(
     null
@@ -98,6 +101,38 @@ const GiftShopsPage: React.FC = () => {
       setOpenDeleteDialog(false);
     } catch (error) {
       console.error("Error deleting gift shop:", error);
+    }
+  };
+
+  const [showFullInventory, setShowFullInventory] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  const handleInventoryClick = (giftShop: GiftShop) => {
+    setSelectedGiftShop(giftShop);
+    setOpenInventoryPopup(true);
+  };
+
+  const handleInventoryExpand = (shopID: number) => {
+    setShowFullInventory((prevState) => ({
+      ...prevState,
+      [shopID]: !prevState[shopID],
+    }));
+  };
+
+  const handleAddToCart = (item: Inventory) => {
+    // Functionality to be added later
+    console.log("Added to cart:", item);
+  };
+
+  const handleInventoryUpdate = (updatedInventory: any[]) => {
+    if (selectedGiftShop) {
+      const updatedGiftShops = giftShops.map((shop) =>
+        shop.shopID === selectedGiftShop.shopID
+          ? { ...shop, inventory: updatedInventory }
+          : shop
+      );
+      setGiftShops(updatedGiftShops);
     }
   };
 
@@ -191,7 +226,7 @@ const GiftShopsPage: React.FC = () => {
 
               <Box
                 sx={{
-                  maxHeight: 200,
+                  maxHeight: showFullInventory[shop.shopID] ? "auto" : 200,
                   overflow: "auto",
                   padding: 1,
                   border: "1px solid #ccc",
@@ -204,15 +239,47 @@ const GiftShopsPage: React.FC = () => {
                 </Typography>
                 {shop.inventory?.length > 0 ? (
                   shop.inventory.map((item) => (
-                    <Typography key={item.itemID} variant="body2">
-                      - {item.itemName} (${item.unitPrice})
-                    </Typography>
+                    <Box
+                      key={item.itemID}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginY: 1,
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="body2">{item.itemName}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {item.description}
+                        </Typography>
+                        <Typography variant="body2">
+                          Quantity: {item.quantity}
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          ${item.unitPrice}
+                        </Typography>
+                      </Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleAddToCart(item)}
+                      >
+                        Add to Cart
+                      </Button>
+                    </Box>
                   ))
                 ) : (
                   <Typography variant="body2">
                     No inventory available
                   </Typography>
                 )}
+                <Button
+                  variant="text"
+                  onClick={() => handleInventoryExpand(shop.shopID)}
+                >
+                  {showFullInventory[shop.shopID] ? "Show Less" : "Show More"}
+                </Button>
               </Box>
             </CardContent>
 
@@ -229,6 +296,12 @@ const GiftShopsPage: React.FC = () => {
                   onClick={() => handleDeleteClick(shop)}
                 >
                   <DeleteIcon />
+                </IconButton>
+                <IconButton
+                  aria-label="inventory"
+                  onClick={() => handleInventoryClick(shop)}
+                >
+                  <InventoryIcon />
                 </IconButton>
               </CardActions>
             )}
@@ -249,8 +322,17 @@ const GiftShopsPage: React.FC = () => {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
-        selectedGiftShop={selectedGiftShop}
+        message="Are you sure you want to delete this gift shop?"
       />
+
+      {selectedGiftShop && (
+        <InventoryPopup
+          open={openInventoryPopup}
+          onClose={() => setOpenInventoryPopup(false)}
+          shopID={selectedGiftShop.shopID}
+          onInventoryUpdate={handleInventoryUpdate}
+        />
+      )}
     </Box>
   );
 };
