@@ -164,17 +164,22 @@ const EventsPage: React.FC = () => {
   };
 
   // Function to format date and time
-  const formatDateTime = (dateTime: string) => {
-    const date = new Date(dateTime);
-    return date.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-
+  const formatDateTime = (dateTimeString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
       month: "numeric",
       day: "numeric",
-      year: "numeric",
-    });
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+    const dateTime = new Date(dateTimeString)
+      .toLocaleString("en-US", options)
+      .split(", ");
+    return {
+      date: dateTime[0], // The date part
+      time: dateTime[1], // The time part
+    };
   };
   // Function to format military time to AM/PM format
 
@@ -203,40 +208,50 @@ const EventsPage: React.FC = () => {
           <Card
             key={thisevent.eventID}
             sx={{
-              margin: 1,
-              width: 300,
-              height: 660,
+              m: 2, // Consistent margin around cards for better spacing
+              width: 300, // Standard width to maintain layout
               display: "flex",
               flexDirection: "column",
+              borderRadius: 2, // Soft rounded corners for a modern touch
+              boxShadow: "1px 2px 4px rgba(0,0,0,0.1)", // Subtle shadow for depth
+              transition: "0.3s", // Smooth transition for hover effects
+              "&:hover": {
+                boxShadow: "2px 4px 8px rgba(0,0,0,0.2)", // Slightly more pronounced shadow on hover
+              },
+              overflow: "hidden", // Ensures content stays within the card
             }}
           >
-            <img
+            <Box
+              component="img"
               src={thisevent.imageUrl}
               alt="Event"
-              style={{ width: "100%", objectFit: "cover", height: "150px" }}
-            />
-            <CardContent
               sx={{
-                overflowY: "auto",
-                padding: 1,
-                flexGrow: 1,
+                width: "100%",
+                height: 200, // Fixed height for images
+                objectFit: "cover", // Ensures images cover the area well without distortion
+                transition: "transform 0.3s ease-in-out",
+                "&:hover": {
+                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                },
               }}
-            >
-              <Typography variant="h5" component="div" gutterBottom>
+            />
+            <CardContent sx={{ flexGrow: 1, padding: 2 }}>
+              <Typography gutterBottom variant="h6" component="div">
                 {thisevent.eventName}
               </Typography>
-              <Divider sx={{ marginY: 1 }} />
-              <Typography color="text.secondary" gutterBottom>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="body2" color="text.secondary" gutterBottom>
                 {thisevent.eventType}
               </Typography>
               <Box
                 sx={{
-                  maxHeight: 120,
-                  minHeight: 120,
+                  my: 1,
+                  p: 1,
+                  bgcolor: "background.paper",
                   overflow: "auto",
-                  padding: 1,
-                  border: "1px solid #ccc",
-                  borderRadius: 1,
+                  maxHeight: "120px", // Ensures the description box has a max height
+                  border: "1px solid #e0e0e0", // Subtle border for the description box
+                  borderRadius: "4px", // Rounded corners for the box
                 }}
               >
                 <Typography variant="body2">{thisevent.description}</Typography>
@@ -249,19 +264,29 @@ const EventsPage: React.FC = () => {
                   alignItems: "center",
                 }}
               >
-                <Typography variant="body2" fontWeight="bold">
-                  Opening Time:
+                <Box>
                   <Typography variant="body2" fontWeight="bold">
-                    {formatDateTime(thisevent.startDate)}
+                    Opening Date:
                   </Typography>
-                </Typography>
+                  <Typography variant="body2">
+                    {formatDateTime(thisevent.startDate).date}
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDateTime(thisevent.startDate).time}
+                  </Typography>
+                </Box>
 
-                <Typography variant="body2" fontWeight="bold">
-                  Closing Time:
+                <Box>
                   <Typography variant="body2" fontWeight="bold">
-                    {formatDateTime(thisevent.endDate)}
+                    Closing Date:
                   </Typography>
-                </Typography>
+                  <Typography variant="body2">
+                    {formatDateTime(thisevent.endDate).date}
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDateTime(thisevent.endDate).time}
+                  </Typography>
+                </Box>
               </Box>
 
               <Divider sx={{ marginY: 1 }} />
