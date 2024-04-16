@@ -24,8 +24,15 @@ const filterMenuItems = () => {
   const level = localStorage.getItem("level");
   if (level === "999") {
     return menuItems;
-  } else {
+  } else if (level === "1") {
     return menuItems.filter((item) => item.text !== "User Management");
+  } else {
+    return menuItems.filter(
+      (item) =>
+        item.text !== "User Management" &&
+        item.text !== "Maintenance" &&
+        item.text !== "Reporting and Analytics"
+    );
   }
 };
 

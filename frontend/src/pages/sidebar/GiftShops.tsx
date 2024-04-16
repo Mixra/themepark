@@ -30,8 +30,8 @@ const GiftShopsPage: React.FC = () => {
   );
   const [isEditing, setIsEditing] = useState(false);
 
-  const level = Number(localStorage.getItem("level"));
-  const display_CRUD = level === 999 ? true : false;
+  const userLevel = Number(localStorage.getItem("level"));
+  const canCreateGiftShop = userLevel === 999 || userLevel === 1;
 
   useEffect(() => {
     const fetchGiftShops = async () => {
@@ -65,7 +65,7 @@ const GiftShopsPage: React.FC = () => {
           ...formData,
           shopID: response.data.shopID,
           inventory: [],
-          hasCrud: 1,
+          hasCrud: 0, // Set hasCrud to 0 by default
         } as GiftShop;
         setGiftShops((prevGiftShops) => [...prevGiftShops, newGiftShop]);
         setSelectedGiftShop(null);
@@ -140,7 +140,7 @@ const GiftShopsPage: React.FC = () => {
     <Box
       sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      {display_CRUD && (
+      {canCreateGiftShop && (
         <Box
           sx={{ display: "flex", justifyContent: "center", marginBottom: 2 }}
         >
@@ -283,7 +283,7 @@ const GiftShopsPage: React.FC = () => {
               </Box>
             </CardContent>
 
-            {display_CRUD && (
+            {shop.hasCrud === 1 && (
               <CardActions>
                 <IconButton
                   aria-label="edit"

@@ -6,6 +6,7 @@ public class User
     public required string LastName { get; set; }
     public required string Email { get; set; }
     public required string Phone { get; set; }
+    public required DateTime BirthDate { get; set; }
     public bool IsStaff { get; set; }
     public Position? Position { get; set; }
     public double? HourlyRate { get; set; }

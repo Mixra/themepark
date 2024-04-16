@@ -20,7 +20,7 @@ namespace backend.Controllers
             _configuration = configuration;
         }
 
-        [Authorize(Roles = "999, 1")]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetResaurant()
         {

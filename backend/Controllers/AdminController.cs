@@ -47,6 +47,7 @@ namespace backend.Controllers
                 Last_Name = user.LastName,
                 Email = user.Email,
                 Phone = user.Phone,
+                BirthDate = user.BirthDate,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 Role = user.Position.Name
@@ -54,8 +55,8 @@ namespace backend.Controllers
 
             var insertQuery =
             @"
-            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role)
-            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, @Role)
+            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role, BirthDate)
+            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, @Role, @BirthDate)
             ";
 
 
@@ -122,6 +123,7 @@ namespace backend.Controllers
                 Last_Name = user.LastName,
                 Email = user.Email,
                 Phone = user.Phone,
+                BirthDate = user.BirthDate,
                 UpdatedAt = DateTime.UtcNow,
                 Role = user.Position.Name
             };
@@ -129,7 +131,7 @@ namespace backend.Controllers
             var updateQuery =
             @"
             UPDATE UserAccounts
-            SET PasswordHash = @PasswordHash, First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email, Phone = @Phone, UpdatedAt = @UpdatedAt, Role = @Role
+            SET PasswordHash = @PasswordHash, First_Name = @First_Name, Last_Name = @Last_Name, Email = @Email, Phone = @Phone, UpdatedAt = @UpdatedAt, Role = @Role, BirthDate = @BirthDate
             WHERE Username = @Username
             ";
 
@@ -205,6 +207,7 @@ namespace backend.Controllers
                 ua.Last_Name AS LastName,
                 ua.Email,
                 ua.Phone,
+                ua.BirthDate,
                 ua.Role,
                 ur.Level AS RoleLevel,
                 s.SSN AS Ssn,
@@ -242,6 +245,7 @@ namespace backend.Controllers
                 LastName = u.LastName,
                 Email = u.Email,
                 Phone = u.Phone,
+                BirthDate = u.BirthDate,
                 IsStaff = u.Role != "Customer",
                 Position = new
                 {

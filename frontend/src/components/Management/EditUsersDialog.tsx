@@ -35,6 +35,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [isStaff, setIsStaff] = useState(false);
@@ -51,6 +52,20 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   const [isFullTime, setIsFullTime] = useState(false);
 
   const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
+
+  const handleBirthDateChange = (event: any) => {
+    const value = event.target.value;
+    if (value) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        setBirthDate(date);
+      } else {
+        setBirthDate(null);
+      }
+    } else {
+      setBirthDate(null);
+    }
+  };
 
   const fetchPositions = async () => {
     let isMounted = true;
@@ -97,6 +112,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
       setLastName(user.lastName);
       setEmail(user.email);
       setPhone(user.phone);
+      setBirthDate(user.birthDate ? new Date(user.birthDate) : null);
       setIsStaff(user.isStaff || false);
       setSelectedPosition(user.position || null);
       setHourlyRate(user.hourlyRate || 0);
@@ -119,6 +135,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         lastName,
         email,
         phone,
+        birthDate: birthDate || new Date(),
         isStaff,
         position: isStaff ? selectedPosition : null,
         hourlyRate: isStaff ? hourlyRate : 0,
@@ -155,17 +172,19 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         <TextField
           label="Username"
           value={username}
-          disabled
+          onChange={(e) => setUsername(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Password"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          type="password"
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="First Name"
@@ -173,6 +192,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
           onChange={(e) => setFirstName(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Last Name"
@@ -180,6 +200,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
           onChange={(e) => setLastName(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Email"
@@ -187,6 +208,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
           onChange={(e) => setEmail(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Phone"
@@ -194,6 +216,16 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
           onChange={(e) => setPhone(e.target.value)}
           fullWidth
           margin="normal"
+          required
+        />
+        <TextField
+          label="Birth Date"
+          value={birthDate ? birthDate.toISOString().slice(0, 10) : ""}
+          onChange={handleBirthDateChange}
+          fullWidth
+          type="date"
+          margin="normal"
+          required
         />
         <FormControlLabel
           control={

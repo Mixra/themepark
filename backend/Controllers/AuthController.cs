@@ -44,13 +44,14 @@ namespace backend.Controllers
                 Last_Name = user.Last_name,
                 Email = user.Email,
                 Phone = user.Phone,
+                BirthDate = user.BirthDate,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             var insertQuery = @"
-            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role)
-            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, 'Customer')";
+            INSERT INTO UserAccounts (Username, PasswordHash, First_Name, Last_Name, Email, Phone, CreatedAt, UpdatedAt, Role, BirthDate)
+            VALUES (@Username, @PasswordHash, @First_Name, @Last_Name, @Email, @Phone, @CreatedAt, @UpdatedAt, 'Customer', @BirthDate)";
 
             try
             {

@@ -23,6 +23,7 @@ interface RegisterData {
   last_name: string;
   email: string;
   phone: string;
+  birthDate: Date;
 }
 
 const Register: React.FC = () => {
@@ -36,11 +37,12 @@ const Register: React.FC = () => {
       last_name: "",
       email: "",
       phone: "",
+      birthDate: new Date(),
     },
     validationSchema: registrationSchema,
     onSubmit: async (values) => {
       const registerData: RegisterData = values;
-      console.log('Submit');
+      console.log("Submit");
       try {
         const response = await db.post("/auth/register", registerData);
         localStorage.setItem("level", response.data.level);
@@ -137,7 +139,9 @@ const Register: React.FC = () => {
             value={formik.values.first_name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            error={formik.touched.first_name && Boolean(formik.errors.first_name)}
+            error={
+              formik.touched.first_name && Boolean(formik.errors.first_name)
+            }
             helperText={formik.touched.first_name && formik.errors.first_name}
           />
           <TextField
@@ -184,6 +188,21 @@ const Register: React.FC = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.phone && Boolean(formik.errors.phone)}
             helperText={formik.touched.phone && formik.errors.phone}
+          />
+          <TextField
+            sx={{ input: { color: "white" } }}
+            margin="normal"
+            required
+            fullWidth
+            id="birthDate"
+            label="Date of Birth"
+            name="birthDate"
+            type="date"
+            autoComplete="bday"
+            value={formik.values.birthDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.birthDate && Boolean(formik.errors.birthDate)}
           />
           <Button
             type="submit"

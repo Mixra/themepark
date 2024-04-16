@@ -26,6 +26,9 @@ namespace backend.Models
 
         [Phone(ErrorMessage = "Invalid phone number.")]
         public required string Phone { get; set; }
+
+        [Required(ErrorMessage = "Birth date is required.")]
+        public required DateTime BirthDate { get; set; }
     }
 
 

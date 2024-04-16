@@ -52,6 +52,12 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
       hideable: true,
     },
     {
+      field: "birthDate",
+      headerName: "Birth Date",
+      width: 150,
+      hideable: true,
+    },
+    {
       field: "position",
       headerName: "Position",
       width: 150,
@@ -137,6 +143,7 @@ const UserDataTable: React.FC<UserDataTableProps> = ({
   const initialState: GridInitialState = {
     columns: {
       columnVisibilityModel: {
+        birthDate: false,
         phone: false,
         parkAreas: false,
         hourlyRate: false,

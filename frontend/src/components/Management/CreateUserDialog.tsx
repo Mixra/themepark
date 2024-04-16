@@ -35,6 +35,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [isStaff, setIsStaff] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null
@@ -80,6 +81,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
       lastName,
       email,
       phone,
+      birthDate: birthDate || new Date(),
       isStaff,
       position: isStaff ? selectedPosition : null,
       hourlyRate: isStaff ? hourlyRate : 0,
@@ -123,6 +125,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           onChange={(e) => setUsername(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Password"
@@ -131,6 +134,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           type="password"
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="First Name"
@@ -138,6 +142,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           onChange={(e) => setFirstName(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Last Name"
@@ -145,6 +150,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           onChange={(e) => setLastName(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Email"
@@ -152,6 +158,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           onChange={(e) => setEmail(e.target.value)}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Phone"
@@ -159,6 +166,18 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           onChange={(e) => setPhone(e.target.value)}
           fullWidth
           margin="normal"
+          required
+        />
+        <TextField
+          label="Birth Date"
+          value={birthDate ? birthDate.toISOString().slice(0, 10) : ""}
+          onChange={(e) =>
+            setBirthDate(e.target.value ? new Date(e.target.value) : null)
+          }
+          fullWidth
+          type="date"
+          margin="normal"
+          required
         />
         <FormControlLabel
           control={

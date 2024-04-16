@@ -5,6 +5,7 @@ export interface User {
   lastName: string;
   email: string;
   phone: string;
+  birthDate: Date;
   isStaff: boolean;
   position: Position | null;
   hourlyRate: number | null;
