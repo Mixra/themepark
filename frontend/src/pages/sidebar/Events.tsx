@@ -20,7 +20,6 @@ import EventPopup from "../../components/EventPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import db from "../../components/db";
 import { Event, Purchase } from "../../models/event.model";
-import { format } from "date-fns";
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
