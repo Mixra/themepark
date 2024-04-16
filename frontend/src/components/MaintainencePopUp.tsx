@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, MenuItem, Box } from '@mui/material';
+import db from "./db";
+import { Maintenance, AffectedEntity } from "../models/maintenance.model";
 
-interface AffectedEntity {
-    entityType: string;
-    entityId: number;
-    closureStatus: boolean;
-}
 
-interface Maintenance {
-    MaintenanceID?: number;
-    MaintenanceStartDate: Date;
-    MaintenanceEndDate?: Date;
-    Reason: string;
-    Description: string;
-    RequireClosure: boolean;
-    AffectedEntities: AffectedEntity[];
-}
+
 
 interface MaintenancePopupProps {
     open: boolean;
@@ -26,66 +15,86 @@ interface MaintenancePopupProps {
 }
 
 const formatDate = (date) => {
-  return date.toISOString().slice(0, 16);
+    if (!date) return '';
+    // Check if date is a string and seems to be formatted correctly
+    if (typeof date === 'string' && date.length === 16 && date.includes('T')) {
+        return date;
+    }
+    // Convert Date objects to the correct string format
+    return date instanceof Date ? date.toISOString().slice(0, 16) : '';
 };
 
-const MaintenancePopup = ({ open, onClose, onSubmit, formData, isEditing }) => {
-  const [maintenanceData, setMaintenanceData] = useState(() => ({
-      MaintenanceID: formData.MaintenanceID || undefined,
-      MaintenanceStartDate: formData.MaintenanceStartDate || new Date(),
-      MaintenanceEndDate: formData.MaintenanceEndDate || new Date(),
-      Reason: formData.Reason || '',
-      Description: formData.Description || '',
-      RequireClosure: formData.RequireClosure || false,
-      AffectedEntities: formData.AffectedEntities || []
-  }));
+  const MaintenancePopup: React.FC<MaintenancePopupProps> = ({ open, onClose, onSubmit, formData, isEditing }) => {
+    const [maintenanceData, setMaintenanceData] = useState<Partial<Maintenance>>({
+        ...formData,
+        maintenanceStartDate: formData.maintenanceStartDate ? new Date(formData.maintenanceStartDate) : new Date(),
+        maintenanceEndDate: formData.maintenanceEndDate ? new Date(formData.maintenanceEndDate) : null,
+        affectedEntities: formData.affectedEntities || []
+    });
 
-  useEffect(() => {
-      if (open) {
-          setMaintenanceData({
-              ...formData,
-              MaintenanceStartDate: formData.MaintenanceStartDate || new Date(),
-              MaintenanceEndDate: formData.MaintenanceEndDate || new Date(),
-              AffectedEntities: formData.AffectedEntities && formData.AffectedEntities.length > 0 ? formData.AffectedEntities : []
-          });
-      }
-  }, [formData, open]);  // Depending on how formData is managed, you might adjust this
-
-    const handleChange = (event) => {
+    useEffect(() => {
+        if (open) {
+            setMaintenanceData({
+                ...formData,
+                maintenanceStartDate: formData.maintenanceStartDate ? new Date(formData.maintenanceStartDate) : new Date(),
+                maintenanceEndDate: formData.maintenanceEndDate ? new Date(formData.maintenanceEndDate) : null,
+                affectedEntities: formData.affectedEntities || []
+            });
+        }
+    }, [formData, open]);
+  
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = event.target;
-        setMaintenanceData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        if (type === 'datetime-local') {
+            // Parse the date string to a Date object
+            const adjustedDate = new Date(value);
+            console.log(`Parsed date for ${name}:`, adjustedDate);
+            setMaintenanceData(prev => ({
+                ...prev,
+                [name]: adjustedDate
+            }));
+        } else {
+            setMaintenanceData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
-
-    const handleEntityChange = (index, event) => {
-        const { name, type, value, checked } = event.target;
-        const updatedEntities = maintenanceData.AffectedEntities.map((entity, idx) =>
-            idx === index ? { ...entity, [name]: type === 'checkbox' ? checked : value } : entity
+    
+  
+    const handleEntityChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+        const updatedEntities = (maintenanceData.affectedEntities || []).map((entity, idx) =>
+            idx === index ? { ...entity, [event.target.name]: event.target.type === 'checkbox' ? event.target.checked : event.target.value } : entity
         );
-        setMaintenanceData(prev => ({ ...prev, AffectedEntities: updatedEntities }));
+        setMaintenanceData(prev => ({ ...prev, affectedEntities: updatedEntities }));
     };
-
+  
     const addEntity = () => {
-        setMaintenanceData(prev => ({
-            ...prev,
-            AffectedEntities: [...prev.AffectedEntities, { entityType: '', entityId: 0, closureStatus: false }]
-        }));
+      setMaintenanceData(prev => ({
+        ...prev,
+        affectedEntities: [...(prev.affectedEntities || []), { entityType: '', entityId: '', closureStatus: false }]
+      }));
     };
-
-    const removeEntity = (index) => {
-        setMaintenanceData(prev => ({
-            ...prev,
-            AffectedEntities: prev.AffectedEntities.filter((_, idx) => idx !== index)
-        }));
+  
+    const removeEntity = (index: number) => {
+      setMaintenanceData(prev => ({
+        ...prev,
+        affectedEntities: (prev.affectedEntities || []).filter((_, idx) => idx !== index)
+      }));
     };
-
+  
     const handleSubmit = () => {
-        onSubmit(maintenanceData);
+        if (!maintenanceData.maintenanceStartDate || !maintenanceData.maintenanceEndDate) {
+            console.error('Date fields are missing!');
+            return;
+        }
+        onSubmit({
+            ...maintenanceData,
+            maintenanceStartDate: maintenanceData.maintenanceStartDate.toISOString(),
+            maintenanceEndDate: maintenanceData.maintenanceEndDate ? maintenanceData.maintenanceEndDate.toISOString() : null,
+        });
         onClose();
     };
-
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
           <DialogTitle>{isEditing ? 'Edit Maintenance' : 'Add Maintenance'}</DialogTitle>
@@ -97,27 +106,30 @@ const MaintenancePopup = ({ open, onClose, onSubmit, formData, isEditing }) => {
                   type="datetime-local"
                   fullWidth
                   variant="outlined"
-                  name="MaintenanceStartDate"
-                  value={formatDate(maintenanceData.MaintenanceStartDate)}
+                  name="maintenanceStartDate"
+                  value={formatDate(maintenanceData.maintenanceStartDate)}
                   onChange={handleChange}
               />
               <TextField
-                  margin="dense"
-                  label="End Date and Time"
-                  type="datetime-local"
-                  fullWidth
-                  variant="outlined"
-                  name="MaintenanceEndDate"
-                  value={maintenanceData.MaintenanceEndDate ? formatDate(maintenanceData.MaintenanceEndDate) : ''}
-                  onChange={handleChange}
-              />
+    margin="dense"
+    label="End Date and Time"
+    type="datetime-local"
+    fullWidth
+    variant="outlined"
+    name="maintenanceEndDate"
+    value={formatDate(maintenanceData.maintenanceEndDate)}
+    onChange={handleChange}
+    InputLabelProps={{
+        shrink: true,  // This prop ensures the label is displayed correctly with a datetime-local input
+    }}
+/>
                 <TextField
                     margin="dense"
                     label="Reason"
                     fullWidth
                     variant="outlined"
-                    name="Reason"
-                    value={maintenanceData.Reason}
+                    name="reason"
+                    value={maintenanceData.reason}
                     onChange={handleChange}
                 />
                 <TextField
@@ -127,15 +139,15 @@ const MaintenancePopup = ({ open, onClose, onSubmit, formData, isEditing }) => {
                     multiline
                     rows={4}
                     variant="outlined"
-                    name="Description"
-                    value={maintenanceData.Description}
+                    name="description"
+                    value={maintenanceData.description}
                     onChange={handleChange}
                 />
                 <FormControlLabel
-                    control={<Checkbox checked={maintenanceData.RequireClosure} onChange={handleChange} name="RequireClosure" />}
+                    control={<Checkbox checked={maintenanceData.requireClosure} onChange={handleChange} name="requireClosure" />}
                     label="Require Closure"
                 />
-                {maintenanceData.AffectedEntities.map((entity, index) => (
+                {maintenanceData.affectedEntities.map((entity, index) => (
                     <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <TextField
                             margin="dense"

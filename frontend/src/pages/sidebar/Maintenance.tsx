@@ -45,15 +45,15 @@ const fetchMaintenance = useCallback(async () => {
   try {
     const { data } = await db.get("/maintenance/maintenance");
     console.log("API Data:", data);
-    const formattedData = data.map((item: any) => ({
+    const formattedData = data ? data.map((item: any) => ({
       ...item,
       maintenanceStartDate: new Date(item.maintenanceStartDate),
       maintenanceEndDate: item.maintenanceEndDate ? new Date(item.maintenanceEndDate) : null,
-      affectedEntities: item.affectedEntities.map(entity => ({
+      affectedEntities: item.affectedEntities ? item.affectedEntities.map(entity => ({
         ...entity,
-        entityName: entity.entityType + ' ' + entity.entityID // Simple naming convention if you don't have a name
-      }))
-    }));
+        entityName: entity.entityType + ' ' + entity.entityID
+      })) : []
+    })) : [];
     setMaintenanceList(formattedData);
   } catch (error) {
     console.error("Error fetching maintenance records:", error);
@@ -76,7 +76,7 @@ const handleClosePopup = () => {
 };
 
 const handleSaveMaintenance = async (formData: Partial<Maintenance>) => {
-  const endpoint = formData.maintenanceID ? `/api/maintenance/${formData.maintenanceID}` : "/api/maintenance";
+  const endpoint = formData.maintenanceID ? `/maintenance/${formData.maintenanceID}` : "/api/maintenance";
   const method = formData.maintenanceID ? "put" : "post";
 
   try {
@@ -90,11 +90,16 @@ const handleSaveMaintenance = async (formData: Partial<Maintenance>) => {
   handleClosePopup();
 };
 
-const handleDeleteMaintenance = async (maintenanceID: number) => {
+const handleDeleteMaintenance = async (maintenanceID) => {
   try {
-    const { data } = await db.delete(`/api/maintenance/${maintenanceID}`);
-    console.log(data.message); // Display success message
-    fetchMaintenance(); // Refresh list after deletion
+    await db.delete(`/Maintenance/maintenance/${maintenanceID}`);
+    setMaintenanceList((prevMaintenanceList) =>
+      prevMaintenanceList.filter(
+        (maintenance) => maintenance.maintenanceID !== maintenanceID
+      )
+    );
+    // Close any dialogs or popups if necessary, e.g.:
+    // setOpenDeleteDialog(false);
   } catch (error) {
     console.error("Error deleting maintenance record:", error);
   }
@@ -155,60 +160,53 @@ const handleDeleteMaintenance = async (maintenanceID: number) => {
     );
   });
   
+  const handleCreateMaintenance = async (formData) => {
+    try {
+      // If you need to adjust formData before sending, do it here
+      const { data } = await db.post("/maintenance/maintenance", formData);
+      
+      // Assuming 'data' returned by your backend contains the new maintenance record,
+      // including its 'maintenanceID' assigned by the server
+      setMaintenanceList(prevMaintenanceList => [...prevMaintenanceList, data]);
+      
+      // Close the popup and reset any state as needed
+      setPopupOpen(false);
+      setCurrentMaintenance(null);
+    } catch (error) {
+      console.error("Error creating maintenance record:", error);
+    }
+  };
 
+  const handleEditMaintenance = async (formData) => {
+    try {
+      // Make sure formData includes 'maintenanceID' of the maintenance you're editing
+      const { data } = await db.put(`maintenance/maintenance/${formData.maintenanceID}`, formData);
+  
+      // Assuming 'data' returned by your backend is the updated maintenance record
+      setMaintenanceList((prevMaintenanceList) =>
+        prevMaintenanceList.map((maintenance) =>
+          maintenance.maintenanceID === data.maintenanceID ? data : maintenance
+        )
+      );
+      
+      // Close the popup and reset any state as needed
+      setPopupOpen(false);
+      setCurrentMaintenance(null);
+    } catch (error) {
+      console.error("Error updating maintenance record:", error);
+    }
+  };
   const handleAddOrEditMaintenance = useCallback(
     (formData: Partial<Maintenance>) => {
-      const affectedEntities = formData.affectedEntities || [];
-      const requireClosure = formData.requireClosure || false;
-
-      // Update the closure status of the affected entities
-      const updatedAffectedEntities = affectedEntities.map((entity) => ({
-        ...entity,
-        closureStatus: requireClosure,
-      }));
-
-      const updatedFormData = {
-        ...formData,
-        AffectedEntities: updatedAffectedEntities,
-      };
-
+      // Determine if we are adding or editing based on if 'maintenanceID' is present
       if (formData.maintenanceID) {
-        // Edit mode
-        setMaintenanceList((current) =>
-          current.map((item) =>
-            item.maintenanceID === formData.maintenanceID
-              ? {
-                  ...item,
-                  ...updatedFormData,
-                  maintenanceStartDate: new Date(
-                    formData.maintenanceStartDate!
-                  ),
-                  maintenanceEndDate: formData.maintenanceEndDate
-                    ? new Date(formData.maintenanceEndDate)
-                    : undefined,
-                }
-              : item
-          )
-        );
+        handleEditMaintenance(formData); // Edit existing record
       } else {
-        // Add mode
-        const newMaintenance = {
-          ...updatedFormData,
-          maintenanceID:
-            maintenanceList.reduce(
-              (max, item) => Math.max(max, item.maintenanceID),
-              0
-            ) + 1,
-          maintenanceStartDate: new Date(formData.maintenanceStartDate!),
-          maintenanceEndDate: formData.maintenanceEndDate
-            ? new Date(formData.maintenanceEndDate)
-            : undefined,
-        } as Maintenance;
-        setMaintenanceList((current) => [...current, newMaintenance]);
+        handleCreateMaintenance(formData); // Create new record
       }
-      closePopup();
     },
-    [closePopup, maintenanceList]
+    // Add any other dependencies for these functions if needed
+    [handleCreateMaintenance, handleEditMaintenance]
   );
 
   const deleteRow = useCallback((maintenanceID: number) => {
@@ -423,14 +421,14 @@ const handleDeleteMaintenance = async (maintenanceID: number) => {
         </Table>
       </TableContainer>
       {popupOpen && (
-        <MaintenancePopup
-          open={popupOpen}
-          onClose={closePopup}
-          onSubmit={handleAddOrEditMaintenance}
-          formData={currentMaintenance || {}}
-          isEditing={!!currentMaintenance?.maintenanceID}
-        />
-      )}
+    <MaintenancePopup
+      open={popupOpen}
+      onClose={closePopup}
+      onSubmit={handleAddOrEditMaintenance}
+      formData={currentMaintenance || {}}
+      isEditing={!!currentMaintenance?.maintenanceID}
+    />
+  )}
     </Box>
   );
 };
