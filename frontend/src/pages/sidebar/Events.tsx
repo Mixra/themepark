@@ -20,6 +20,8 @@ import EventPopup from "../../components/EventPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import db from "../../components/db";
 import { Event, Purchase } from "../../models/event.model";
+import EventAvailable from "@mui/icons-material/EventAvailable";
+import EventBusy from "@mui/icons-material/EventBusy";
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -264,8 +266,25 @@ const EventsPage: React.FC = () => {
 
               <Divider sx={{ marginY: 1 }} />
               {thisevent.requireTicket ? (
-                <div>
-                  <h1 style={{ fontSize: "1.5rem" }}>Tickets Required</h1>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexDirection="column"
+                  mb={2}
+                >
+                  <Typography
+                    variant="h6"
+                    color="secondary"
+                    gutterBottom
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <EventAvailable
+                      color="inherit"
+                      style={{ marginRight: 8 }}
+                    />{" "}
+                    Tickets Required
+                  </Typography>
                   <Button
                     variant="contained"
                     color="primary"
@@ -273,9 +292,25 @@ const EventsPage: React.FC = () => {
                   >
                     Add to Cart (${thisevent.unitPrice || 0})
                   </Button>
-                </div>
+                </Box>
               ) : (
-                <h1 style={{ fontSize: "1.5rem" }}>No Tickets Required</h1>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexDirection="column"
+                  mb={2}
+                >
+                  <Typography
+                    variant="h6"
+                    color="error"
+                    gutterBottom
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <EventBusy color="inherit" style={{ marginRight: 8 }} /> No
+                    Tickets Required
+                  </Typography>
+                </Box>
               )}
             </CardContent>
             {displayCrud && (
