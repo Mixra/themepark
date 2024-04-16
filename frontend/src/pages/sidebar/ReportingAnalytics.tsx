@@ -16,7 +16,6 @@ type SalesReportData = {
   totalSales: number;
   rideSales: number;
   giftShopSales: number;
-  restaurantSales: number;
   bestRide: string;
   leastPerformingRide: string;
   bestPark: string;
@@ -37,7 +36,6 @@ type MaintenanceReportData = {
 
 type EmployeeReportData = {
   employeeName: string;
-  employeeID: string;
   employeePark: string;
   employeePosition: string;
   employeeActive: string | 'Active';
@@ -51,7 +49,6 @@ const salesFields = [
   { label: 'Total Sales', key: 'totalSales', prefix: '$', trend: 'up' },
   { label: 'Ride Sales', key: 'rideSales', prefix: '$', trend: 'down' },
   { label: 'Gift Shop Sales', key: 'giftShopSales', prefix: '$', trend: 'up' },
-  { label: 'Restaurant Sales', key: 'restaurantSales', prefix: '$', trend: 'down' },
  ];
  
  
@@ -116,7 +113,6 @@ const ReportingAnalytics: React.FC = () => {
           totalSales: 100000,
           rideSales: 40000,
           giftShopSales: 15000,
-          restaurantSales: 45000,
           bestRide: 'High Sky Adventure',
           leastPerformingRide: 'Fairy Tale Carousel',
           bestPark: 'FutureLand',
@@ -129,14 +125,12 @@ const ReportingAnalytics: React.FC = () => {
           employees: [
             {
               employeeName: 'Timmy Chra',
-              employeeID: '2dd4dg4g',
               employeePark: 'FutureLand',
               employeePosition: 'Manager',
               employeeActive: 'Active'
             },
             {
               employeeName: 'Billy Baker',
-              employeeID: '1145ffds',
               employeePark: 'FrontierLand',
               employeePosition: 'Admin',
               employeeActive: 'Inactive'
@@ -149,14 +143,14 @@ const ReportingAnalytics: React.FC = () => {
         setReportData({
           entries: [
             {
-              entityType: 'Roller Coaster',
+              entityType: 'Giftshop',
               entityID: 'RC101',
               maintenanceStartDate: '2024-04-12',
               maintenanceEndDate: '2024-04-14',
               maintenanceDescription: 'Routine annual maintenance check and safety verification.'
             },
             {
-              entityType: 'Water Slide',
+              entityType: 'WaterSlide',
               entityID: 'WS205',
               maintenanceStartDate: '2024-04-13',
               maintenanceEndDate: 'Ongoing',
