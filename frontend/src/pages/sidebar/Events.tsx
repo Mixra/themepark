@@ -173,9 +173,6 @@ const EventsPage: React.FC = () => {
     });
   };
   // Function to format military time to AM/PM format
-  const formatTime = (time: string) => {
-    return format(new Date(`2000-01-01T${time}`), "h:mm a");
-  };
 
   return (
     <Box
