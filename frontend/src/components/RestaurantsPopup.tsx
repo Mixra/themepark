@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,20 +6,15 @@ import {
   DialogActions,
   Button,
   TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
+  FormHelperText,
 } from "@mui/material";
-
-interface Restaurant {
-  RestaurantID?: number;
-  AreaID?: number;
-  Name?: string;
-  CuisineType?: string;
-  OpeningTime?: string;
-  ClosingTime?: string;
-  MenuDescription?: string;
-  SeatingCapacity?: number;
-  imageUrl?: string;
-  Menulist?: string[];
-}
+import db from "./db";
+import { Restaurant } from "../models/restaurant.model";
 
 interface RestaurantPopupProps {
   open: boolean;
@@ -38,119 +33,152 @@ const RestaurantPopup: React.FC<RestaurantPopupProps> = ({
   setFormData,
   isEditing,
 }) => {
+  const [areas, setAreas] = useState<{ areaID: number; areaName: string }[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const response = await db.get("/view/allowed_areas");
+        setAreas(response.data);
+      } catch (error) {
+        console.error("Error fetching areas:", error);
+      }
+    };
+    fetchAreas();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: parseInt(e.target.value) || 0 });
+  const handleAreaChange = (e: SelectChangeEvent<string>) => {
+    const selectedAreaId = parseInt(e.target.value);
+    const selectedArea =
+      areas.find((area) => area.areaID === selectedAreaId) || null;
+
+    setFormData({
+      ...formData,
+      area: {
+        areaID: selectedAreaId,
+        areaName: selectedArea?.areaName || "",
+      },
+    });
   };
 
-  const handleMenuChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const menuItems = e.target.value.split(',').map(item => item.trim());
-    setFormData({ ...formData, Menulist: menuItems });
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     onSubmit(formData);
-    onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{isEditing ? "Edit Restaurant" : "Create Restaurant"}</DialogTitle>
-      <DialogContent>
-      <TextField
-          name="imageUrl"
-          label="Image URL"
-          value={formData.imageUrl || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="Name"
-          label="Name"
-          value={formData.Name || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-         <TextField
-          name="areaID"
-          label="Area ID"
-          type="number"
-          value={formData.AreaID || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="CuisineType"
-          label="Cuisine Type"
-          value={formData.CuisineType || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="MenuDescription"
-          label="Menu Description"
-          value={formData.MenuDescription || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          multiline
-          rows={4}
-        />
-        <TextField
-          name="SeatingCapacity"
-          label="Seating Capacity"
-          type="number"
-          value={formData.SeatingCapacity || ""}
-          onChange={handleNumberChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="OpeningTime"
-          label="Opening Time"
-          type="time"
-          value={formData.OpeningTime || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          name="ClosingTime"
-          label="Closing Time"
-          type="time"
-          value={formData.ClosingTime || ""}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-          InputLabelProps={{
-            shrink: true,
-          }}
-        />
-        <TextField
-          name="Menulist"
-          label="Menu Items (separated by commas)"
-          value={formData.Menulist ? formData.Menulist.join(", ") : ""}
-          onChange={handleMenuChange}
-          fullWidth
-          margin="normal"
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {isEditing ? "Save" : "Create"}
-        </Button>
-      </DialogActions>
+      <DialogTitle>
+        {isEditing ? "Edit Restaurant" : "Create Restaurant"}
+      </DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <TextField
+            name="imageURL"
+            label="Image URL"
+            value={formData.imageURL || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="restaurantName"
+            label="Name"
+            value={formData.restaurantName || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="area-select-label">Area</InputLabel>
+            <Select
+              labelId="area-select-label"
+              id="area-select"
+              value={formData.area?.areaID?.toString() || ""}
+              onChange={(event: SelectChangeEvent<string>) =>
+                handleAreaChange(event)
+              }
+            >
+              {areas.map((area) => (
+                <MenuItem key={area.areaID} value={area.areaID.toString()}>
+                  {area.areaName}
+                </MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>Required</FormHelperText>
+          </FormControl>
+          <TextField
+            name="cuisineType"
+            label="Cuisine Type"
+            value={formData.cuisineType || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="menuDescription"
+            label="Menu Description"
+            value={formData.menuDescription || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={4}
+            required
+          />
+          <TextField
+            name="seatingCapacity"
+            label="Seating Capacity"
+            type="number"
+            value={formData.seatingCapacity || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            name="openingTime"
+            label="Opening Time"
+            type="time"
+            value={formData.openingTime || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+          <TextField
+            name="closingTime"
+            label="Closing Time"
+            type="time"
+            value={formData.closingTime || ""}
+            onChange={handleChange}
+            fullWidth
+            margin="dense"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            required
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="contained">
+            {isEditing ? "Save" : "Create"}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 };
