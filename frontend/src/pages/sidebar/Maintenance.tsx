@@ -261,7 +261,6 @@ const handleDeleteMaintenance = async (maintenanceID) => {
       [column]: !prev[column],
     }));
   };
-
   return (
     <Box
       sx={{
