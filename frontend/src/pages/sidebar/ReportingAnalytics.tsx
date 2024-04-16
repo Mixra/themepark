@@ -8,9 +8,10 @@ import dayjs from 'dayjs';
 import { Budget } from '../../components/ReportTests/Sales/TotalSales';
 import { RideSale } from '../../components/ReportTests/Sales/RideSales';
 import { GiftShopSale } from '../../components/ReportTests/Sales/GiftShopSale';
-import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurauntSale';
+//import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurantSale';
 import { LatestMaintenance } from '../../components/ReportTests/Maintenance/MaintainReport';
 import { EmployeeReport } from '../../components/ReportTests/Employee/EmployeeReport';
+import db from '../../components/db';
 
 type SalesReportData = {
   totalSales: number;
@@ -41,24 +42,18 @@ type EmployeeReportData = {
   employeeActive: string | 'Active';
 };
 
-type EmployeeData = {
-  employees: EmployeeReportData[];
-};
-
 const salesFields = [
   { label: 'Total Sales', key: 'totalSales', prefix: '$', trend: 'up' },
   { label: 'Ride Sales', key: 'rideSales', prefix: '$', trend: 'down' },
   { label: 'Gift Shop Sales', key: 'giftShopSales', prefix: '$', trend: 'up' },
- ];
- 
- 
- const SaleComponentMap = {
+];
+
+const SaleComponentMap = {
   totalSales: Budget,
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
   restaurantSales: RestaurantSale,
- };
- 
+};
 
 type ReportType = 'sales' | 'maintenance' | 'employee';
 
@@ -75,7 +70,6 @@ const ReportingAnalytics: React.FC = () => {
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
   useEffect(() => {
-    // Reset filters when changing report types to avoid accessing data not yet available
     if (reportType === 'maintenance' && reportData && reportData.entries) {
       setFilteredMaintenanceEntries(
         showOngoingOnly ? reportData.entries.filter((e: MaintenanceEntry) => e.maintenanceEndDate === 'Ongoing') : reportData.entries
@@ -85,7 +79,6 @@ const ReportingAnalytics: React.FC = () => {
         showActiveOnly ? reportData.employees.filter((e: EmployeeReportData) => e.employeeActive === 'Active') : reportData.employees
       );
     } else {
-      // Clear out filtered data when switching types or when data is undefined
       setFilteredMaintenanceEntries([]);
       setFilteredEmployees([]);
     }
@@ -93,8 +86,18 @@ const ReportingAnalytics: React.FC = () => {
 
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setReportType(event.target.value as ReportType | '');
-    // Reset data when changing report type to ensure clean state
     setReportData(null);
+  };
+
+  const fetchMaintenanceReports = async (startDate: dayjs.Dayjs | null) => {
+    if (!startDate) return;
+    try {
+      const response = await db.get(`/maintenance?startDate=${startDate.format('YYYY-MM-DD')}`);
+      setReportData({ entries: response.data });
+    } catch (error) {
+      console.error('Failed to fetch maintenance reports:', error);
+      alert('Failed to fetch maintenance reports.');
+    }
   };
 
   const handleViewReports = () => {
@@ -105,10 +108,8 @@ const ReportingAnalytics: React.FC = () => {
       alert("Please select a start date for the maintenance report.");
       return;
     }
-    // Simulated data fetching logic
     switch (reportType) {
       case 'sales':
-        // Example sales data initialization
         setReportData({
           totalSales: 100000,
           rideSales: 40000,
@@ -120,7 +121,6 @@ const ReportingAnalytics: React.FC = () => {
         });
         break;
       case 'employee':
-        // Example employee data initialization
         setReportData({
           employees: [
             {
@@ -139,30 +139,11 @@ const ReportingAnalytics: React.FC = () => {
         });
         break;
       case 'maintenance':
-        // Example maintenance data initialization
-        setReportData({
-          entries: [
-            {
-              entityType: 'Giftshop',
-              entityID: 'RC101',
-              maintenanceStartDate: '2024-04-12',
-              maintenanceEndDate: '2024-04-14',
-              maintenanceDescription: 'Routine annual maintenance check and safety verification.'
-            },
-            {
-              entityType: 'WaterSlide',
-              entityID: 'WS205',
-              maintenanceStartDate: '2024-04-13',
-              maintenanceEndDate: 'Ongoing',
-              maintenanceDescription: 'Replacement of water pumps and slide surface resealing due to unexpected leakage.'
-            },
-          ]
-        });
+        fetchMaintenanceReports(startDate);
         break;
     }
   };
 
-  // Function to render date pickers based on report type
   const renderDatePickers = () => {
     if (reportType === 'sales') {
       return (
@@ -200,7 +181,7 @@ const ReportingAnalytics: React.FC = () => {
         <Typography variant="body1">
           Can't find what you're looking for?{" "}
           <Button onClick={() => setShowChatbot(true)}>Try asking Joker</Button>
-        </Typography>
+          </Typography>
       </Box>
       <Box
         sx={{
@@ -291,7 +272,6 @@ const ReportingAnalytics: React.FC = () => {
           </Box>
         )}
       </Box>
-
       <Joker open={showChatbot} onClose={() => setShowChatbot(false)} />
     </div>
   );
