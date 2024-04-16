@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Button,
   IconButton,
@@ -29,83 +29,76 @@ import MaintenancePopup from "../../components/MaintainencePopUp";
 import { useTheme } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-
-interface AffectedEntity {
-  entityType: string;
-  entityName: string;
-  entityId: number;
-  closureStatus: boolean;
-}
-
-interface Maintenance {
-  MaintenanceID: number;
-  MaintenanceStartDate: Date;
-  MaintenanceEndDate?: Date;
-  Reason: string;
-  Description: string;
-  RequireClosure: boolean;
-  AffectedEntities: AffectedEntity[];
-  DeletedAt?: Date;
-}
-
-const initialMaintenance: Maintenance[] = [
-  {
-    MaintenanceID: 1,
-    MaintenanceStartDate: new Date("2024-04-27T08:00:00"),
-    MaintenanceEndDate: new Date("2024-04-27T10:00:00"),
-    Reason: "Routine Checkup",
-    Description: "Regular maintenance checkup for equipment",
-    RequireClosure: false,
-    AffectedEntities: [
-      {
-        entityType: "GiftShop",
-        entityName: "Souvenir Shop",
-        entityId: 2,
-        closureStatus: true,
-      },
-      {
-        entityType: "Restaurant",
-        entityName: "Burger Palace",
-        entityId: 3,
-        closureStatus: false,
-      },
-    ],
-  },
-  {
-    MaintenanceID: 2,
-    MaintenanceStartDate: new Date("2024-04-27T08:00:00"),
-    MaintenanceEndDate: new Date("2024-04-27T10:00:00"),
-    Reason: "Routine Checkup",
-    Description: "Regular maintenance checkup for equipment",
-    RequireClosure: true,
-    AffectedEntities: [
-      {
-        entityType: "GiftShop",
-        entityName: "Souvenir Shop",
-        entityId: 2,
-        closureStatus: true,
-      },
-      {
-        entityType: "Restaurant",
-        entityName: "Burger Palace",
-        entityId: 3,
-        closureStatus: true,
-      },
-    ],
-  },
-  // Additional initial maintenance logs
-];
+import db from "../../components/db";
+import {Maintenance, AffectedEntity } from "../../models/maintenance.model";
 
 const MaintenancePage: React.FC = () => {
-  const [maintenanceList, setMaintenanceList] =
-    useState<Maintenance[]>(initialMaintenance);
-  const [popupOpen, setPopupOpen] = useState<boolean>(false);
-  const [currentMaintenance, setCurrentMaintenance] =
-    useState<Partial<Maintenance> | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterByClosure, setFilterByClosure] = useState("");
-  const [sortDirection, setSortDirection] = useState("asc");
-  const theme = useTheme();
+const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>([]);
+const [popupOpen, setPopupOpen] = useState<boolean>(false);
+const [currentMaintenance, setCurrentMaintenance] = useState<Partial<Maintenance> | null>(null);
+const [searchTerm, setSearchTerm] = useState("");
+const [filterByClosure, setFilterByClosure] = useState("");
+const [sortDirection, setSortDirection] = useState("asc");
+const theme = useTheme();
+
+const fetchMaintenance = useCallback(async () => {
+  try {
+    const { data } = await db.get("/maintenance/maintenance");
+    console.log("API Data:", data);
+    const formattedData = data.map((item: any) => ({
+      ...item,
+      maintenanceStartDate: new Date(item.maintenanceStartDate),
+      maintenanceEndDate: item.maintenanceEndDate ? new Date(item.maintenanceEndDate) : null,
+      affectedEntities: item.affectedEntities.map(entity => ({
+        ...entity,
+        entityName: entity.entityType + ' ' + entity.entityID // Simple naming convention if you don't have a name
+      }))
+    }));
+    setMaintenanceList(formattedData);
+  } catch (error) {
+    console.error("Error fetching maintenance records:", error);
+  }
+}, []);
+
+
+useEffect(() => {
+  fetchMaintenance();
+}, [fetchMaintenance]);
+
+
+const handleOpenPopup = (maintenance?: Maintenance) => {
+  setCurrentMaintenance(maintenance || null); // Pass null for new maintenance
+  setPopupOpen(true);
+};
+
+const handleClosePopup = () => {
+  setPopupOpen(false);
+};
+
+const handleSaveMaintenance = async (formData: Partial<Maintenance>) => {
+  const endpoint = formData.maintenanceID ? `/api/maintenance/${formData.maintenanceID}` : "/api/maintenance";
+  const method = formData.maintenanceID ? "put" : "post";
+
+  try {
+    const { data } = await db[method](endpoint, formData);
+    console.log(data.message); // Display success message
+    fetchMaintenance(); // Refresh list after save
+  } catch (error) {
+    console.error("Error saving maintenance record:", error);
+  }
+
+  handleClosePopup();
+};
+
+const handleDeleteMaintenance = async (maintenanceID: number) => {
+  try {
+    const { data } = await db.delete(`/api/maintenance/${maintenanceID}`);
+    console.log(data.message); // Display success message
+    fetchMaintenance(); // Refresh list after deletion
+  } catch (error) {
+    console.error("Error deleting maintenance record:", error);
+  }
+};
 
   const openPopupToAdd = useCallback(() => {
     console.log("Opening popup to add new maintenance.");
@@ -120,13 +113,13 @@ const MaintenancePage: React.FC = () => {
   const openPopupToEdit = useCallback((maintenance) => {
     console.log(
       "Opening popup to edit maintenance:",
-      maintenance.MaintenanceID
+      maintenance.maintenanceID
     );
     setCurrentMaintenance({
       ...maintenance,
-      MaintenanceStartDate: new Date(maintenance.MaintenanceStartDate),
-      MaintenanceEndDate: maintenance.MaintenanceEndDate
-        ? new Date(maintenance.MaintenanceEndDate)
+      maintenanceStartDate: new Date(maintenance.maintenanceStartDate),
+      maintenanceEndDate: maintenance.maintenanceEndDate
+        ? new Date(maintenance.maintenanceEndDate)
         : null,
     });
     setPopupOpen(true);
@@ -149,24 +142,24 @@ const MaintenancePage: React.FC = () => {
     return maintenanceList.filter((item) => !item.DeletedAt);
   }, [maintenanceList]);
 
-  const filteredMaintenanceList = getActiveMaintenance().filter(
-    (maintenance) => {
-      const maintenanceIDString = maintenance.MaintenanceID.toString();
-      return (
-        (maintenanceIDString.includes(searchTerm) ||
-          maintenance.Reason.toLowerCase().includes(searchTerm) ||
-          maintenance.Description.toLowerCase().includes(searchTerm)) &&
-        (filterByClosure === "" ||
-          (filterByClosure === "yes" && maintenance.RequireClosure) ||
-          (filterByClosure === "no" && !maintenance.RequireClosure))
-      );
-    }
-  );
+  const filteredMaintenanceList = getActiveMaintenance().filter(maintenance => {
+    const maintenanceIDString = maintenance.maintenanceID.toString();
+    return (
+      maintenanceIDString.includes(searchTerm) ||
+      maintenance.reason.toLowerCase().includes(searchTerm) ||
+      maintenance.description.toLowerCase().includes(searchTerm)
+    ) && (
+      filterByClosure === "" ||
+      (filterByClosure === "yes" && maintenance.requireClosure) ||
+      (filterByClosure === "no" && !maintenance.requireClosure)
+    );
+  });
+  
 
   const handleAddOrEditMaintenance = useCallback(
     (formData: Partial<Maintenance>) => {
-      const affectedEntities = formData.AffectedEntities || [];
-      const requireClosure = formData.RequireClosure || false;
+      const affectedEntities = formData.affectedEntities || [];
+      const requireClosure = formData.requireClosure || false;
 
       // Update the closure status of the affected entities
       const updatedAffectedEntities = affectedEntities.map((entity) => ({
@@ -179,19 +172,19 @@ const MaintenancePage: React.FC = () => {
         AffectedEntities: updatedAffectedEntities,
       };
 
-      if (formData.MaintenanceID) {
+      if (formData.maintenanceID) {
         // Edit mode
         setMaintenanceList((current) =>
           current.map((item) =>
-            item.MaintenanceID === formData.MaintenanceID
+            item.maintenanceID === formData.maintenanceID
               ? {
                   ...item,
                   ...updatedFormData,
-                  MaintenanceStartDate: new Date(
-                    formData.MaintenanceStartDate!
+                  maintenanceStartDate: new Date(
+                    formData.maintenanceStartDate!
                   ),
-                  MaintenanceEndDate: formData.MaintenanceEndDate
-                    ? new Date(formData.MaintenanceEndDate)
+                  maintenanceEndDate: formData.maintenanceEndDate
+                    ? new Date(formData.maintenanceEndDate)
                     : undefined,
                 }
               : item
@@ -201,14 +194,14 @@ const MaintenancePage: React.FC = () => {
         // Add mode
         const newMaintenance = {
           ...updatedFormData,
-          MaintenanceID:
+          maintenanceID:
             maintenanceList.reduce(
-              (max, item) => Math.max(max, item.MaintenanceID),
+              (max, item) => Math.max(max, item.maintenanceID),
               0
             ) + 1,
-          MaintenanceStartDate: new Date(formData.MaintenanceStartDate!),
-          MaintenanceEndDate: formData.MaintenanceEndDate
-            ? new Date(formData.MaintenanceEndDate)
+          maintenanceStartDate: new Date(formData.maintenanceStartDate!),
+          maintenanceEndDate: formData.maintenanceEndDate
+            ? new Date(formData.maintenanceEndDate)
             : undefined,
         } as Maintenance;
         setMaintenanceList((current) => [...current, newMaintenance]);
@@ -218,10 +211,10 @@ const MaintenancePage: React.FC = () => {
     [closePopup, maintenanceList]
   );
 
-  const deleteRow = useCallback((MaintenanceID: number) => {
+  const deleteRow = useCallback((maintenanceID: number) => {
     setMaintenanceList((current) =>
       current.map((item) =>
-        item.MaintenanceID === MaintenanceID
+        item.maintenanceID === maintenanceID
           ? {
               ...item,
               DeletedAt: new Date(),
@@ -231,12 +224,12 @@ const MaintenancePage: React.FC = () => {
     );
   }, []);
 
-  const handleMaintenanceCompletion = useCallback((MaintenanceID: number) => {
+  const handleMaintenanceCompletion = useCallback((maintenanceID: number) => {
     setMaintenanceList((current) =>
       current.map((item) => {
-        if (item.MaintenanceID === MaintenanceID) {
+        if (item.maintenanceID === maintenanceID) {
           // Update the affected entities to reopen them
-          const updatedAffectedEntities = item.AffectedEntities.map(
+          const updatedAffectedEntities = item.affectedEntities.map(
             (entity) => ({
               ...entity,
               closureStatus: false,
@@ -339,29 +332,29 @@ const MaintenancePage: React.FC = () => {
           </TableHead>
           <TableBody>
             {filteredMaintenanceList.map((maintenance) => (
-              <React.Fragment key={maintenance.MaintenanceID}>
+              <React.Fragment key={maintenance.maintenanceID}>
                 <TableRow>
-                  <TableCell>{maintenance.MaintenanceID}</TableCell>
+                  <TableCell>{maintenance.maintenanceID}</TableCell>
                   <TableCell>
-                    {maintenance.MaintenanceStartDate.toLocaleString()}
+                    {maintenance.maintenanceStartDate.toLocaleString()}
                   </TableCell>
                   <TableCell>
-                    {maintenance.MaintenanceEndDate
-                      ? maintenance.MaintenanceEndDate.toLocaleString()
+                    {maintenance.maintenanceEndDate
+                      ? maintenance.maintenanceEndDate.toLocaleString()
                       : "N/A"}
                   </TableCell>
-                  <TableCell>{maintenance.Reason}</TableCell>
-                  <TableCell>{maintenance.Description}</TableCell>
+                  <TableCell>{maintenance.reason}</TableCell>
+                  <TableCell>{maintenance.description}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={maintenance.RequireClosure}
+                          checked={maintenance.requireClosure}
                           disabled
                           color="primary"
                         />
                       }
-                      label={maintenance.RequireClosure ? "Yes" : "No"}
+                      label={maintenance.requireClosure ? "Yes" : "No"}
                     />
                   </TableCell>
                   <TableCell>
@@ -369,14 +362,14 @@ const MaintenancePage: React.FC = () => {
                       <EditIcon />
                     </IconButton>
                     <IconButton
-                      onClick={() => deleteRow(maintenance.MaintenanceID)}
+                      onClick={() => deleteRow(maintenance.maintenanceID)}
                     >
                       <DeleteIcon />
                     </IconButton>
-                    {maintenance.MaintenanceEndDate ? null : (
+                    {maintenance.maintenanceEndDate ? null : (
                       <IconButton
                         onClick={() =>
-                          handleMaintenanceCompletion(maintenance.MaintenanceID)
+                          handleMaintenanceCompletion(maintenance.maintenanceID)
                         }
                       >
                         <CheckIcon />
@@ -402,27 +395,23 @@ const MaintenancePage: React.FC = () => {
                           <TableHead>
                             <TableRow>
                               <TableCell>Entity Type</TableCell>
-                              <TableCell>Entity Name</TableCell>
                               <TableCell>Entity ID</TableCell>
                               <TableCell>Closure Status</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {maintenance.AffectedEntities.map(
-                              (entity, index) => (
-                                <TableRow key={index}>
-                                  <TableCell component="th" scope="row">
-                                    {entity.entityType}
-                                  </TableCell>
-                                  <TableCell>{entity.entityName}</TableCell>
-                                  <TableCell>{entity.entityId}</TableCell>
-                                  <TableCell>
-                                    {entity.closureStatus ? "Closed" : "Open"}
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            )}
-                          </TableBody>
+  {maintenance.affectedEntities.map((entity, index) => (
+    <TableRow key={index}>
+      <TableCell component="th" scope="row">
+        {entity.entityType}
+      </TableCell>
+      <TableCell>{entity.entityID}</TableCell>
+      <TableCell>
+        {entity.closureStatus ? "Closed" : "Open"}
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
                         </Table>
                       </AccordionDetails>
                     </Accordion>
@@ -439,7 +428,7 @@ const MaintenancePage: React.FC = () => {
           onClose={closePopup}
           onSubmit={handleAddOrEditMaintenance}
           formData={currentMaintenance || {}}
-          isEditing={!!currentMaintenance?.MaintenanceID}
+          isEditing={!!currentMaintenance?.maintenanceID}
         />
       )}
     </Box>
