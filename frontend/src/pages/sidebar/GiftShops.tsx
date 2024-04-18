@@ -22,7 +22,7 @@ import GiftShopPopup from "../../components/GiftShopPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import InventoryPopup from "../../components/InventoryPopup";
 import db from "../../components/db";
-import { GiftShop, Inventory,Purchase } from "../../models/giftshop.model";
+import { GiftShop, Inventory, Purchase } from "../../models/giftshop.model";
 
 const GiftShopsPage: React.FC = () => {
   const [giftShops, setGiftShops] = useState<GiftShop[]>([]);
@@ -33,14 +33,11 @@ const GiftShopsPage: React.FC = () => {
   const [selectedGiftShop, setSelectedGiftShop] = useState<GiftShop | null>(
     null
   );
-  const [selectedItem, setSelectedItem] = useState<Inventory | null>(
-    null
-  );
+  const [selectedItem, setSelectedItem] = useState<Inventory | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<Purchase[]>([]);
-
 
   const userLevel = Number(localStorage.getItem("level"));
   const canCreateGiftShop = userLevel === 999 || userLevel === 1;
@@ -126,16 +123,13 @@ const GiftShopsPage: React.FC = () => {
   };
 
   const handleInventoryExpand = (shopID: number) => {
+    console.log("Toggling Inventory for Shop ID:", shopID);
     setShowFullInventory((prevState) => ({
       ...prevState,
       [shopID]: !prevState[shopID],
     }));
   };
 
-
-
-
-  
   const handleCloseDialog = () => {
     setShowTicketDialog(false);
     setQuantity(1); // Reset quantity for future purchases
@@ -147,7 +141,7 @@ const GiftShopsPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedItem || quantity < 1) return;
-  
+
     const newItem: Purchase = {
       itemId: selectedItem.itemID,
       name: selectedItem.itemName,
@@ -155,12 +149,12 @@ const GiftShopsPage: React.FC = () => {
       itemType: "GiftShop",
       quantity,
     };
-  
+
     // Get existing cart items from local storage
     const existingCartItems: Purchase[] = JSON.parse(
       localStorage.getItem("cartItems") || "[]"
     );
-  
+
     // Check if the item already exists in the cart
     const existingItemIndex = existingCartItems.findIndex(
       (item) => item.itemId === newItem.itemId
@@ -172,25 +166,16 @@ const GiftShopsPage: React.FC = () => {
       // If the item doesn't exist, add it to the cart
       existingCartItems.push(newItem);
     }
-  
+
     // Update cartItems state
     setCartItems(existingCartItems);
-  
+
     // Store updated cartItems in local storage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
-  
+
     // Close the purchase dialog after adding to cart
     setShowTicketDialog(false);
   };
-  
-
-
-
-
-
-
-
-
 
   const handleInventoryUpdate = (updatedInventory: any[]) => {
     if (selectedGiftShop) {
@@ -290,18 +275,19 @@ const GiftShopsPage: React.FC = () => {
               </Box>
 
               <Divider sx={{ marginY: 1 }} />
-
               <Box
                 sx={{
                   maxHeight: showFullInventory[shop.shopID] ? "auto" : 200,
                   overflow: "auto",
-                  padding: 1,
+                  padding: 2,
                   border: "1px solid #ccc",
-                  borderRadius: 1,
-                  marginY: 1,
+                  borderRadius: 2,
+                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                  bgcolor: "background.paper",
+                  marginY: 2,
                 }}
               >
-                <Typography variant="body2" fontWeight="bold">
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                   Inventory:
                 </Typography>
                 {shop.inventory?.length > 0 ? (
@@ -312,25 +298,36 @@ const GiftShopsPage: React.FC = () => {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
+                        padding: 1,
+                        borderRadius: 1,
+                        boxShadow: "inset 0px 0px 4px rgba(0,0,0,0.1)",
                         marginY: 1,
+                        bgcolor: "background.default",
                       }}
                     >
-                      <Box>
-                        <Typography variant="body2">{thisItem.itemName}</Typography>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body1" fontWeight="bold">
+                          {thisItem.itemName}
+                        </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {thisItem.description}
                         </Typography>
                         <Typography variant="body2">
                           Quantity: {thisItem.quantity}
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold">
+                        <Typography
+                          variant="body2"
+                          color="primary.main"
+                          fontWeight="bold"
+                        >
                           ${thisItem.unitPrice}
                         </Typography>
                       </Box>
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
-                        
+                        size="small" // Smaller button size for subtlety
+                        sx={{ ml: 2 }} // Spacing from the text
                         onClick={() => handleOpenPurchaseDialog(thisItem)}
                       >
                         Add to Cart
@@ -344,7 +341,9 @@ const GiftShopsPage: React.FC = () => {
                 )}
                 <Button
                   variant="text"
+                  color="primary" // Add primary color for consistency
                   onClick={() => handleInventoryExpand(shop.shopID)}
+                  sx={{ mt: 1 }} // Space from the last item
                 >
                   {showFullInventory[shop.shopID] ? "Show Less" : "Show More"}
                 </Button>
@@ -401,7 +400,7 @@ const GiftShopsPage: React.FC = () => {
           onInventoryUpdate={handleInventoryUpdate}
         />
       )}
-      
+
       <Dialog open={showTicketDialog} onClose={handleCloseDialog}>
         <DialogTitle>Add to Cart </DialogTitle>
         <DialogContent>
