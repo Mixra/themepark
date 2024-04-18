@@ -125,7 +125,7 @@ const EventsPage: React.FC = () => {
     const newItem: Purchase = {
       eventID: selectedEvent.eventID,
       name: selectedEvent.eventName,
-      unitPrice : selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
+      unitPrice: selectedEvent.requireTicket ? selectedEvent.unitPrice || 0 : 0,
       itemType: "Event",
       quantity,
     };
@@ -239,7 +239,9 @@ const EventsPage: React.FC = () => {
               <Typography gutterBottom variant="h6" component="div">
                 {thisevent.eventName}
               </Typography>
-              <Divider sx={{ my: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 {thisevent.eventType}
               </Typography>
@@ -256,7 +258,9 @@ const EventsPage: React.FC = () => {
               >
                 <Typography variant="body2">{thisevent.description}</Typography>
               </Box>
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Box
                 sx={{
                   display: "flex",
@@ -289,7 +293,9 @@ const EventsPage: React.FC = () => {
                 </Box>
               </Box>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               {thisevent.requireTicket ? (
                 <Box
                   display="flex"

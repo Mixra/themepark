@@ -245,7 +245,9 @@ const GiftShopsPage: React.FC = () => {
                 />
               </Typography>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
 
               <Typography color="text.secondary" gutterBottom>
                 <span style={{ fontWeight: "bold" }}>Merchandise Type:</span>{" "}
@@ -255,7 +257,9 @@ const GiftShopsPage: React.FC = () => {
                 {shop.description}
               </Typography>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
 
               <Box
                 sx={{
@@ -288,7 +292,9 @@ const GiftShopsPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Box
                 sx={{
                   maxHeight: showFullInventory[shop.shopID] ? "auto" : 200,

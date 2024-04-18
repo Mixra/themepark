@@ -170,7 +170,9 @@ const ParkAreaPage: React.FC = () => {
               <Typography variant="h5" component="div" gutterBottom>
                 {area.areaName}
               </Typography>
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Typography color="text.secondary" gutterBottom>
                 {area.theme}
               </Typography>
@@ -186,7 +188,9 @@ const ParkAreaPage: React.FC = () => {
               >
                 <Typography variant="body2">{area.description}</Typography>
               </Box>
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Box
                 sx={{
                   display: "flex",
@@ -215,7 +219,9 @@ const ParkAreaPage: React.FC = () => {
                   {formatTime(area.closingTime)}
                 </Typography>
               </Box>
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <Typography variant="h6" gutterBottom>

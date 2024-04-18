@@ -227,7 +227,9 @@ const RidesPage: React.FC = () => {
                   sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
                 />
               </Typography>
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Typography color="text.secondary" gutterBottom>
                 {ride.type}
               </Typography>
@@ -247,7 +249,9 @@ const RidesPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Box
                 sx={{
                   display: "flex",
@@ -264,7 +268,9 @@ const RidesPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
               <Typography variant="body2" fontWeight="bold">
                 Minimum Height: {ride.minimumHeight} cm
               </Typography>

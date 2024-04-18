@@ -201,7 +201,9 @@ const RestaurantsPage: React.FC = () => {
                 />
               </Typography>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
 
               <Typography color="text.secondary" gutterBottom>
                 <span style={{ fontWeight: "bold" }}>Cuisine:</span>{" "}
@@ -212,7 +214,9 @@ const RestaurantsPage: React.FC = () => {
                 {restaurant.seatingCapacity}
               </Typography>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
 
               <Box
                 sx={{
@@ -243,7 +247,9 @@ const RestaurantsPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Divider sx={{ marginY: 1 }} />
+              <Divider
+                sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
+              />
 
               <Box
                 sx={{
