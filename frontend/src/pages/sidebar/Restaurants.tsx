@@ -223,11 +223,23 @@ const RestaurantsPage: React.FC = () => {
               >
                 <Typography variant="body2">
                   <span style={{ fontWeight: "bold" }}>Opening Time:</span>{" "}
-                  {restaurant.openingTime}
+                  {new Date(
+                    `1970-01-01T${restaurant.openingTime}`
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </Typography>
-                <Typography variant="body2" fontWeight="bold">
+                <Typography variant="body2">
                   <span style={{ fontWeight: "bold" }}>Closing Time:</span>{" "}
-                  {restaurant.closingTime}
+                  {new Date(
+                    `1970-01-01T${restaurant.closingTime}`
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </Typography>
               </Box>
 

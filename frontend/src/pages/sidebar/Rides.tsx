@@ -251,8 +251,9 @@ const RidesPage: React.FC = () => {
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: "column", // Arrange times vertically
+                  alignItems: "flex-start",
+                  width: "100%", // Take up full width
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
@@ -273,15 +274,15 @@ const RidesPage: React.FC = () => {
               <Typography variant="body2" fontWeight="bold">
                 Duration of the ride: {ride.duration} seconds
               </Typography>
-              <CardActions style={{ justifyContent: "center" }}>
-                <Button
-                  variant="contained"
-                  onClick={() => handleOpenPurchaseDialog(ride)}
-                >
-                  Add To Cart (${ride.unitPrice})
-                </Button>
-              </CardActions>
             </CardContent>
+            <CardActions style={{ justifyContent: "center" }}>
+              <Button
+                variant="contained"
+                onClick={() => handleOpenPurchaseDialog(ride)}
+              >
+                Add To Cart (${ride.unitPrice})
+              </Button>
+            </CardActions>
             {ride.hasCrud && (
               <CardActions>
                 <IconButton

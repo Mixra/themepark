@@ -197,7 +197,7 @@ const ParkAreaPage: React.FC = () => {
                 <Typography variant="body2" fontWeight="bold">
                   Opening Time:
                 </Typography>
-                <Typography variant="body2" fontWeight="bold" color="green">
+                <Typography variant="body2" fontWeight="bold" color="white">
                   {formatTime(area.openingTime)}
                 </Typography>
               </Box>
@@ -211,7 +211,7 @@ const ParkAreaPage: React.FC = () => {
                 <Typography variant="body2" fontWeight="bold">
                   Closing Time:
                 </Typography>
-                <Typography variant="body2" fontWeight="bold" color="red">
+                <Typography variant="body2" fontWeight="bold" color="white">
                   {formatTime(area.closingTime)}
                 </Typography>
               </Box>

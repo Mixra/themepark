@@ -266,11 +266,25 @@ const GiftShopsPage: React.FC = () => {
               >
                 <Typography variant="body2">
                   <span style={{ fontWeight: "bold" }}>Opening Time:</span>{" "}
-                  {shop.openingTime}
+                  {new Date(
+                    `1970-01-01T${shop.openingTime}`
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </Typography>
-                <Typography variant="body2" fontWeight="bold">
+
+                {/* Closing Time */}
+                <Typography variant="body2">
                   <span style={{ fontWeight: "bold" }}>Closing Time:</span>{" "}
-                  {shop.closingTime}
+                  {new Date(
+                    `1970-01-01T${shop.closingTime}`
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </Typography>
               </Box>
 
