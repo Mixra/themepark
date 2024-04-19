@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, Toolbar } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import Topbar from "./Topbar";
 import Sidebar from "./Sidebar";
 import {
@@ -44,6 +45,7 @@ const menuItems = [
   { text: "Gift Shops", icon: <GiftShopIcon />, path: "/gifts" },
   { text: "Purchase History", icon: <TicketsIcon />, path: "/tickets" },
   { text: "Maintenance", icon: <MaintenanceIcon />, path: "/maintenance" },
+ 
   {
     text: "Reporting and Analytics",
     icon: <UserManagementIcon />,
@@ -54,6 +56,8 @@ const menuItems = [
 ];
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const isShoppingCartPage = location.pathname === "/shopping_cart";
   const [open, setOpen] = useState(() => {
     const isSidebarOpen = localStorage.getItem("sidebarOpen");
     return isSidebarOpen === null ? true : isSidebarOpen === "true";
@@ -71,7 +75,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Topbar onDrawerToggle={handleDrawerToggle} />
+      <Topbar onDrawerToggle={handleDrawerToggle } />
+      
       <Sidebar open={open} menuItems={filteredMenuItems} />
       <Box
         component="main"

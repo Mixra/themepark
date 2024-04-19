@@ -17,6 +17,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import Topbar from "../../components/Topbar"; 
 import db from "../../components/db";
 
 
@@ -223,6 +224,7 @@ const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: n
 
   return (
     <Box>
+     
     <h1 style={{ fontSize: "1.5rem" }}>Shopping Cart:  </h1>
     <h1 style={{ fontSize: "1.5rem" }}>{calculateTotalQuantity()} Items</h1>
     <Divider sx={{ marginY: 1 }} />
