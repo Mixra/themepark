@@ -1,34 +1,34 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import Chip from '@mui/material/Chip';
-import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
-import type { SxProps } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import Chip from "@mui/material/Chip";
+import CardHeader from "@mui/material/CardHeader";
+import Divider from "@mui/material/Divider";
+import type { SxProps } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import { ArrowRight as ArrowRightIcon } from "@phosphor-icons/react";
 
- const statusMap = {
-   'Inactive': { label: 'Inactive', color: 'warning' },
-   'Active': { label: 'Active', color: 'success' }
+const statusMap = {
+  Active: { label: "Active", color: "success" },
+  Inactive: { label: "Inactive", color: "warning" },
 } as const;
 
 export interface Employee {
-  employeeName: string;
-  employeeID: string;
-  employeePark: string;
-  employeePosition: string;
-  employeeActive: string | string;
+  username: string;
+  fullName: string;
+  assignedPark: string | null;
+  employeeRole: string;
+  employeeStatus: string;
 }
 
 export interface EmployeeReportData {
-  employees?: Employee[];
+  employees: Employee[];
   sx?: SxProps;
 }
 
@@ -37,28 +37,25 @@ export function EmployeeReport({ employees = [], sx }: EmployeeReportData): Reac
     <Card sx={sx}>
       <CardHeader title="Latest Employee Activities" />
       <Divider />
-      <Box sx={{ overflowX: 'auto' }}>
+      <Box sx={{ overflowX: "auto" }}>
         <Table sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell>Employee Name</TableCell>
-              <TableCell>Employee ID</TableCell>
-              <TableCell>Employee Assigned Park</TableCell>
-              <TableCell>Employee Assigned Role</TableCell>
+              <TableCell>Assigned Park</TableCell>
+              <TableCell>Employee Role</TableCell>
               <TableCell>Employee Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {employees.map((entry) => {
-              const statusLabel = entry.employeeActive === 'Active' ? 'Active' : 'Inactive';
-              const { label, color } = statusMap[statusLabel];
+            {employees.map((employee) => {
+              const { label, color } = statusMap[employee.employeeStatus];
 
               return (
-                <TableRow hover key={entry.employeeID}>
-                  <TableCell>{entry.employeeName}</TableCell>
-                  <TableCell>{entry.employeeID}</TableCell>
-                  <TableCell>{entry.employeePark}</TableCell>
-                  <TableCell>{entry.employeePosition}</TableCell>
+                <TableRow hover key={employee.username}>
+                  <TableCell>{employee.fullName}</TableCell>
+                  <TableCell>{employee.assignedPark || "N/A"}</TableCell>
+                  <TableCell>{employee.employeeRole}</TableCell>
                   <TableCell>
                     <Chip color={color} label={label} size="small" />
                   </TableCell>
@@ -69,7 +66,7 @@ export function EmployeeReport({ employees = [], sx }: EmployeeReportData): Reac
         </Table>
       </Box>
       <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
+      <CardActions sx={{ justifyContent: "flex-end" }}>
         <Button
           color="inherit"
           endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />}
