@@ -209,18 +209,25 @@ const handleDeleteMaintenance = async (maintenanceID) => {
     [handleCreateMaintenance, handleEditMaintenance]
   );
 
-  const deleteRow = useCallback((maintenanceID: number) => {
-    setMaintenanceList((current) =>
-      current.map((item) =>
-        item.maintenanceID === maintenanceID
-          ? {
-              ...item,
-              DeletedAt: new Date(),
-            }
-          : item
-      )
-    );
-  }, []);
+  const deleteRow = useCallback(async (maintenanceID: number) => {
+    try {
+        // Make the API call to delete the maintenance record
+        const response = await db.delete(`/maintenance/maintenance/${maintenanceID}`);
+        console.log(response.data.message); // Assuming the API sends back a success message
+
+        // Update the state to filter out the deleted record
+        setMaintenanceList(current => current.filter(item => item.maintenanceID !== maintenanceID));
+        
+        // Optionally, show a success message to the user
+        // e.g., enqueueSnackbar('Maintenance record deleted successfully', { variant: 'success' });
+
+    } catch (error) {
+        console.error("Error deleting maintenance record:", error);
+        // Optionally, show an error message to the user
+        // e.g., enqueueSnackbar('Failed to delete maintenance record', { variant: 'error' });
+    }
+}, []);
+
 
   const handleMaintenanceCompletion = useCallback((maintenanceID: number) => {
     setMaintenanceList((current) =>

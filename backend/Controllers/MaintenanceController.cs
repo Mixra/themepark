@@ -79,9 +79,37 @@ public async Task<IActionResult> GetMaintenanceRecords()
 [HttpDelete("maintenance/{MaintenanceID}")]
 public async Task<IActionResult> DeleteMaintenance(int MaintenanceID)
 {
-    await _databaseService.ExecuteAsync("DELETE FROM Maintenance WHERE MaintenanceID = @MaintenanceID", new { MaintenanceID });
+    try
+    {
+        // First delete the dependent records in MaintenanceAffectedEntities
+        int affectedEntitiesDeleted = await _databaseService.ExecuteAsync("DELETE FROM MaintenanceAffectedEntities WHERE MaintenanceID = @MaintenanceID", new { MaintenanceID });
 
-    return Ok(new { message = "Maintenance deleted successfully" });
+        // Then delete the record in Maintenance if the first deletion was successful
+        if (affectedEntitiesDeleted >= 0) // If the first delete command did not throw an exception
+        {
+            int maintenanceDeleted = await _databaseService.ExecuteAsync("DELETE FROM Maintenance WHERE MaintenanceID = @MaintenanceID", new { MaintenanceID });
+            if (maintenanceDeleted > 0)
+            {
+                return Ok(new { message = "Maintenance deleted successfully" });
+            }
+            else
+            {
+                return NotFound(new { message = "Maintenance not found" });
+            }
+        }
+        else
+        {
+            return StatusCode(500, new { message = "Failed to delete maintenance affected entities" });
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log the exception (consider using a logging framework)
+        // Log.Error(ex, "Error deleting maintenance");
+
+        // Return an appropriate error response
+        return StatusCode(500, new { message = "Error deleting maintenance" });
+    }
 }
 
 
