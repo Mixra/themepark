@@ -28,12 +28,14 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
-  background-image: url(./assets/images/night.avif);
+  background-image: url('./src/assets/images/amusePic.jpeg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
 }
+
+
 
 h1 {
   font-size: 3.2em;
