@@ -1,19 +1,21 @@
 export interface AffectedEntity {
-    entityType: string;
-    entityName: string;
-    entityId: number;
-    closureStatus: boolean;
-  }
-  
-  export interface Maintenance {
-    MaintenanceID: number;
-    MaintenanceStartDate: Date;
-    MaintenanceEndDate?: Date;
-    Reason: string;
-    Description: string;
-    RequireClosure: boolean;
-    AffectedEntities: AffectedEntity[];
-    DeletedAt?: Date;
-    hasCRUD: boolean;
-  }
-  
+  entityType: string;
+  entityName: string;
+  entityID: number;
+  closureStatus: boolean;
+}
+
+export interface Maintenance {
+  [x: string]: any;
+  maintenanceID: number;
+  maintenanceStartDate: string;
+  maintenanceEndDate?: string;
+  reason: string;
+  description: string;
+  affectedEntities?: AffectedEntity[];
+}
+
+export interface MaintenanceEntity {
+  entityID: number;
+  entityName: string;
+}
