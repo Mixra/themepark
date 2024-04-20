@@ -16,6 +16,13 @@ import dayjs from "dayjs";
 import { Budget } from "../../components/ReportTests/Sales/TotalSales";
 import { RideSale } from "../../components/ReportTests/Sales/RideSales";
 import { GiftShopSale } from "../../components/ReportTests/Sales/GiftShopSale";
+import { BestRide } from "../../components/ReportTests/Sales/BestRide";
+import { WorstRide } from "../../components/ReportTests/Sales/LeastPerfomRide";
+import { BestPark } from "../../components/ReportTests/Sales/BestPark";
+import { WorstPark } from "../../components/ReportTests/Sales/LeastPerfPark";
+import { ParkSales } from "../../components/ReportTests/Sales/totalParkSale";
+import { BestGift } from "../../components/ReportTests/Sales/BestGift";
+import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
 import db from "../../components/db";
@@ -28,6 +35,9 @@ type SalesReportData = {
   leastPerformingRide: string;
   bestPark: string;
   leastPerformingPark: string;
+  totalParkSales: number;
+  bestGiftshop: string;
+  leastPerformingGiftShop: string;
 };
 
 type MaintenanceEntry = {
@@ -35,6 +45,7 @@ type MaintenanceEntry = {
   entityID: string;
   maintenanceStartDate: string;
   maintenanceEndDate: string | "Ongoing";
+  reason: string;
   maintenanceDescription: string;
 };
 
@@ -50,16 +61,32 @@ type EmployeeReportData = {
   employeeStatus: string;
 };
 
+//everything but the first three were new additions
 const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
   { label: "Ride Sales", key: "rideSales", prefix: "$", trend: "down" },
   { label: "Gift Shop Sales", key: "giftShopSales", prefix: "$", trend: "up" },
+  { label: "Best Ride", key: "BestRide", prefix: "$", trend: "up" },
+  { label: "Worst Ride", key: "WorstRide", prefix: "$", trend: "up" },
+  { label: "Best Park", key: "BestPark", prefix: "$", trend: "up" },
+  { label: "Worst Park", key: "WorstPark", prefix: "$", trend: "up" },
+  { label: "Total Park Sales", key: "ParkSales", prefix: "$", trend: "up" },
+  { label: "Best Giftshop Sales", key: "BestGift", prefix: "$", trend: "up" },
+  { label: "Worst Giftshop Sales", key: "WorstGift", prefix: "$", trend: "up" }
 ];
 
+//everything but the first three will be changed
 const SaleComponentMap = {
   totalSales: Budget,
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
+  bestRide: BestRide,
+  worstRide: WorstRide,
+  bestPark: BestPark,
+  worstPark: WorstPark,
+  parkSales: ParkSales,
+  bestGiftshop: BestGift,
+  worstGift: WorstGift,
 };
 
 type ReportType = "sales" | "maintenance" | "employee";
@@ -79,6 +106,8 @@ const ReportingAnalytics: React.FC = () => {
   >([]);
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
+
+
 
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
@@ -113,19 +142,50 @@ const ReportingAnalytics: React.FC = () => {
     setReportData(null);
   };
 
-  const fetchMaintenanceReports = async (startDate: dayjs.Dayjs | null) => {
-    if (!startDate) return;
+  //this is teh start of fetching from the database//check and see why its not printing 
+  const fetchSalesReport = async (startDate, endDate) => {
+    if (!startDate || !endDate) return;
+  
+    const formattedStartDate = startDate.format("YYYY-MM-DD");
+    const formattedEndDate = endDate.format("YYYY-MM-DD");
+  
+    const params = new URLSearchParams({
+      startDate: formattedStartDate,
+      endDate: formattedEndDate
+    }).toString();
+  
     try {
-      const response = await db.get(
-        `/maintenance?startDate=${startDate.format("YYYY-MM-DD")}`
-      );
+      const response = await db.post(`/Reports/sales`, {
+        StartDate: formattedStartDate,
+        EndDate: formattedEndDate
+      });
+      setReportData(response.data);
+    } catch (error) {
+      console.error("Failed to fetch sales reports:", error);
+      alert("Failed to fetch sales reports.");
+    }
+  };
+  
+
+  const fetchMaintenanceReports = async (startDate, endDate) => {
+    if (!startDate) return;
+    const formattedStartDate = startDate.format("YYYY-MM-DD");
+    const formattedEndDate = endDate ? endDate.format("YYYY-MM-DD") : undefined;
+  
+    const params = new URLSearchParams({
+      ...(formattedStartDate && { startDate: formattedStartDate }),
+      ...(formattedEndDate && { endDate: formattedEndDate }),
+    }).toString();
+  
+    try {
+      const response = await db.get(`/Reports/maintenanceReports?${params}`);
       setReportData({ entries: response.data });
     } catch (error) {
       console.error("Failed to fetch maintenance reports:", error);
       alert("Failed to fetch maintenance reports.");
     }
   };
-
+  
   const fetchEmployeeReports = async () => {
     try {
       const response = await db.get("/Reports/employee");
@@ -136,6 +196,8 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
+  //this is teh end of fetching from database
+
   const handleViewReports = () => {
     if (reportType === "sales" && (!startDate || !endDate)) {
       alert("Please select both start and end dates for the sales report.");
@@ -145,28 +207,33 @@ const ReportingAnalytics: React.FC = () => {
       return;
     }
     switch (reportType) {
-      case "sales":
-        setReportData({
-          totalSales: 100000,
-          rideSales: 40000,
-          giftShopSales: 15000,
-          bestRide: "High Sky Adventure",
-          leastPerformingRide: "Fairy Tale Carousel",
-          bestPark: "FutureLand",
-          leastPerformingPark: "FrontierLand",
-        });
+      case "sales"://this is what I changed
+        fetchSalesReport(startDate, endDate);
+        // setReportData({
+        //   totalSales: 100000,
+        //   rideSales: 40000,
+        //   giftShopSales: 15000,
+        //   bestRide: "High Sky Adventure",
+        //   leastPerformingRide: "Fairy Tale Carousel",
+        //   bestPark: "FutureLand",
+        //   leastPerformingPark: "FrontierLand",
+        //   totalParkSales: 23222323,
+        //   bestGiftShop: "fjfjff",
+        //   leastPerformingGiftShop: "jfjfjf"
+        // });
         break;
       case "employee":
         fetchEmployeeReports();
         break;
       case "maintenance":
-        fetchMaintenanceReports(startDate);
+        fetchMaintenanceReports(startDate, endDate);
+        
         break;
     }
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales") {
+    if (reportType === "sales" || reportType === "maintenance") {
       return (
         <>
           <DatePicker
@@ -182,15 +249,6 @@ const ReportingAnalytics: React.FC = () => {
             renderInput={(params) => <TextField {...params} />}
           />
         </>
-      );
-    } else if (reportType === "maintenance") {
-      return (
-        <DatePicker
-          label="Start Date"
-          value={startDate}
-          onChange={setStartDate}
-          renderInput={(params) => <TextField {...params} />}
-        />
       );
     }
     return null;
