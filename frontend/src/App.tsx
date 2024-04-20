@@ -11,7 +11,6 @@ import Rides from "./pages/sidebar/Rides.tsx";
 import Shops from "./pages/sidebar/GiftShops.tsx";
 import UserManagement from "./pages/sidebar/UserManagement.tsx";
 import ParkAreas from "./pages/sidebar/ParkAreas.tsx";
-import Notification from "./pages/sidebar/Notificaton.tsx";
 import Home from "./pages/Home";
 import Events from "./pages/sidebar/Events.tsx";
 import PurchaseTickets from "./pages/PurchaseTick.tsx";

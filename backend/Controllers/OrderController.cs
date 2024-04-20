@@ -29,7 +29,6 @@ namespace backend.Controllers
             {
                 totalCost += item.UnitPrice * item.Quantity;
             }
-
             var newOrderData = new
             {
                 Username = HttpContext.Items["Username"],
@@ -44,6 +43,7 @@ namespace backend.Controllers
 
             foreach (var item in order.Items)
             {
+                DateTime? TicketExpiryDate = item.ItemType == "Ride" ? DateTime.UtcNow.AddDays(7) : (DateTime?)null;
                 var newOrderItemData = new
                 {
                     OrderID = orderID,
@@ -52,12 +52,13 @@ namespace backend.Controllers
                     EventID = item.EventID,
                     ItemID = item.ItemID,
                     Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice
+                    UnitPrice = item.UnitPrice,
+                    TicketExpiryDate = TicketExpiryDate
                 };
 
                 await _databaseService.ExecuteAsync(@"
-                INSERT INTO OrderItems (OrderID, ItemType, RideID, EventID, ItemID, Quantity, UnitPrice)
-                VALUES (@OrderID, @ItemType, @RideID, @EventID, @ItemID, @Quantity, @UnitPrice)", newOrderItemData);
+                INSERT INTO OrderItems (OrderID, ItemType, RideID, EventID, ItemID, Quantity, UnitPrice, TicketExpiryDate)
+                VALUES (@OrderID, @ItemType, @RideID, @EventID, @ItemID, @Quantity, @UnitPrice, @TicketExpiryDate)", newOrderItemData);
             }
 
             return Ok(new { OrderID = orderID });
@@ -79,6 +80,7 @@ namespace backend.Controllers
                 oi.UnitPrice AS Price,
                 oi.ItemType,
                 oi.Quantity,
+                oi.TicketExpiryDate,
                 o.OrderDate AS PurchaseDate
             FROM OrderItems oi
             JOIN Orders o ON oi.OrderID = o.OrderID

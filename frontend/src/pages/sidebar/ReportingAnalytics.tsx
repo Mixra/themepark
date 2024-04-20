@@ -25,6 +25,7 @@ import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
+import { InventoryReport } from "../../components/ReportTests/InventoryReport/InventoryReport";
 import db from "../../components/db";
 
 type SalesReportData = {
@@ -66,13 +67,10 @@ const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
   { label: "Ride Sales", key: "rideSales", prefix: "$", trend: "down" },
   { label: "Gift Shop Sales", key: "giftShopSales", prefix: "$", trend: "up" },
-  { label: "Best Ride", key: "BestRide", prefix: "$", trend: "up" },
-  { label: "Worst Ride", key: "WorstRide", prefix: "$", trend: "up" },
-  { label: "Best Park", key: "BestPark", prefix: "$", trend: "up" },
-  { label: "Worst Park", key: "WorstPark", prefix: "$", trend: "up" },
-  { label: "Total Park Sales", key: "ParkSales", prefix: "$", trend: "up" },
-  { label: "Best Giftshop Sales", key: "BestGift", prefix: "$", trend: "up" },
-  { label: "Worst Giftshop Sales", key: "WorstGift", prefix: "$", trend: "up" }
+  { label: "Best Ride", key: "bestRide", prefix: "", trend: "up" },
+  { label: "Worst Ride", key: "leastPerformingRide", prefix: "", trend: "up" },
+  { label: "Best Giftshop", key: "bestGiftshop", prefix: "", trend: "up" },
+  { label: "Worst Giftshop", key: "worstGiftshop", prefix: "", trend: "up" }
 ];
 
 //everything but the first three will be changed
@@ -81,15 +79,13 @@ const SaleComponentMap = {
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
   bestRide: BestRide,
-  worstRide: WorstRide,
-  bestPark: BestPark,
-  worstPark: WorstPark,
-  parkSales: ParkSales,
+  leastPerformingRide: WorstRide, // Assuming this component exists; rename as necessary
   bestGiftshop: BestGift,
-  worstGift: WorstGift,
+  worstGiftshop: WorstGift // Assuming this component exists; rename as necessary
 };
 
-type ReportType = "sales" | "maintenance" | "employee";
+
+type ReportType = "sales" | "maintenance" | "employee" | "inventory";
 
 const ReportingAnalytics: React.FC = () => {
   const theme = useTheme();
@@ -143,23 +139,23 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   //this is teh start of fetching from the database//check and see why its not printing 
+  
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
-  
     const formattedStartDate = startDate.format("YYYY-MM-DD");
     const formattedEndDate = endDate.format("YYYY-MM-DD");
-  
-    const params = new URLSearchParams({
-      startDate: formattedStartDate,
-      endDate: formattedEndDate
-    }).toString();
-  
+    
     try {
       const response = await db.post(`/Reports/sales`, {
         StartDate: formattedStartDate,
         EndDate: formattedEndDate
       });
-      setReportData(response.data);
+      if (!response.data || response.data.length === 0) {
+        alert("No sales data available for the selected period.");
+        setReportData(null);
+      } else {
+        setReportData(response.data[0]); // Make sure this correctly grabs the first item from array
+      }
     } catch (error) {
       console.error("Failed to fetch sales reports:", error);
       alert("Failed to fetch sales reports.");
@@ -196,6 +192,17 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
+  const fetchInventoryReport = async () => {
+    try {
+      // Fetch inventory report data from the backend
+      const response = await db.get("/Reports/inventory");
+      setReportData(response.data); // Assuming the response contains the inventory data
+    } catch (error) {
+      console.error("Failed to fetch inventory report:", error);
+      alert("Failed to fetch inventory report.");
+    }
+  };
+
   //this is teh end of fetching from database
 
   const handleViewReports = () => {
@@ -209,31 +216,115 @@ const ReportingAnalytics: React.FC = () => {
     switch (reportType) {
       case "sales"://this is what I changed
         fetchSalesReport(startDate, endDate);
-        // setReportData({
-        //   totalSales: 100000,
-        //   rideSales: 40000,
-        //   giftShopSales: 15000,
-        //   bestRide: "High Sky Adventure",
-        //   leastPerformingRide: "Fairy Tale Carousel",
-        //   bestPark: "FutureLand",
-        //   leastPerformingPark: "FrontierLand",
-        //   totalParkSales: 23222323,
-        //   bestGiftShop: "fjfjff",
-        //   leastPerformingGiftShop: "jfjfjf"
-        // });
         break;
       case "employee":
         fetchEmployeeReports();
         break;
       case "maintenance":
         fetchMaintenanceReports(startDate, endDate);
-        
         break;
+      
+        case "inventory":
+          setReportData({
+            items: [
+              // Existing items
+              {
+                itemID: "001",
+                itemName: "T-Shirt",
+                description: "Cotton T-Shirt",
+                quantity: 100,
+                unitPrice: 15.99,
+                shopId: 1,
+              },
+              {
+                itemID: "002",
+                itemName: "Jeans",
+                description: "Blue Denim Jeans",
+                quantity: 50,
+                unitPrice: 29.99,
+                shopId: 1,
+              },
+              {
+                itemID: "003",
+                itemName: "Sneakers",
+                description: "White Sneakers",
+                quantity: 75,
+                unitPrice: 49.99,
+                shopId: 1,
+              },
+              {
+                itemID: "004",
+                itemName: "Hat",
+                description: "Sun Hat",
+                quantity: 30,
+                unitPrice: 12.99,
+                shopId: 2,
+              },
+              {
+                itemID: "005",
+                itemName: "Sunglasses",
+                description: "Polarized Sunglasses",
+                quantity: 40,
+                unitPrice: 19.99,
+                shopId: 2,
+              },
+              {
+                itemID: "006",
+                itemName: "Flip Flops",
+                description: "Beach Flip Flops",
+                quantity: 60,
+                unitPrice: 9.99,
+                shopId: 2,
+              },
+
+
+            ],
+            bestItemsByGiftShop: {
+              // Include items from all shops
+              Shop1: {
+                itemID: "001",
+                itemName: "T-Shirt",
+                description: "Cotton T-Shirt",
+                quantity: 100,
+                unitPrice: 15.99,
+                shopId: 1,
+              },
+            },
+            worstItemsByGiftShop: {
+              // Include items from all shops
+              Shop1: {
+                itemID: "002",
+                itemName: "Jeans",
+                description: "Blue Denim Jeans",
+                quantity: 50,
+                unitPrice: 29.99,
+                shopId: 1,
+              },
+             
+            },
+            bestOverallItem: {
+              itemID: "003",
+              itemName: "Sneakers",
+              description: "White Sneakers",
+              quantity: 75,
+              unitPrice: 49.99,
+              shopId: 1,
+            },
+            worstOverallItem: {
+              itemID: "001",
+              itemName: "T-Shirt",
+              description: "Cotton T-Shirt",
+              quantity: 100,
+              unitPrice: 15.99,
+              shopId: 1,
+            },
+          });
+
     }
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "maintenance") {
+    if (reportType === "sales" || reportType ==="inventory") {
       return (
         <>
           <DatePicker
@@ -281,7 +372,7 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {["sales", "maintenance", "employee"].map((type) => (
+          {["sales", "employee","inventory"].map((type) => (
             <MenuItem key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
@@ -343,25 +434,43 @@ const ReportingAnalytics: React.FC = () => {
             />
           </>
         )}
+        
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
-            <Typography variant="h6">Sales Report</Typography>
-            {salesFields.map((field) => {
-              const SaleComponent = SaleComponentMap[field.key];
-              return (
-                <SaleComponent
-                  key={field.key}
-                  trend={field.trend as "up" | "down"}
-                  value={`${field.prefix}${
-                    reportData[field.key as keyof SalesReportData]
-                  }`}
-                  diff={Math.floor(Math.random() * 100) + 1}
-                  sx={{ my: 2 }}
-                />
-              );
-            })}
-          </Box>
+          <Typography variant="h6">Sales Report</Typography>
+          {salesFields.map((field) => {
+            const SaleComponent = SaleComponentMap[field.key];
+            if (!SaleComponent || reportData[field.key] === undefined) {
+              console.log(`No component or data available for key: ${field.key}`);
+            return null;
+          }
+          return (
+            <SaleComponent
+              key={field.key}
+              trend={field.trend}
+              value={`${field.prefix}${reportData[field.key]}`}
+              diff={Math.floor(Math.random() * 100) + 1}
+              sx={{ my: 2 }}
+            />
+          );
+        })}
+        </Box>
         )}
+        {reportType === "inventory" && reportData && (
+          <InventoryReport
+          items={reportData?.items}
+          shopId={reportData?.shopId}
+          bestItemsByGiftShop={reportData?.bestItemsByGiftShop}
+          worstItemsByGiftShop={reportData?.worstItemsByGiftShop}
+          bestOverallItem={reportData?.bestOverallItem}
+          worstOverallItem={reportData?.worstOverallItem}
+        />
+
+
+        )}
+
+
+
       </Box>
       <Joker open={showChatbot} onClose={() => setShowChatbot(false)} />
     </div>
