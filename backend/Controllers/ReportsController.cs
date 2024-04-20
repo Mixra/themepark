@@ -20,7 +20,7 @@ namespace backend.Controllers
             _databaseService = databaseService;
             _configuration = configuration;
         }
-        
+
         [HttpGet("employee")]
         [Authorize(Roles = "999")]
         public async Task<IActionResult> GenerateEmployeeReports()
@@ -88,27 +88,6 @@ namespace backend.Controllers
             return Ok(parsed);
         }
 
-        [HttpPost("rideReport")]
-        [Authorize(Roles = "999")]
-        public async Task<IActionResult> GetRideReport([FromBody] RideReportModel data)
-        {
-            var sql = "EXEC sp_GetRideStatistics @RideID";
-
-            var rideReport = await _databaseService.QueryAsync<dynamic>(sql, new { RideID = data.RideID});
-
-            var parsed = rideReport.Select(r => new{
-                RideName = r.RideName,
-                TotalClosures = r.TotalClosures,
-                AvgClosureLength = r.AvgClosureLength,
-                MaxTotalClosures = r.MaxTotalClosures,
-                MinTotalClosures = r.MinTotalClosures,
-                MaxAvgClosureLength = r.MaxAvgClosureLength,
-                MinAvgClosureLength = r.MinAvgClosureLength
-            });
-            
-            return Ok(parsed);
-        }
-
         [HttpPost("getBestAndWorst")]
         [Authorize(Roles = "999")]
         public async Task<IActionResult> GetBestAndWorst([FromBody] SalesModel data)
@@ -141,7 +120,8 @@ namespace backend.Controllers
 
             var maintenanceReport = await _databaseService.QueryAsync<dynamic>(sql);
 
-            var parsed = maintenanceReport.Select(m => new{
+            var parsed = maintenanceReport.Select(m => new
+            {
                 entityType = m.EntityType,
                 entityID = m.EntityID,
                 maintenanceStartDate = m.MaintenanceStartDate,
@@ -149,12 +129,30 @@ namespace backend.Controllers
                 reason = m.Reason,
                 description = m.Description
             });
-            
+
             return Ok(parsed);
         }
 
+
+        [HttpPost("inventory")]
+        [Authorize(Roles = "999")]
+        public async Task<IActionResult> GetInventoryReports([FromBody] SalesModel data)
+        {
+            var sql = "EXEC GetInventoryReport @StartDate, @EndDate";
+
+            var inventoryReport = await _databaseService.QuerySingleOrDefaultAsync<string>(sql, new { StartDate = data.StartDate, EndDate = data.EndDate });
+            if (inventoryReport == null)
+            {
+                return NotFound();
+            }
+            var parsed = JsonConvert.DeserializeObject<InventoryReportModel>(inventoryReport);
+
+            if (parsed?.Stores == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(parsed);
+        }
     }
-
 }
-
-

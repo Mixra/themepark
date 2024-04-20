@@ -1,5 +1,13 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import { Box, Button, Typography, TextField, MenuItem, FormControlLabel, Switch} from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  MenuItem,
+  FormControlLabel,
+  Switch,
+} from "@mui/material";
 import Joker from "../../components/Joker";
 import { useTheme } from "@mui/material/styles";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -17,7 +25,10 @@ import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
-import { InventoryReport } from "../../components/ReportTests/InventoryReport/InventoryReport";
+import {
+  InventoryReport,
+  InventoryReportProps,
+} from "../../components/ReportTests/InventoryReport/InventoryReport";
 import db from "../../components/db";
 
 type MaintenanceEntry = {
@@ -29,19 +40,13 @@ type MaintenanceEntry = {
   maintenanceDescription: string;
 };
 
+
 type MaintenanceReportData = {
   entries: MaintenanceEntry[];
 };
 
-type EmployeeReportData = {
-  username: string;
-  fullName: string;
-  assignedPark: string | null;
-  employeeRole: string;
-  employeeStatus: string;
-};
 
-//everything but the first three were new additions
+
 const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
   { label: "Ride Sales", key: "rideSales", prefix: "$", trend: "down" },
@@ -49,22 +54,20 @@ const salesFields = [
   { label: "Best Ride", key: "bestRide", prefix: "", trend: "up" },
   { label: "Worst Ride", key: "leastPerformingRide", prefix: "", trend: "up" },
   { label: "Best Giftshop", key: "bestGiftshop", prefix: "", trend: "up" },
-  { label: "Worst Giftshop", key: "worstGiftshop", prefix: "", trend: "up" }
+  { label: "Worst Giftshop", key: "worstGiftshop", prefix: "", trend: "up" },
 ];
 
-//everything but the first three will be changed
 const SaleComponentMap = {
   totalSales: Budget,
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
   bestRide: BestRide,
-  leastPerformingRide: WorstRide, // Assuming this component exists; rename as necessary
+  leastPerformingRide: WorstRide,
   bestGiftshop: BestGift,
-  worstGiftshop: WorstGift // Assuming this component exists; rename as necessary
+  worstGiftshop: WorstGift,
 };
 
-
-type ReportType = "sales" | "maintenance" | "employee" | "inventory";
+type ReportType = "sales" | "maintenance" | "inventory";
 
 const ReportingAnalytics: React.FC = () => {
   const theme = useTheme();
@@ -72,7 +75,9 @@ const ReportingAnalytics: React.FC = () => {
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
   const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);
   const [reportType, setReportType] = useState<ReportType | "">("");
-  const [reportData, setReportData] = useState<any | null>(null);
+  const [reportData, setReportData] = useState<InventoryReportProps | null>(
+    null
+  );
   const [filteredMaintenanceEntries, setFilteredMaintenanceEntries] = useState<
     MaintenanceEntry[]
   >([]);
@@ -81,7 +86,6 @@ const ReportingAnalytics: React.FC = () => {
   >([]);
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
-
 
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
@@ -116,175 +120,95 @@ const ReportingAnalytics: React.FC = () => {
     setReportData(null);
   };
 
-  //this is teh start of fetching from the database//check and see why its not printing 
-  
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
     const formattedStartDate = startDate.format("YYYY-MM-DD");
     const formattedEndDate = endDate.format("YYYY-MM-DD");
-    
+
     try {
       const response = await db.post(`/Reports/sales`, {
         StartDate: formattedStartDate,
-        EndDate: formattedEndDate
+        EndDate: formattedEndDate,
       });
       if (!response.data || response.data.length === 0) {
         alert("No sales data available for the selected period.");
         setReportData(null);
       } else {
-        setReportData(response.data[0]); // Make sure this correctly grabs the first item from array
+        setReportData(response.data[0]);
       }
     } catch (error) {
       console.error("Failed to fetch sales reports:", error);
       alert("Failed to fetch sales reports.");
     }
   };
-  
-  
-  
-  const fetchEmployeeReports = async () => {
-    try {
-      const response = await db.get("/Reports/employee");
-      setReportData({ employees: response.data });
-    } catch (error) {
-      console.error("Failed to fetch employee reports:", error);
-      alert("Failed to fetch employee reports.");
-    }
-  };
 
+  
   const fetchInventoryReport = async () => {
     try {
-      // Fetch inventory report data from the backend
-      const response = await db.get("/Reports/inventory");
-      setReportData(response.data); // Assuming the response contains the inventory data
+      const response = await db.post("/reports/inventory", {
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
+      });
+
+      setReportData(response.data);
     } catch (error) {
       console.error("Failed to fetch inventory report:", error);
       alert("Failed to fetch inventory report.");
     }
   };
 
-  //this is teh end of fetching from database
-
   const handleViewReports = () => {
-    if (reportType === "sales" && (!startDate || !endDate)) {
-      alert("Please select both start and end dates for the sales report.");
-      return;
-    } else if (reportType === "maintenance" && !startDate) {
-      alert("Please select a start date for the maintenance report.");
+    if ((reportType === "sales" || reportType === "inventory" || reportType === "maintenance") && (!startDate || !endDate)) {
+      alert("Please select both start and end dates for the report.");
       return;
     }
+    
     switch (reportType) {
-      case "sales"://this is what I changed
+      case "sales":
         fetchSalesReport(startDate, endDate);
         break;
-      case "employee":
-        fetchEmployeeReports();
-        break;
       case "maintenance":
-        fetchMaintenanceReports(startDate, endDate);
-        break;
-      
-        case "inventory":
           setReportData({
-            items: [
-              // Existing items
+            entries: [
               {
-                itemID: "001",
-                itemName: "T-Shirt",
-                description: "Cotton T-Shirt",
-                quantity: 100,
-                unitPrice: 15.99,
-                shopId: 1,
+                rideId: 1,
+                rideName: "Roller Coaster",
+                totalClosures: 10,
+                lastClosure: new Date("2024-04-19"),
+                averageClosureLengthDays: 2.5
               },
               {
-                itemID: "002",
-                itemName: "Jeans",
-                description: "Blue Denim Jeans",
-                quantity: 50,
-                unitPrice: 29.99,
-                shopId: 1,
+                rideId: 2,
+                rideName: "Carousel",
+                totalClosures: 5,
+                lastClosure: new Date("2024-04-18"),
+                averageClosureLengthDays: 1.8
               },
               {
-                itemID: "003",
-                itemName: "Sneakers",
-                description: "White Sneakers",
-                quantity: 75,
-                unitPrice: 49.99,
-                shopId: 1,
+                rideId: 3,
+                rideName: "Ferris Wheel",
+                totalClosures: 7,
+                lastClosure: new Date("2024-04-20"),
+                averageClosureLengthDays: 2.1
               },
               {
-                itemID: "004",
-                itemName: "Hat",
-                description: "Sun Hat",
-                quantity: 30,
-                unitPrice: 12.99,
-                shopId: 2,
-              },
-              {
-                itemID: "005",
-                itemName: "Sunglasses",
-                description: "Polarized Sunglasses",
-                quantity: 40,
-                unitPrice: 19.99,
-                shopId: 2,
-              },
-              {
-                itemID: "006",
-                itemName: "Flip Flops",
-                description: "Beach Flip Flops",
-                quantity: 60,
-                unitPrice: 9.99,
-                shopId: 2,
-              },
-
-
-            ],
-            bestItemsByGiftShop: {
-              // Include items from all shops
-              Shop1: {
-                itemID: "001",
-                itemName: "T-Shirt",
-                description: "Cotton T-Shirt",
-                quantity: 100,
-                unitPrice: 15.99,
-                shopId: 1,
-              },
-            },
-            worstItemsByGiftShop: {
-              // Include items from all shops
-              Shop1: {
-                itemID: "002",
-                itemName: "Jeans",
-                description: "Blue Denim Jeans",
-                quantity: 50,
-                unitPrice: 29.99,
-                shopId: 1,
-              },
-             
-            },
-            bestOverallItem: {
-              itemID: "003",
-              itemName: "Sneakers",
-              description: "White Sneakers",
-              quantity: 75,
-              unitPrice: 49.99,
-              shopId: 1,
-            },
-            worstOverallItem: {
-              itemID: "001",
-              itemName: "T-Shirt",
-              description: "Cotton T-Shirt",
-              quantity: 100,
-              unitPrice: 15.99,
-              shopId: 1,
-            },
+                rideId: 4,
+                rideName: "Teacups",
+                totalClosures: 3,
+                lastClosure: new Date("2024-04-17"),
+                averageClosureLengthDays: 1.3
+              }
+            ]
           });
-
+          break;
+      case "inventory":
+        fetchInventoryReport();
+        break;
     }
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType ==="inventory") {
+    if (reportType === "sales" || reportType === "inventory"||reportType ==="maintenance") {
       return (
         <>
           <DatePicker
@@ -332,7 +256,7 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {["sales", "employee","inventory"].map((type) => (
+          {["sales", "maintenance", "inventory"].map((type) => (
             <MenuItem key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
@@ -363,76 +287,44 @@ const ReportingAnalytics: React.FC = () => {
             {endDate && ` to ${dayjs(endDate).format("MM/DD/YYYY")}`}
           </Typography>
         )}
-        {reportType === "maintenance" && (
-          <>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showOngoingOnly}
-                  onChange={(e) => setShowOngoingOnly(e.target.checked)}
-                />
-              }
-              label="Show Ongoing Only"
-            />
-            <LatestMaintenance entries={filteredMaintenanceEntries} />
-          </>
+        {reportType === "maintenance" && reportData && (
+          <LatestMaintenance
+          entries={reportData.entries}
+          />
         )}
-        {reportType === "employee" && (
-          <>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showActiveOnly}
-                  onChange={(e) => setShowActiveOnly(e.target.checked)}
-                />
-              }
-              label="Show Active Only"
-            />
-            <EmployeeReport
-              employees={filteredEmployees}
-              showActiveOnly={showActiveOnly}
-            />
-          </>
-        )}
-        
+
+       
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
-          <Typography variant="h6">Sales Report</Typography>
-          {salesFields.map((field) => {
-            const SaleComponent = SaleComponentMap[field.key];
-            if (!SaleComponent || reportData[field.key] === undefined) {
-              console.log(`No component or data available for key: ${field.key}`);
-            return null;
-          }
-          return (
-            <SaleComponent
-              key={field.key}
-              trend={field.trend}
-              value={`${field.prefix}${reportData[field.key]}`}
-              diff={Math.floor(Math.random() * 100) + 1}
-              sx={{ my: 2 }}
-            />
-          );
-        })}
-        </Box>
+            <Typography variant="h6">Sales Report</Typography>
+            {salesFields.map((field) => {
+              const SaleComponent = SaleComponentMap[field.key];
+              if (!SaleComponent || reportData[field.key] === undefined) {
+                console.log(
+                  `No component or data available for key: ${field.key}`
+                );
+                return null;
+              }
+              return (
+                <SaleComponent
+                  key={field.key}
+                  trend={field.trend}
+                  value={`${field.prefix}${reportData[field.key]}`}
+                  diff={Math.floor(Math.random() * 100) + 1}
+                  sx={{ my: 2 }}
+                />
+              );
+            })}
+          </Box>
         )}
         {reportType === "inventory" && reportData && (
           <InventoryReport
-          items={reportData?.items}
-          shopId={reportData?.shopId}
-          bestItemsByGiftShop={reportData?.bestItemsByGiftShop}
-          worstItemsByGiftShop={reportData?.worstItemsByGiftShop}
-          bestOverallItem={reportData?.bestOverallItem}
-          worstOverallItem={reportData?.worstOverallItem}
-        />
-
-
+            stores={reportData.stores}
+            overallBestItem={reportData.overallBestItem}
+            overallWorstItem={reportData.overallWorstItem}
+          />
         )}
-
-
-
       </Box>
-      <Joker open={showChatbot} onClose={() => setShowChatbot(false)} />
     </div>
   );
 };
