@@ -31,9 +31,7 @@ export function WorstGift({ diff, trend, sx, value }: BudgetProps): React.JSX.El
               </Typography>
               <Typography variant="h4">{value}</Typography>
             </Stack>
-            <Avatar sx={{ height: '56px', width: '56px', color: 'white'}}>
-              <CurrencyDollarIcon fontSize="var(--icon-fontSize-lg)" color="white" />
-            </Avatar>
+
           </Stack>
           {diff ? (
             <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
@@ -43,9 +41,7 @@ export function WorstGift({ diff, trend, sx, value }: BudgetProps): React.JSX.El
                   {diff}%
                 </Typography>
               </Stack>
-              <Typography color="text.secondary" variant="caption">
-                Since last month
-              </Typography>
+              
             </Stack>
           ) : null}
         </Stack>

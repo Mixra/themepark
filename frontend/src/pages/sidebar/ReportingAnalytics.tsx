@@ -66,13 +66,10 @@ const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
   { label: "Ride Sales", key: "rideSales", prefix: "$", trend: "down" },
   { label: "Gift Shop Sales", key: "giftShopSales", prefix: "$", trend: "up" },
-  { label: "Best Ride", key: "BestRide", prefix: "$", trend: "up" },
-  { label: "Worst Ride", key: "WorstRide", prefix: "$", trend: "up" },
-  { label: "Best Park", key: "BestPark", prefix: "$", trend: "up" },
-  { label: "Worst Park", key: "WorstPark", prefix: "$", trend: "up" },
-  { label: "Total Park Sales", key: "ParkSales", prefix: "$", trend: "up" },
-  { label: "Best Giftshop Sales", key: "BestGift", prefix: "$", trend: "up" },
-  { label: "Worst Giftshop Sales", key: "WorstGift", prefix: "$", trend: "up" }
+  { label: "Best Ride", key: "bestRide", prefix: "", trend: "up" },
+  { label: "Worst Ride", key: "leastPerformingRide", prefix: "", trend: "up" },
+  { label: "Best Giftshop", key: "bestGiftshop", prefix: "", trend: "up" },
+  { label: "Worst Giftshop", key: "worstGiftshop", prefix: "", trend: "up" }
 ];
 
 //everything but the first three will be changed
@@ -81,13 +78,11 @@ const SaleComponentMap = {
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
   bestRide: BestRide,
-  worstRide: WorstRide,
-  bestPark: BestPark,
-  worstPark: WorstPark,
-  parkSales: ParkSales,
+  leastPerformingRide: WorstRide, // Assuming this component exists; rename as necessary
   bestGiftshop: BestGift,
-  worstGift: WorstGift,
+  worstGiftshop: WorstGift // Assuming this component exists; rename as necessary
 };
+
 
 type ReportType = "sales" | "maintenance" | "employee";
 
@@ -143,23 +138,23 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   //this is teh start of fetching from the database//check and see why its not printing 
+  
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
-  
     const formattedStartDate = startDate.format("YYYY-MM-DD");
     const formattedEndDate = endDate.format("YYYY-MM-DD");
-  
-    const params = new URLSearchParams({
-      startDate: formattedStartDate,
-      endDate: formattedEndDate
-    }).toString();
-  
+    
     try {
       const response = await db.post(`/Reports/sales`, {
         StartDate: formattedStartDate,
         EndDate: formattedEndDate
       });
-      setReportData(response.data);
+      if (!response.data || response.data.length === 0) {
+        alert("No sales data available for the selected period.");
+        setReportData(null);
+      } else {
+        setReportData(response.data[0]); // Make sure this correctly grabs the first item from array
+      }
     } catch (error) {
       console.error("Failed to fetch sales reports:", error);
       alert("Failed to fetch sales reports.");
@@ -209,25 +204,12 @@ const ReportingAnalytics: React.FC = () => {
     switch (reportType) {
       case "sales"://this is what I changed
         fetchSalesReport(startDate, endDate);
-        // setReportData({
-        //   totalSales: 100000,
-        //   rideSales: 40000,
-        //   giftShopSales: 15000,
-        //   bestRide: "High Sky Adventure",
-        //   leastPerformingRide: "Fairy Tale Carousel",
-        //   bestPark: "FutureLand",
-        //   leastPerformingPark: "FrontierLand",
-        //   totalParkSales: 23222323,
-        //   bestGiftShop: "fjfjff",
-        //   leastPerformingGiftShop: "jfjfjf"
-        // });
         break;
       case "employee":
         fetchEmployeeReports();
         break;
       case "maintenance":
         fetchMaintenanceReports(startDate, endDate);
-        
         break;
     }
   };
@@ -343,25 +325,31 @@ const ReportingAnalytics: React.FC = () => {
             />
           </>
         )}
+        
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
-            <Typography variant="h6">Sales Report</Typography>
-            {salesFields.map((field) => {
-              const SaleComponent = SaleComponentMap[field.key];
-              return (
-                <SaleComponent
-                  key={field.key}
-                  trend={field.trend as "up" | "down"}
-                  value={`${field.prefix}${
-                    reportData[field.key as keyof SalesReportData]
-                  }`}
-                  diff={Math.floor(Math.random() * 100) + 1}
-                  sx={{ my: 2 }}
-                />
-              );
-            })}
-          </Box>
+          <Typography variant="h6">Sales Report</Typography>
+          {salesFields.map((field) => {
+            const SaleComponent = SaleComponentMap[field.key];
+            if (!SaleComponent || reportData[field.key] === undefined) {
+              console.log(`No component or data available for key: ${field.key}`);
+            return null;
+          }
+          return (
+            <SaleComponent
+              key={field.key}
+              trend={field.trend}
+              value={`${field.prefix}${reportData[field.key]}`}
+              diff={Math.floor(Math.random() * 100) + 1}
+              sx={{ my: 2 }}
+            />
+          );
+        })}
+        </Box>
         )}
+
+
+
       </Box>
       <Joker open={showChatbot} onClose={() => setShowChatbot(false)} />
     </div>
