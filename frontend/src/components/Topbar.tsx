@@ -68,7 +68,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
     };
 
     // Start checking for new notifications every 60 seconds
-    intervalRef.current = setInterval(fetchNotifications, 60000);
+    intervalRef.current = setInterval(fetchNotifications, 5000);
     fetchNotifications();
 
     return () => {
