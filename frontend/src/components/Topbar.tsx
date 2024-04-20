@@ -26,15 +26,11 @@ import {
   Notifications as NotificationsIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "./CartContext";
 import db from "./db";
 
 interface TopbarProps {
   onDrawerToggle?: () => void;
-}
-
-interface Item {
-  id: number;
-  quantity: number;
 }
 
 interface Notification {
@@ -48,84 +44,38 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   const [notificationAnchorEl, setNotificationAnchorEl] =
     useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [cartItems, setCartItems] = useState<Item[]>([]);
-  const [cartItemCount, setCartItemCount] = useState(0);
   const [newNotificationCount, setNewNotificationCount] = useState(0);
+  const navigate = useNavigate();
+  const { cartItems } = useCart();
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
-    // Retrieve cart items from local storage when component initializes
-    const storedCartItems = localStorage.getItem("cartItems");
-    if (storedCartItems) {
-      const parsedCartItems = JSON.parse(storedCartItems);
-      setCartItems(parsedCartItems);
-      updateCartItemCount(parsedCartItems); // Update cart item count
-    }
-
     // Retrieve notifications from the backend
-    fetchNotifications();
+    const fetchNotifications = async () => {
+      try {
+        const response = await db.get("/notification/");
+        setNotifications(response.data);
+        setNewNotificationCount(
+          response.data.filter((n: Notification) => !n.readStatus).length
+        );
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
 
     // Start checking for new notifications every 60 seconds
-    startNewNotificationCheck();
+    intervalRef.current = setInterval(fetchNotifications, 60000);
+    fetchNotifications();
 
     return () => {
       // Clean up the interval when the component unmounts
-      stopNewNotificationCheck();
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    // Update cart item count when cart items change
-    updateCartItemCount(cartItems);
-  }, [cartItems]);
-
-  const updateCartItemCount = (items: Item[]) => {
-    const totalCount = items.reduce((total, item) => total + item.quantity, 0);
-    setCartItemCount(totalCount);
-  };
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await db.get("/notification/");
-      setNotifications(response.data);
-      setNewNotificationCount(
-        response.data.filter((n: Notification) => !n.readStatus).length
-      );
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
-
-  const markNotificationAsRead = async (notificationID: number) => {
-    try {
-      await db.post(`/notification/mark-read/${notificationID}`);
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notification) =>
-          notification.notificationID === notificationID
-            ? { ...notification, readStatus: true }
-            : notification
-        )
-      );
-      setNewNotificationCount((prevCount) =>
-        prevCount > 0 ? prevCount - 1 : 0
-      );
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
-
-  const startNewNotificationCheck = () => {
-    intervalRef.current = setInterval(fetchNotifications, 3000); // Refresh every 3 secs
-  };
-
-  const stopNewNotificationCheck = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -157,9 +107,21 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
     navigate("/shopping_cart");
   };
 
-  const handleNotificationClick = (notificationID: number) => {
-    markNotificationAsRead(notificationID);
-    handleNotificationsClose();
+  const handleNotificationClick = async (notificationID: number) => {
+    try {
+      await db.post(`/notification/mark-read/${notificationID}`);
+      setNotifications(
+        notifications.map((n) =>
+          n.notificationID === notificationID ? { ...n, readStatus: true } : n
+        )
+      );
+      setNewNotificationCount((prevCount) =>
+        prevCount > 0 ? prevCount - 1 : 0
+      );
+      handleNotificationsClose();
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   };
 
   return (
@@ -185,8 +147,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           The Clown Park
         </Typography>
 
-        {/* Handle click to navigate to the shopping cart page */}
-        <IconButton color="inherit" onClick={() => navigate("/shopping_cart")}>
+        <IconButton color="inherit" onClick={handleShoppingCartClick}>
           <Badge badgeContent={cartItemCount} color="secondary">
             <ShoppingCartIcon />
           </Badge>
@@ -201,20 +162,10 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           open={Boolean(notificationAnchorEl)}
           anchorEl={notificationAnchorEl}
           onClose={handleNotificationsClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
           PaperProps={{
-            style: {
-              width: "400px",
-              maxHeight: "500px",
-              overflow: "auto",
-            },
+            style: { width: "400px", maxHeight: "500px", overflow: "auto" },
           }}
         >
           <Paper elevation={3}>
@@ -230,9 +181,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
                       backgroundColor: notification.readStatus
                         ? "transparent"
                         : "rgba(0, 0, 0, 0.04)",
-                      "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.08)",
-                      },
+                      "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.08)" },
                     }}
                   >
                     <ListItemButton>
@@ -288,4 +237,5 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
     </AppBar>
   );
 };
+
 export default Topbar;

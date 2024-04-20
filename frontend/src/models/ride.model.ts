@@ -15,6 +15,7 @@ export interface Ride {
     areaName: string;
   };
   hasCrud: boolean;
+  closureStatus: boolean;
 }
 
 export interface Purchase {

@@ -8,7 +8,6 @@ import {
   Typography,
   IconButton,
   Divider,
-  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -17,6 +16,7 @@ import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import MenuPopup from "../../components/MenuListPopup";
 import db from "../../components/db";
 import { Restaurant, MenuListItem } from "../../models/restaurant.model";
+import { ClosedIndicator } from "../../components/ClosedIndicator";
 
 const RestaurantsPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -175,6 +175,7 @@ const RestaurantsPage: React.FC = () => {
               height: "auto",
               display: "flex",
               flexDirection: "column",
+              opacity: restaurant.closureStatus ? 0.5 : 1, // Reduce opacity for closed restaurants
             }}
           >
             <Box
@@ -183,11 +184,11 @@ const RestaurantsPage: React.FC = () => {
               alt="Restaurant Image"
               sx={{
                 width: "100%",
-                height: 200, // Fixed height for images
-                objectFit: "cover", // Ensures images cover the area well without distortion
+                height: 200,
+                objectFit: "cover",
                 transition: "transform 0.3s ease-in-out",
                 "&:hover": {
-                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                  transform: "scale(1.03)",
                 },
               }}
             />
@@ -201,14 +202,18 @@ const RestaurantsPage: React.FC = () => {
                 justifyContent: "space-between",
               }}
             >
-              <Typography variant="h5" component="div" gutterBottom>
-                {restaurant.restaurantName}
-                <Chip
-                  label={restaurant.area.areaName}
-                  size="small"
-                  sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
-                />
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography variant="h5" component="div" gutterBottom>
+                  {restaurant.restaurantName}
+                </Typography>
+                {restaurant.closureStatus && <ClosedIndicator />}
+              </Box>
 
               <Divider
                 sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}

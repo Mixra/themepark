@@ -241,8 +241,10 @@ namespace backend.Controllers
                 ClosingTime = r.ClosingTime,
                 Duration = r.Duration,
                 UnitPrice = r.UnitPrice,
+                ClosureStatus = r.ClosureStatus,
                 Area = JsonConvert.DeserializeObject<ParkViewModel>(r.Area),
-                hasCrud = r.hasCrud == 1 || (HttpContext.Items["Level"] != null && ((int)HttpContext.Items["Level"] == 999))
+                hasCrud = r.hasCrud == 1 || (HttpContext.Items["Level"] != null && ((int?)HttpContext.Items["Level"] ?? 0) == 999)
+
             });
 
             return Ok(parsed);

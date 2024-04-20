@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -22,6 +21,7 @@ import DeleteRideConfirmation from "../../components/DeleteRideConfirmation";
 import db from "../../components/db";
 import { Ride, Purchase } from "../../models/ride.model";
 import { useCart } from "../../components/CartContext";
+import { ClosedIndicator } from "../../components/ClosedIndicator";
 
 const formatTime = (time: string): string => {
   const [hours, minutes] = time.split(":").map((part) => parseInt(part, 10));
@@ -160,7 +160,6 @@ const RidesPage: React.FC = () => {
     }
 
     // Update cartItems state
-
     setCartItems((currentItems) => {
       const existingItemIndex = currentItems.findIndex(
         (item) => item.rideId === newItem.rideId
@@ -220,6 +219,7 @@ const RidesPage: React.FC = () => {
               width: 300,
               display: "flex",
               flexDirection: "column",
+              opacity: ride.closureStatus ? 0.5 : 1, // Reduce opacity for closed rides
             }}
           >
             <Box
@@ -228,11 +228,11 @@ const RidesPage: React.FC = () => {
               alt={ride.rideName}
               sx={{
                 width: "100%",
-                height: 200, // Fixed height for images
-                objectFit: "cover", // Ensures images cover the area well without distortion
+                height: 200,
+                objectFit: "cover",
                 transition: "transform 0.3s ease-in-out",
                 "&:hover": {
-                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                  transform: "scale(1.03)",
                 },
               }}
             />
@@ -245,14 +245,18 @@ const RidesPage: React.FC = () => {
                 flexDirection: "column",
               }}
             >
-              <Typography variant="h5" component="div" gutterBottom>
-                {ride.rideName}
-                <Chip
-                  label={ride.area.areaName}
-                  size="small"
-                  sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
-                />
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography variant="h5" component="div" gutterBottom>
+                  {ride.rideName}
+                </Typography>
+                {ride.closureStatus && <ClosedIndicator />}
+              </Box>
               <Divider
                 sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
               />
@@ -280,9 +284,9 @@ const RidesPage: React.FC = () => {
               />
               <Box
                 sx={{
-                  flexDirection: "column", // Arrange times vertically
+                  flexDirection: "column",
                   alignItems: "flex-start",
-                  width: "100%", // Take up full width
+                  width: "100%",
                 }}
               >
                 <Typography variant="body2" fontWeight="bold">
@@ -307,12 +311,14 @@ const RidesPage: React.FC = () => {
               </Typography>
             </CardContent>
             <CardActions style={{ justifyContent: "center" }}>
-              <Button
-                variant="contained"
-                onClick={() => handleOpenPurchaseDialog(ride)}
-              >
-                Add To Cart (${ride.unitPrice})
-              </Button>
+              {!ride.closureStatus && (
+                <Button
+                  variant="contained"
+                  onClick={() => handleOpenPurchaseDialog(ride)}
+                >
+                  Add To Cart (${ride.unitPrice})
+                </Button>
+              )}
             </CardActions>
             {ride.hasCrud && (
               <CardActions>

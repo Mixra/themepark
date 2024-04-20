@@ -68,7 +68,7 @@ namespace backend.Controllers
         [HttpGet("history")]
         public async Task<IActionResult> GetPurchaseHistory()
         {
-            var username = HttpContext.Items["Username"].ToString();
+            var username = HttpContext.Items["Username"]?.ToString();
 
             var query = @"
             SELECT oi.OrderItemID AS Id, 
@@ -81,6 +81,7 @@ namespace backend.Controllers
                 oi.ItemType,
                 oi.Quantity,
                 oi.TicketExpiryDate,
+                oi.RefundStatus,
                 o.OrderDate AS PurchaseDate
             FROM OrderItems oi
             JOIN Orders o ON oi.OrderID = o.OrderID

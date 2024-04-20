@@ -39,7 +39,6 @@ const MaintenancePopup: React.FC<MaintenancePopupProps> = ({
   const [entityOptions, setEntityOptions] = useState<{
     [key: string]: MaintenanceEntity[];
   }>({
-    Area: [],
     Ride: [],
     Restaurant: [],
     GiftShop: [],
@@ -79,20 +78,14 @@ const MaintenancePopup: React.FC<MaintenancePopupProps> = ({
 
   const fetchEntityOptions = async () => {
     try {
-      const [
-        areasResponse,
-        ridesResponse,
-        restaurantsResponse,
-        giftshopsResponse,
-      ] = await Promise.all([
-        db.get("/Maintenance/areas"),
-        db.get("/Maintenance/rides"),
-        db.get("/Maintenance/restaurants"),
-        db.get("/Maintenance/shops"),
-      ]);
+      const [ridesResponse, restaurantsResponse, giftshopsResponse] =
+        await Promise.all([
+          db.get("/Maintenance/rides"),
+          db.get("/Maintenance/restaurants"),
+          db.get("/Maintenance/shops"),
+        ]);
 
       setEntityOptions({
-        Area: areasResponse.data,
         Ride: ridesResponse.data,
         Restaurant: restaurantsResponse.data,
         GiftShop: giftshopsResponse.data,

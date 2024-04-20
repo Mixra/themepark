@@ -13,7 +13,6 @@ import {
   TextField,
   IconButton,
   Divider,
-  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -22,8 +21,9 @@ import GiftShopPopup from "../../components/GiftShopPopup";
 import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import InventoryPopup from "../../components/InventoryPopup";
 import db from "../../components/db";
-import { GiftShop, Inventory, Purchase } from "../../models/giftshop.model";
+import { GiftShop, Inventory } from "../../models/giftshop.model";
 import { useCart } from "../../components/CartContext";
+import { ClosedIndicator } from "../../components/ClosedIndicator";
 
 const GiftShopsPage: React.FC = () => {
   const [giftShops, setGiftShops] = useState<GiftShop[]>([]);
@@ -234,6 +234,7 @@ const GiftShopsPage: React.FC = () => {
               height: "auto",
               display: "flex",
               flexDirection: "column",
+              opacity: shop.closureStatus ? 0.5 : 1, // Reduce opacity for closed gift shops
             }}
           >
             <Box
@@ -242,11 +243,11 @@ const GiftShopsPage: React.FC = () => {
               alt="Gift Shop Image"
               sx={{
                 width: "100%",
-                height: 200, // Fixed height for images
-                objectFit: "cover", // Ensures images cover the area well without distortion
+                height: 200,
+                objectFit: "cover",
                 transition: "transform 0.3s ease-in-out",
                 "&:hover": {
-                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                  transform: "scale(1.03)",
                 },
               }}
             />
@@ -259,14 +260,18 @@ const GiftShopsPage: React.FC = () => {
                 justifyContent: "space-between",
               }}
             >
-              <Typography variant="h5" component="div" gutterBottom>
-                {shop.shopName}
-                <Chip
-                  label={shop.area.areaName}
-                  size="small"
-                  sx={{ ml: 1, bgcolor: "primary.main", color: "white" }}
-                />
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography variant="h5" component="div" gutterBottom>
+                  {shop.shopName}
+                </Typography>
+                {shop.closureStatus && <ClosedIndicator />}
+              </Box>
 
               <Divider
                 sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
@@ -366,15 +371,17 @@ const GiftShopsPage: React.FC = () => {
                           ${thisItem.unitPrice}
                         </Typography>
                       </Box>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small" // Smaller button size for subtlety
-                        sx={{ ml: 2 }} // Spacing from the text
-                        onClick={() => handleOpenPurchaseDialog(thisItem)}
-                      >
-                        Add to Cart
-                      </Button>
+                      {!shop.closureStatus && (
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          sx={{ ml: 2 }}
+                          onClick={() => handleOpenPurchaseDialog(thisItem)}
+                        >
+                          Add to Cart
+                        </Button>
+                      )}
                     </Box>
                   ))
                 ) : (
@@ -384,9 +391,9 @@ const GiftShopsPage: React.FC = () => {
                 )}
                 <Button
                   variant="text"
-                  color="primary" // Add primary color for consistency
+                  color="primary"
                   onClick={() => handleInventoryExpand(shop.shopID)}
-                  sx={{ mt: 1 }} // Space from the last item
+                  sx={{ mt: 1 }}
                 >
                   {showFullInventory[shop.shopID] ? "Show Less" : "Show More"}
                 </Button>
