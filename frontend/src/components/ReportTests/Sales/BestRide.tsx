@@ -43,9 +43,7 @@ export function BestRide({ diff, trend, sx, value }: BudgetProps): React.JSX.Ele
                   {diff}%
                 </Typography>
               </Stack>
-              <Typography color="text.secondary" variant="caption">
-                Since last month
-              </Typography>
+              
             </Stack>
           ) : null}
         </Stack>
