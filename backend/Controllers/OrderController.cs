@@ -29,7 +29,6 @@ namespace backend.Controllers
             {
                 totalCost += item.UnitPrice * item.Quantity;
             }
-
             var newOrderData = new
             {
                 Username = HttpContext.Items["Username"],
