@@ -157,14 +157,19 @@ const ParkAreaPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
-            <img
-              src={
-                area.imageUrl
-                  ? area.imageUrl
-                  : "https://via.placeholder.com/150"
-              }
-              alt="Park Area"
-              style={{ width: "100%", objectFit: "cover", height: "150px" }}
+            <Box
+              component="img"
+              src={area.imageUrl}
+              alt="Event"
+              sx={{
+                width: "100%",
+                height: 200, // Fixed height for images
+                objectFit: "cover", // Ensures images cover the area well without distortion
+                transition: "transform 0.3s ease-in-out",
+                "&:hover": {
+                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                },
+              }}
             />
             <CardContent sx={{ overflowY: "auto", padding: 1, flexGrow: 1 }}>
               <Typography variant="h5" component="div" gutterBottom>
