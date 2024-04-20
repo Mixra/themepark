@@ -314,17 +314,6 @@ const RidesPage: React.FC = () => {
               <Typography variant="body2" fontWeight="bold">
                 Duration of the ride: {ride.duration} seconds
               </Typography>
-              <Box
-                sx={{
-                  marginTop: "auto",
-                  alignSelf: "flex-end",
-                  color: "#777", // Gray color for the park area text
-                }}
-              >
-                <Typography variant="body2">
-                  Park Area: {ride.parkArea?.areaName || "Unknown Area"}
-                </Typography>
-              </Box>
             </CardContent>
             <CardActions style={{ justifyContent: "center" }}>
               {!ride.closureStatus && (
