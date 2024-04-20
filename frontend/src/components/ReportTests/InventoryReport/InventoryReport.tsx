@@ -24,8 +24,9 @@ export interface InventoryItem {
   shopId: number;
   itemID: number;
   itemName: string;
-  description: string;
   quantity: number;
+  soldQuantity:number;
+  soldSales:number;
   unitPrice: number;
 }
 
@@ -107,7 +108,9 @@ export function InventoryReport({
                   <TableCell>Item ID</TableCell>
                   <TableCell>Item Name</TableCell>
                   <TableCell>Quantity</TableCell>
+                  <TableCell>SoldQuantity</TableCell>
                   <TableCell>Unit Price</TableCell>
+                  <TableCell>Sold Sales</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -116,7 +119,9 @@ export function InventoryReport({
                     <TableCell>{item.itemID}</TableCell>
                     <TableCell>{item.itemName}</TableCell>
                     <TableCell>{item.quantity}</TableCell>
+                    <TableCell>{item.soldQuantity != null ? item.soldQuantity : 'N/A'}</TableCell>
                     <TableCell>{item.unitPrice}</TableCell>
+                    <TableCell>{item.soldQuantity != null ? item.soldQuantity * item.unitPrice : 'N/A'}</TableCell>
                     </TableRow>
                 ))}
                 </TableBody>
