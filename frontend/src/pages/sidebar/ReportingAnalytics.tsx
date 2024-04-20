@@ -40,17 +40,12 @@ type MaintenanceEntry = {
   maintenanceDescription: string;
 };
 
+
 type MaintenanceReportData = {
   entries: MaintenanceEntry[];
 };
 
-type EmployeeReportData = {
-  username: string;
-  fullName: string;
-  assignedPark: string | null;
-  employeeRole: string;
-  employeeStatus: string;
-};
+
 
 const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
@@ -72,7 +67,7 @@ const SaleComponentMap = {
   worstGiftshop: WorstGift,
 };
 
-type ReportType = "sales" | "maintenance" | "employee" | "inventory";
+type ReportType = "sales" | "maintenance" | "inventory";
 
 const ReportingAnalytics: React.FC = () => {
   const theme = useTheme();
@@ -147,16 +142,7 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
-  const fetchEmployeeReports = async () => {
-    try {
-      const response = await db.get("/Reports/employee");
-      setReportData({ employees: response.data });
-    } catch (error) {
-      console.error("Failed to fetch employee reports:", error);
-      alert("Failed to fetch employee reports.");
-    }
-  };
-
+  
   const fetchInventoryReport = async () => {
     try {
       const response = await db.post("/reports/inventory", {
@@ -172,23 +158,49 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {
-    if (reportType === "sales" && (!startDate || !endDate)) {
-      alert("Please select both start and end dates for the sales report.");
-      return;
-    } else if (reportType === "maintenance" && !startDate) {
-      alert("Please select a start date for the maintenance report.");
+    if ((reportType === "sales" || reportType === "inventory" || reportType === "maintenance") && (!startDate || !endDate)) {
+      alert("Please select both start and end dates for the report.");
       return;
     }
+    
     switch (reportType) {
       case "sales":
         fetchSalesReport(startDate, endDate);
         break;
-      case "employee":
-        fetchEmployeeReports();
-        break;
       case "maintenance":
-        fetchMaintenanceReports(startDate, endDate);
-        break;
+          setReportData({
+            entries: [
+              {
+                rideId: 1,
+                rideName: "Roller Coaster",
+                totalClosures: 10,
+                lastClosure: new Date("2024-04-19"),
+                averageClosureLengthDays: 2.5
+              },
+              {
+                rideId: 2,
+                rideName: "Carousel",
+                totalClosures: 5,
+                lastClosure: new Date("2024-04-18"),
+                averageClosureLengthDays: 1.8
+              },
+              {
+                rideId: 3,
+                rideName: "Ferris Wheel",
+                totalClosures: 7,
+                lastClosure: new Date("2024-04-20"),
+                averageClosureLengthDays: 2.1
+              },
+              {
+                rideId: 4,
+                rideName: "Teacups",
+                totalClosures: 3,
+                lastClosure: new Date("2024-04-17"),
+                averageClosureLengthDays: 1.3
+              }
+            ]
+          });
+          break;
       case "inventory":
         fetchInventoryReport();
         break;
@@ -196,7 +208,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "inventory") {
+    if (reportType === "sales" || reportType === "inventory"||reportType ==="maintenance") {
       return (
         <>
           <DatePicker
@@ -244,7 +256,7 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {["sales", "employee", "inventory"].map((type) => (
+          {["sales", "maintenance", "inventory"].map((type) => (
             <MenuItem key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
@@ -275,37 +287,13 @@ const ReportingAnalytics: React.FC = () => {
             {endDate && ` to ${dayjs(endDate).format("MM/DD/YYYY")}`}
           </Typography>
         )}
-        {reportType === "maintenance" && (
-          <>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showOngoingOnly}
-                  onChange={(e) => setShowOngoingOnly(e.target.checked)}
-                />
-              }
-              label="Show Ongoing Only"
-            />
-            <LatestMaintenance entries={filteredMaintenanceEntries} />
-          </>
+        {reportType === "maintenance" && reportData && (
+          <LatestMaintenance
+          entries={reportData.entries}
+          />
         )}
-        {reportType === "employee" && (
-          <>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showActiveOnly}
-                  onChange={(e) => setShowActiveOnly(e.target.checked)}
-                />
-              }
-              label="Show Active Only"
-            />
-            <EmployeeReport
-              employees={filteredEmployees}
-              showActiveOnly={showActiveOnly}
-            />
-          </>
-        )}
+
+       
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
             <Typography variant="h6">Sales Report</Typography>
