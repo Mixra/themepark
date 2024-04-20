@@ -66,27 +66,28 @@ namespace backend.Controllers
             return Ok(parsed);
         }
 
+        [HttpGet("maintenance")]
+        [Authorize(Roles = "999")]
+        public async Task<IActionResult> GetMaintenanceReports([FromBody] MaintenanceReportModel data)
+        {
+            var sql = "EXEC GetMaintenanceReports @StartDate, @EndDate";
+
+            var maintenanceReport = await _databaseService.QueryAsync<dynamic>(sql);
+
+            var parsed = maintenanceReport.Select(m => new{
+                entityType = m.EntityType,
+                entityID = m.EntityID,
+                maintenanceStartDate = m.MaintenanceStartDate,
+                maintenanceEndDate = m.MaintenanceEndDate,
+                reason = m.Reason,
+                description = m.Description
+            });
+            
+            return Ok(parsed);
+        }
+
     }
 
 }
 
-        // [HttpGet("maintenance")]
-        // [Authorize(Roles = "999")]
-        // public async Task<IActionResult> GetMaintenanceReports()
-        // {
-        //     var sql = "EXEC GetMaintenanceReports @StartDate = '2024-01-01', @EndDate = '2024-12-31'";
-
-        //     var maintenanceReport = await _databaseService.QueryAsync<dynamic>(sql);
-
-        //     var parsed = maintenanceReport.Select(m => new{
-        //         entityType = m.EntityType,
-        //         entityID = m.EntityID,
-        //         maintenanceStartDate = m.MaintenanceStartDate,
-        //         maintenanceEndDate = m.MaintenanceEndDate,
-        //         reason = m.Reason,
-        //         description = m.Description
-        //     });
-            
-        //     return Ok(parsed);
-        // }
 

@@ -1,13 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  MenuItem,
-  FormControlLabel,
-  Switch,
-} from "@mui/material";
+import { Box, Button, Typography, TextField, MenuItem, FormControlLabel, Switch} from "@mui/material";
 import Joker from "../../components/Joker";
 import { useTheme } from "@mui/material/styles";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -27,19 +19,6 @@ import { LatestMaintenance } from "../../components/ReportTests/Maintenance/Main
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
 import { InventoryReport } from "../../components/ReportTests/InventoryReport/InventoryReport";
 import db from "../../components/db";
-
-type SalesReportData = {
-  totalSales: number;
-  rideSales: number;
-  giftShopSales: number;
-  bestRide: string;
-  leastPerformingRide: string;
-  bestPark: string;
-  leastPerformingPark: string;
-  totalParkSales: number;
-  bestGiftshop: string;
-  leastPerformingGiftShop: string;
-};
 
 type MaintenanceEntry = {
   entityType: string;
@@ -104,7 +83,6 @@ const ReportingAnalytics: React.FC = () => {
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
 
-
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
       setFilteredMaintenanceEntries(
@@ -162,25 +140,7 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
   
-
-  const fetchMaintenanceReports = async (startDate, endDate) => {
-    if (!startDate) return;
-    const formattedStartDate = startDate.format("YYYY-MM-DD");
-    const formattedEndDate = endDate ? endDate.format("YYYY-MM-DD") : undefined;
   
-    const params = new URLSearchParams({
-      ...(formattedStartDate && { startDate: formattedStartDate }),
-      ...(formattedEndDate && { endDate: formattedEndDate }),
-    }).toString();
-  
-    try {
-      const response = await db.get(`/Reports/maintenanceReports?${params}`);
-      setReportData({ entries: response.data });
-    } catch (error) {
-      console.error("Failed to fetch maintenance reports:", error);
-      alert("Failed to fetch maintenance reports.");
-    }
-  };
   
   const fetchEmployeeReports = async () => {
     try {
