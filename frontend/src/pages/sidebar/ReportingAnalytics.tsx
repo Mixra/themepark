@@ -45,8 +45,6 @@ type MaintenanceReportData = {
   entries: MaintenanceEntry[];
 };
 
-
-
 const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
   { label: "Ride Sales", key: "rideSales", prefix: "$", trend: "down" },
