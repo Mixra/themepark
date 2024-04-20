@@ -22,13 +22,14 @@ import db from "../../components/db";
 import { Event, Purchase } from "../../models/event.model";
 import EventAvailable from "@mui/icons-material/EventAvailable";
 import EventBusy from "@mui/icons-material/EventBusy";
+import { useCart } from "../../components/CartContext";
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [cartItems, setCartItems] = useState<Purchase[]>([]);
+  const { cartItems, setCartItems } = useCart(); // Correctly using useCart
 
   const level = Number(localStorage.getItem("level"));
   const displayCrud = level === 999;
@@ -148,7 +149,22 @@ const EventsPage: React.FC = () => {
     }
 
     // Update cartItems state
-    setCartItems(existingCartItems);
+    setCartItems((currentItems) => {
+      const existingItemIndex = currentItems.findIndex(
+        (item) => item.eventID === newItem.eventID
+      );
+      if (existingItemIndex !== -1) {
+        // If the item already exists, update its quantity
+        return currentItems.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        // If the item doesn't exist, add it to the cart
+        return [...currentItems, newItem];
+      }
+    });
 
     // Store updated cartItems in local storage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));

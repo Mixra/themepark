@@ -23,6 +23,7 @@ import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 import InventoryPopup from "../../components/InventoryPopup";
 import db from "../../components/db";
 import { GiftShop, Inventory, Purchase } from "../../models/giftshop.model";
+import { useCart } from "../../components/CartContext";
 
 const GiftShopsPage: React.FC = () => {
   const [giftShops, setGiftShops] = useState<GiftShop[]>([]);
@@ -37,8 +38,7 @@ const GiftShopsPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [cartItems, setCartItems] = useState<Purchase[]>([]);
-
+  const { cartItems, setCartItems } = useCart();
   const userLevel = Number(localStorage.getItem("level"));
   const canCreateGiftShop = userLevel === 999 || userLevel === 1;
 
@@ -168,7 +168,22 @@ const GiftShopsPage: React.FC = () => {
     }
 
     // Update cartItems state
-    setCartItems(existingCartItems);
+    setCartItems((currentItems) => {
+      const existingItemIndex = currentItems.findIndex(
+        (item) => item.itemId === newItem.itemId
+      );
+      if (existingItemIndex !== -1) {
+        // If the item already exists, update its quantity
+        return currentItems.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        // If the item doesn't exist, add it to the cart
+        return [...currentItems, newItem];
+      }
+    });
 
     // Store updated cartItems in local storage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));

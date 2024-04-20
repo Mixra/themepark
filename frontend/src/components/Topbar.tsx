@@ -185,8 +185,9 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           The Clown Park
         </Typography>
 
-        <IconButton color="inherit" onClick={handleShoppingCartClick}>
-          <Badge badgeContent={cartItemCount} color="error">
+        {/* Handle click to navigate to the shopping cart page */}
+        <IconButton color="inherit" onClick={() => navigate("/shopping_cart")}>
+          <Badge badgeContent={cartItemCount} color="secondary">
             <ShoppingCartIcon />
           </Badge>
         </IconButton>
@@ -287,5 +288,4 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
     </AppBar>
   );
 };
-
 export default Topbar;
