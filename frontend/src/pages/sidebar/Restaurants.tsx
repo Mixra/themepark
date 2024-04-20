@@ -177,10 +177,19 @@ const RestaurantsPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
-            <img
+            <Box
+              component="img"
               src={restaurant.imageURL}
               alt="Restaurant Image"
-              style={{ width: "100%", objectFit: "cover", height: "150px" }}
+              sx={{
+                width: "100%",
+                height: 200, // Fixed height for images
+                objectFit: "cover", // Ensures images cover the area well without distortion
+                transition: "transform 0.3s ease-in-out",
+                "&:hover": {
+                  transform: "scale(1.03)", // Gentle zoom on hover for a dynamic effect
+                },
+              }}
             />
 
             <CardContent
