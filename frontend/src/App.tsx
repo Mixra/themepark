@@ -161,14 +161,6 @@ function App() {
               }
             />
             <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute isAllowed>
-                  <Layout children={<Notification />} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/login"
               element={
                 <ProtectedRoute isAllowed={false}>

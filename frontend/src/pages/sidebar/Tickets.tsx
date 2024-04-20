@@ -7,6 +7,8 @@ import {
   Typography,
   Card,
   Grid,
+  Chip,
+  Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import QRCode from "qrcode.react";
@@ -19,8 +21,9 @@ interface Purchase {
   itemType: string;
   quantity: number;
   purchaseDate: string;
+  ticketExpiryDate: string | null;
+  refundStatus: boolean;
 }
-
 
 const Tickets: React.FC = () => {
   const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
@@ -39,41 +42,70 @@ const Tickets: React.FC = () => {
   }, []);
 
   const renderQRCodeOrDetails = (purchase: Purchase) => {
-    //GiftShop Items don't have QR codes
-    if (purchase.itemType === "GiftShop") {
-      return (
-        <>
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={8}>
           <ListItemText
-          primary={`${purchase.name} - Quantity: ${purchase.quantity} - Price: $${(purchase.price*purchase.quantity).toFixed(2) }`}
-          secondary={`Purchase Date: ${new Date(purchase.purchaseDate).toLocaleDateString()}`}
-        />
-        </>
-      );
-    } else {
-      return (
-        <>
-          <ListItemText
-          primary={`${purchase.name} - Quantity: ${purchase.quantity} - Price: $${(purchase.price*purchase.quantity).toFixed(2) }`}
-
-          secondary={`Purchase Date: ${new Date(purchase.purchaseDate).toLocaleDateString()}`}
-        />
-          <div style={{ marginTop: "16px", display: "flex", flexWrap: "wrap" }}>
-            {/* Generating QR Codes */}
-            {Array.from({ length: purchase.quantity }).map((_, codeIndex) => (
-              <div
-                key={codeIndex}
-                style={{ marginRight: "16px", marginBottom: "16px" }}
-              >
-                <QRCode
-                  value={`${purchase.name} - ${purchase.itemType} - ${purchase.purchaseDate}`}
-                  size={96}
-                />
-              </div>
-            ))}
-          </div>
-        </>
-      );
-    }
+            primary={`${purchase.name} - Quantity: ${purchase.quantity}`}
+            secondary={
+              <>
+                <Box>
+                  <span style={{ fontWeight: "bold" }}>Item Type:</span>{" "}
+                  {purchase.itemType}
+                </Box>
+                <Box>
+                  <span style={{ fontWeight: "bold" }}>Purchase Date:</span>{" "}
+                  {new Date(purchase.purchaseDate).toLocaleDateString()}
+                </Box>
+                <Box>
+                  <span style={{ fontWeight: "bold" }}>Expiry Date:</span>{" "}
+                  {purchase.itemType === "Ride"
+                    ? purchase.ticketExpiryDate
+                      ? new Date(purchase.ticketExpiryDate).toLocaleDateString()
+                      : "N/A"
+                    : "N/A"}
+                </Box>
+                {purchase.refundStatus && (
+                  <Box>
+                    <Chip label="Refunded" color="error" size="small" />
+                  </Box>
+                )}
+              </>
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Total: ${(purchase.price * purchase.quantity).toFixed(2)}
+            </Typography>
+            <div
+              style={{ marginTop: "16px", display: "flex", flexWrap: "wrap" }}
+            >
+              {Array.from({ length: purchase.quantity }).map((_, codeIndex) => (
+                <div
+                  key={codeIndex}
+                  style={{ marginRight: "16px", marginBottom: "16px" }}
+                >
+                  <QRCode
+                    value={`${purchase.name} - ${purchase.itemType} - ${purchase.purchaseDate}`}
+                    size={96}
+                  />
+                </div>
+              ))}
+            </div>
+          </Box>
+        </Grid>
+      </Grid>
+    );
   };
 
   return (
@@ -85,15 +117,21 @@ const Tickets: React.FC = () => {
             {purchaseHistory.map((purchase, index) => (
               <ListItem
                 key={index}
-                sx={{ flexDirection: "column", alignItems: "start" }}
+                sx={{
+                  padding: 3,
+                  borderBottom: "1px solid #e0e0e0",
+                  "&:last-child": {
+                    borderBottom: "none",
+                  },
+                }}
               >
                 {renderQRCodeOrDetails(purchase)}
               </ListItem>
             ))}
           </List>
         ) : (
-          <Typography textAlign="center">
-            You have not yet purchased any tickets.
+          <Typography textAlign="center" padding={3}>
+            You have not yet purchased any items.
           </Typography>
         )}
       </Card>

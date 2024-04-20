@@ -81,6 +81,7 @@ namespace backend.Controllers
                 oi.ItemType,
                 oi.Quantity,
                 oi.TicketExpiryDate,
+                oi.RefundStatus,
                 o.OrderDate AS PurchaseDate
             FROM OrderItems oi
             JOIN Orders o ON oi.OrderID = o.OrderID
