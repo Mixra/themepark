@@ -158,7 +158,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {
-    if ((reportType === "sales" || reportType === "inventory" || reportType === "maintenance") && (!startDate || !endDate)) {
+    if ((reportType === "sales" || reportType === "inventory" ) && (!startDate || !endDate)) {
       alert("Please select both start and end dates for the report.");
       return;
     }
@@ -208,7 +208,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "inventory"||reportType ==="maintenance") {
+    if (reportType === "sales" || reportType === "inventory") {
       return (
         <>
           <DatePicker
