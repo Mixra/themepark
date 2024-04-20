@@ -21,6 +21,7 @@ interface Purchase {
   purchaseDate: string;
 }
 
+
 const Tickets: React.FC = () => {
   const [purchaseHistory, setPurchaseHistory] = useState<Purchase[]>([]);
 
@@ -38,26 +39,24 @@ const Tickets: React.FC = () => {
   }, []);
 
   const renderQRCodeOrDetails = (purchase: Purchase) => {
+    //GiftShop Items don't have QR codes
     if (purchase.itemType === "GiftShop") {
       return (
         <>
           <ListItemText
-            primary={`${purchase.name} - Quantity: ${purchase.quantity}`}
-            secondary={`Purchase Date: ${new Date(
-              purchase.purchaseDate
-            ).toLocaleDateString()}`}
-          />
+          primary={`${purchase.name} - Quantity: ${purchase.quantity} - Price: $${(purchase.price*purchase.quantity).toFixed(2) }`}
+          secondary={`Purchase Date: ${new Date(purchase.purchaseDate).toLocaleDateString()}`}
+        />
         </>
       );
     } else {
       return (
         <>
           <ListItemText
-            primary={`${purchase.name} - Quantity: ${purchase.quantity}`}
-            secondary={`Purchase Date: ${new Date(
-              purchase.purchaseDate
-            ).toLocaleDateString()}`}
-          />
+          primary={`${purchase.name} - Quantity: ${purchase.quantity} - Price: $${(purchase.price*purchase.quantity).toFixed(2) }`}
+
+          secondary={`Purchase Date: ${new Date(purchase.purchaseDate).toLocaleDateString()}`}
+        />
           <div style={{ marginTop: "16px", display: "flex", flexWrap: "wrap" }}>
             {/* Generating QR Codes */}
             {Array.from({ length: purchase.quantity }).map((_, codeIndex) => (

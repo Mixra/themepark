@@ -16,7 +16,6 @@ import dayjs from "dayjs";
 import { Budget } from "../../components/ReportTests/Sales/TotalSales";
 import { RideSale } from "../../components/ReportTests/Sales/RideSales";
 import { GiftShopSale } from "../../components/ReportTests/Sales/GiftShopSale";
-//import { RestaurantSale } from '../../components/ReportTests/Sales/RestaurantSale';
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
 import db from "../../components/db";
@@ -44,10 +43,11 @@ type MaintenanceReportData = {
 };
 
 type EmployeeReportData = {
-  employeeName: string;
-  employeePark: string;
-  employeePosition: string;
-  employeeActive: string | "Active";
+  username: string;
+  fullName: string;
+  assignedPark: string | null;
+  employeeRole: string;
+  employeeStatus: string;
 };
 
 const salesFields = [
@@ -60,7 +60,6 @@ const SaleComponentMap = {
   totalSales: Budget,
   rideSales: RideSale,
   giftShopSales: GiftShopSale,
-  // restaurantSales: RestaurantSale,
 };
 
 type ReportType = "sales" | "maintenance" | "employee";
@@ -98,7 +97,8 @@ const ReportingAnalytics: React.FC = () => {
       setFilteredEmployees(
         showActiveOnly
           ? reportData.employees.filter(
-              (e: EmployeeReportData) => e.employeeActive === "Active"
+              (employee: EmployeeReportData) =>
+                employee.employeeStatus === "Active"
             )
           : reportData.employees
       );
@@ -126,6 +126,16 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
+  const fetchEmployeeReports = async () => {
+    try {
+      const response = await db.get("/Reports/employee");
+      setReportData({ employees: response.data });
+    } catch (error) {
+      console.error("Failed to fetch employee reports:", error);
+      alert("Failed to fetch employee reports.");
+    }
+  };
+
   const handleViewReports = () => {
     if (reportType === "sales" && (!startDate || !endDate)) {
       alert("Please select both start and end dates for the sales report.");
@@ -147,22 +157,7 @@ const ReportingAnalytics: React.FC = () => {
         });
         break;
       case "employee":
-        setReportData({
-          employees: [
-            {
-              employeeName: "Timmy Chra",
-              employeePark: "FutureLand",
-              employeePosition: "Manager",
-              employeeActive: "Active",
-            },
-            {
-              employeeName: "Billy Baker",
-              employeePark: "FrontierLand",
-              employeePosition: "Admin",
-              employeeActive: "Inactive",
-            },
-          ],
-        });
+        fetchEmployeeReports();
         break;
       case "maintenance":
         fetchMaintenanceReports(startDate);
@@ -284,7 +279,10 @@ const ReportingAnalytics: React.FC = () => {
               }
               label="Show Active Only"
             />
-            <EmployeeReport employees={filteredEmployees} />
+            <EmployeeReport
+              employees={filteredEmployees}
+              showActiveOnly={showActiveOnly}
+            />
           </>
         )}
         {reportType === "sales" && reportData && (

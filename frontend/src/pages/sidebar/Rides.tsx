@@ -254,7 +254,7 @@ const RidesPage: React.FC = () => {
               />
               <Box
                 sx={{
-                  display: "flex",
+                  
                   flexDirection: "column", // Arrange times vertically
                   alignItems: "flex-start",
                   width: "100%", // Take up full width

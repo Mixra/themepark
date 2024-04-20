@@ -14,13 +14,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  Select,
   TextField,
-  Switch,
-  FormControlLabel,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,82 +22,77 @@ import EditIcon from "@mui/icons-material/Edit";
 import MaintenancePopup from "../../components/MaintainencePopUp";
 import { useTheme } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import db from "../../components/db";
-import {Maintenance, AffectedEntity } from "../../models/maintenance.model";
+import { AffectedEntity, Maintenance } from "../../models/maintenance.model";
+import DeleteConfirmationPopup from "../../components/DeleteConfirmationPopup";
 
 const MaintenancePage: React.FC = () => {
-const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>([]);
-const [popupOpen, setPopupOpen] = useState<boolean>(false);
-const [currentMaintenance, setCurrentMaintenance] = useState<Partial<Maintenance> | null>(null);
-const [searchTerm, setSearchTerm] = useState("");
-const [filterByClosure, setFilterByClosure] = useState("");
-const [sortDirection, setSortDirection] = useState("asc");
-const theme = useTheme();
+  const [maintenanceList, setMaintenanceList] = useState<Maintenance[]>([]);
+  const [popupOpen, setPopupOpen] = useState<boolean>(false);
+  const [currentMaintenance, setCurrentMaintenance] =
+    useState<Partial<Maintenance> | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [maintenanceToDelete, setMaintenanceToDelete] = useState<number | null>(
+    null
+  );
+  const theme = useTheme();
 
-const fetchMaintenance = useCallback(async () => {
-  try {
-    const { data } = await db.get("/maintenance/maintenance");
-    console.log("API Data:", data);
-    const formattedData = data ? data.map((item: any) => ({
-      ...item,
-      maintenanceStartDate: new Date(item.maintenanceStartDate),
-      maintenanceEndDate: item.maintenanceEndDate ? new Date(item.maintenanceEndDate) : null,
-      affectedEntities: item.affectedEntities ? item.affectedEntities.map(entity => ({
-        ...entity,
-        entityName: entity.entityType + ' ' + entity.entityID
-      })) : []
-    })) : [];
-    setMaintenanceList(formattedData);
-  } catch (error) {
-    console.error("Error fetching maintenance records:", error);
-  }
-}, []);
+  const fetchMaintenance = useCallback(async () => {
+    try {
+      const { data } = await db.get("/maintenance");
+      setMaintenanceList(
+        data.map((item: any) => ({
+          ...item,
+          maintenanceStartDate: item.maintenanceStartDate,
+          maintenanceEndDate: item.maintenanceEndDate || null,
+          affectedEntities: item.affectedEntities
+            ? item.affectedEntities.map((entity: AffectedEntity) => ({
+                ...entity,
+                entityName: `${entity.entityName}`,
+              }))
+            : [],
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching maintenance records:", error);
+    }
+  }, []);
 
+  useEffect(() => {
+    fetchMaintenance();
+  }, [fetchMaintenance]);
 
-useEffect(() => {
-  fetchMaintenance();
-}, [fetchMaintenance]);
+  const formatTime = (time: string) => {
+    const date = new Date(time);
+    return date.toLocaleString(undefined, {
+      dateStyle: "full",
+      timeStyle: "short",
+    });
+  };
 
+  const deleteRow = useCallback((maintenanceID: number) => {
+    setMaintenanceToDelete(maintenanceID);
+    setShowDeleteConfirmation(true);
+  }, []);
 
-const handleOpenPopup = (maintenance?: Maintenance) => {
-  setCurrentMaintenance(maintenance || null); // Pass null for new maintenance
-  setPopupOpen(true);
-};
-
-const handleClosePopup = () => {
-  setPopupOpen(false);
-};
-
-const handleSaveMaintenance = async (formData: Partial<Maintenance>) => {
-  const endpoint = formData.maintenanceID ? `/maintenance/${formData.maintenanceID}` : "/api/maintenance";
-  const method = formData.maintenanceID ? "put" : "post";
-
-  try {
-    const { data } = await db[method](endpoint, formData);
-    console.log(data.message); // Display success message
-    fetchMaintenance(); // Refresh list after save
-  } catch (error) {
-    console.error("Error saving maintenance record:", error);
-  }
-
-  handleClosePopup();
-};
-
-const handleDeleteMaintenance = async (maintenanceID) => {
-  try {
-    await db.delete(`/Maintenance/maintenance/${maintenanceID}`);
-    setMaintenanceList((prevMaintenanceList) =>
-      prevMaintenanceList.filter(
-        (maintenance) => maintenance.maintenanceID !== maintenanceID
-      )
-    );
-    // Close any dialogs or popups if necessary, e.g.:
-    // setOpenDeleteDialog(false);
-  } catch (error) {
-    console.error("Error deleting maintenance record:", error);
-  }
-};
+  const handleDeleteConfirmed = useCallback(async () => {
+    if (maintenanceToDelete !== null) {
+      try {
+        await db.delete(`/Maintenance/${maintenanceToDelete}`);
+        setMaintenanceList((prevMaintenanceList) =>
+          prevMaintenanceList.filter(
+            (maintenance) => maintenance.maintenanceID !== maintenanceToDelete
+          )
+        );
+      } catch (error) {
+        console.error("Error deleting maintenance record:", error);
+      } finally {
+        setShowDeleteConfirmation(false);
+        setMaintenanceToDelete(null);
+      }
+    }
+  }, [maintenanceToDelete]);
 
   const openPopupToAdd = useCallback(() => {
     console.log("Opening popup to add new maintenance.");
@@ -111,21 +100,15 @@ const handleDeleteMaintenance = async (maintenanceID) => {
     setPopupOpen(true);
   }, []);
 
-  const toggleSort = useCallback(() => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-  }, []);
-
-  const openPopupToEdit = useCallback((maintenance) => {
+  const openPopupToEdit = useCallback((maintenance: Maintenance) => {
     console.log(
       "Opening popup to edit maintenance:",
       maintenance.maintenanceID
     );
     setCurrentMaintenance({
       ...maintenance,
-      maintenanceStartDate: new Date(maintenance.maintenanceStartDate),
-      maintenanceEndDate: maintenance.maintenanceEndDate
-        ? new Date(maintenance.maintenanceEndDate)
-        : null,
+      maintenanceStartDate: maintenance.maintenanceStartDate,
+      maintenanceEndDate: maintenance.maintenanceEndDate,
     });
     setPopupOpen(true);
   }, []);
@@ -135,41 +118,43 @@ const handleDeleteMaintenance = async (maintenanceID) => {
     setPopupOpen(false);
   }, []);
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value.toLowerCase());
   };
 
-  const handleFilterChange = (event) => {
-    setFilterByClosure(event.target.value);
-  };
-
   const getActiveMaintenance = useCallback(() => {
-    return maintenanceList.filter((item) => !item.DeletedAt);
+    return maintenanceList.filter((item) => !item.deletedAt);
   }, [maintenanceList]);
 
-  const filteredMaintenanceList = getActiveMaintenance().filter(maintenance => {
-    const maintenanceIDString = maintenance.maintenanceID.toString();
-    return (
-      maintenanceIDString.includes(searchTerm) ||
-      maintenance.reason.toLowerCase().includes(searchTerm) ||
-      maintenance.description.toLowerCase().includes(searchTerm)
-    ) && (
-      filterByClosure === "" ||
-      (filterByClosure === "yes" && maintenance.requireClosure) ||
-      (filterByClosure === "no" && !maintenance.requireClosure)
-    );
-  });
-  
-  const handleCreateMaintenance = async (formData) => {
+  const filteredMaintenanceList = getActiveMaintenance().filter(
+    (maintenance) => {
+      const maintenanceIDString = maintenance.maintenanceID.toString();
+      return (
+        maintenanceIDString.includes(searchTerm) ||
+        maintenance.reason.toLowerCase().includes(searchTerm) ||
+        maintenance.description.toLowerCase().includes(searchTerm)
+      );
+    }
+  );
+
+  const handleCreateMaintenance = async (formData: Partial<Maintenance>) => {
     try {
-      // If you need to adjust formData before sending, do it here
-      const { data } = await db.post("/maintenance/maintenance", formData);
-      
-      // Assuming 'data' returned by your backend contains the new maintenance record,
-      // including its 'maintenanceID' assigned by the server
-      setMaintenanceList(prevMaintenanceList => [...prevMaintenanceList, data]);
-      
-      // Close the popup and reset any state as needed
+      const { data } = await db.post("/maintenance", formData);
+      setMaintenanceList((prevMaintenanceList: Maintenance[]) => [
+        {
+          ...formData,
+          maintenanceID: data.maintenanceID,
+          maintenanceStartDate: formData.maintenanceStartDate,
+          maintenanceEndDate: formData.maintenanceEndDate || null,
+          affectedEntities: formData.affectedEntities
+            ? formData.affectedEntities.map((entity) => ({
+                ...entity,
+                entityName: `${entity.entityName}`,
+              }))
+            : [],
+        } as Maintenance,
+        ...prevMaintenanceList,
+      ]);
       setPopupOpen(false);
       setCurrentMaintenance(null);
     } catch (error) {
@@ -177,57 +162,49 @@ const handleDeleteMaintenance = async (maintenanceID) => {
     }
   };
 
-  const handleEditMaintenance = async (formData) => {
+  const handleEditMaintenance = async (formData: Partial<Maintenance>) => {
     try {
-      // Make sure formData includes 'maintenanceID' of the maintenance you're editing
-      const { data } = await db.put(`maintenance/maintenance/${formData.maintenanceID}`, formData);
-  
-      // Assuming 'data' returned by your backend is the updated maintenance record
-      setMaintenanceList((prevMaintenanceList) =>
-        prevMaintenanceList.map((maintenance) =>
-          maintenance.maintenanceID === data.maintenanceID ? data : maintenance
+      await db.put(`/maintenance/${formData.maintenanceID}`, formData);
+      setMaintenanceList((prevMaintenanceList: Maintenance[]) =>
+        prevMaintenanceList.map((item) =>
+          item.maintenanceID === formData.maintenanceID
+            ? ({
+                ...formData,
+                maintenanceStartDate: formData.maintenanceStartDate,
+                maintenanceEndDate: formData.maintenanceEndDate || null,
+                affectedEntities: formData.affectedEntities
+                  ? formData.affectedEntities.map((entity) => ({
+                      ...entity,
+                      entityName: `${entity.entityName}`,
+                    }))
+                  : [],
+              } as Maintenance)
+            : item
         )
       );
-      
-      // Close the popup and reset any state as needed
       setPopupOpen(false);
       setCurrentMaintenance(null);
     } catch (error) {
       console.error("Error updating maintenance record:", error);
     }
   };
+
   const handleAddOrEditMaintenance = useCallback(
     (formData: Partial<Maintenance>) => {
-      // Determine if we are adding or editing based on if 'maintenanceID' is present
       if (formData.maintenanceID) {
-        handleEditMaintenance(formData); // Edit existing record
+        handleEditMaintenance(formData);
       } else {
-        handleCreateMaintenance(formData); // Create new record
+        handleCreateMaintenance(formData);
       }
     },
-    // Add any other dependencies for these functions if needed
     [handleCreateMaintenance, handleEditMaintenance]
   );
-
-  const deleteRow = useCallback((maintenanceID: number) => {
-    setMaintenanceList((current) =>
-      current.map((item) =>
-        item.maintenanceID === maintenanceID
-          ? {
-              ...item,
-              DeletedAt: new Date(),
-            }
-          : item
-      )
-    );
-  }, []);
 
   const handleMaintenanceCompletion = useCallback((maintenanceID: number) => {
     setMaintenanceList((current) =>
       current.map((item) => {
         if (item.maintenanceID === maintenanceID) {
-          // Update the affected entities to reopen them
-          const updatedAffectedEntities = item.affectedEntities.map(
+          const updatedAffectedEntities = item.affectedEntities?.map(
             (entity) => ({
               ...entity,
               closureStatus: false,
@@ -236,8 +213,8 @@ const handleDeleteMaintenance = async (maintenanceID) => {
 
           return {
             ...item,
-            MaintenanceEndDate: new Date(),
-            AffectedEntities: updatedAffectedEntities,
+            maintenanceEndDate: new Date().toISOString(),
+            affectedEntities: updatedAffectedEntities,
           };
         }
         return item;
@@ -245,22 +222,6 @@ const handleDeleteMaintenance = async (maintenanceID) => {
     );
   }, []);
 
-  const [visibleColumns, setVisibleColumns] = useState({
-    maintenanceID: true,
-    startDate: true,
-    endDate: true,
-    reason: true,
-    description: true,
-    requireClosure: true,
-    actions: true,
-  });
-
-  const toggleColumnVisibility = (column) => {
-    setVisibleColumns((prev) => ({
-      ...prev,
-      [column]: !prev[column],
-    }));
-  };
   return (
     <Box
       sx={{
@@ -301,18 +262,6 @@ const handleDeleteMaintenance = async (maintenanceID) => {
           onChange={handleSearchChange}
           sx={{ mr: 2 }}
         />
-        <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-          <InputLabel>Require Closure</InputLabel>
-          <Select
-            value={filterByClosure}
-            onChange={handleFilterChange}
-            label="Require Closure"
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="yes">Yes</MenuItem>
-            <MenuItem value="no">No</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
       <TableContainer component={Paper}>
         <Table>
@@ -323,7 +272,6 @@ const handleDeleteMaintenance = async (maintenanceID) => {
               <TableCell>End Date Time</TableCell>
               <TableCell>Reason</TableCell>
               <TableCell>Description</TableCell>
-              <TableCell>Require Closure</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -333,27 +281,15 @@ const handleDeleteMaintenance = async (maintenanceID) => {
                 <TableRow>
                   <TableCell>{maintenance.maintenanceID}</TableCell>
                   <TableCell>
-                    {maintenance.maintenanceStartDate.toLocaleString()}
+                    {formatTime(maintenance.maintenanceStartDate)}
                   </TableCell>
                   <TableCell>
                     {maintenance.maintenanceEndDate
-                      ? maintenance.maintenanceEndDate.toLocaleString()
+                      ? formatTime(maintenance.maintenanceEndDate)
                       : "N/A"}
                   </TableCell>
                   <TableCell>{maintenance.reason}</TableCell>
                   <TableCell>{maintenance.description}</TableCell>
-                  <TableCell>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={maintenance.requireClosure}
-                          disabled
-                          color="primary"
-                        />
-                      }
-                      label={maintenance.requireClosure ? "Yes" : "No"}
-                    />
-                  </TableCell>
                   <TableCell>
                     <IconButton onClick={() => openPopupToEdit(maintenance)}>
                       <EditIcon />
@@ -392,23 +328,25 @@ const handleDeleteMaintenance = async (maintenanceID) => {
                           <TableHead>
                             <TableRow>
                               <TableCell>Entity Type</TableCell>
-                              <TableCell>Entity ID</TableCell>
+                              <TableCell>Entity Name</TableCell>
                               <TableCell>Closure Status</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
-  {maintenance.affectedEntities.map((entity, index) => (
-    <TableRow key={index}>
-      <TableCell component="th" scope="row">
-        {entity.entityType}
-      </TableCell>
-      <TableCell>{entity.entityID}</TableCell>
-      <TableCell>
-        {entity.closureStatus ? "Closed" : "Open"}
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
+                            {maintenance.affectedEntities?.map(
+                              (entity, index) => (
+                                <TableRow key={index}>
+                                  <TableCell component="th" scope="row">
+                                    {entity.entityType}
+                                  </TableCell>
+                                  <TableCell>{entity.entityName}</TableCell>
+                                  <TableCell>
+                                    {entity.closureStatus ? "Closed" : "Open"}
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            )}
+                          </TableBody>
                         </Table>
                       </AccordionDetails>
                     </Accordion>
@@ -420,14 +358,19 @@ const handleDeleteMaintenance = async (maintenanceID) => {
         </Table>
       </TableContainer>
       {popupOpen && (
-    <MaintenancePopup
-      open={popupOpen}
-      onClose={closePopup}
-      onSubmit={handleAddOrEditMaintenance}
-      formData={currentMaintenance || {}}
-      isEditing={!!currentMaintenance?.maintenanceID}
-    />
-  )}
+        <MaintenancePopup
+          open={popupOpen}
+          onClose={closePopup}
+          onSubmit={handleAddOrEditMaintenance}
+          formData={currentMaintenance || {}}
+          isEditing={!!currentMaintenance?.maintenanceID}
+        />
+      )}
+      <DeleteConfirmationPopup
+        open={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={handleDeleteConfirmed}
+      />
     </Box>
   );
 };
