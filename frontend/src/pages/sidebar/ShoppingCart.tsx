@@ -123,25 +123,44 @@ const ShoppingCartpage: React.FC = () => {
   };
 
   
-  const calculateFinalPrice = () => {
-    const totalPrice = cartItems.reduce(
-        (total, item) => total + item.unitPrice * item.quantity,
-        0
-    );
-    return parseFloat(totalPrice.toFixed(2)); // Convert string to number
+ 
+//Changing the value of item quantity 
+  const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: number) => {
+  // Create a copy of the cartItems array and find the item to update
+  const updatedCartItems = cartItems.map(item => {
+      // Check item type and cast accordingly
+      if (item.itemType === itemType) {
+          // Check if the item is of type EventItem
+          if (itemType === "Event") {
+              const eventItem = item as EventItem;
+              if (eventItem.eventID === itemId) {
+                  return { ...item, quantity: newQuantity }; // Update quantity for matching item
+              }
+          }
+          if (itemType === "Ride") {
+            const rideItem = item as RideItem;
+            if (rideItem.rideId === itemId) {
+                return { ...item, quantity: newQuantity }; // Update quantity for matching item
+            }
+        }
+        if (itemType === "GiftShop") {
+          const giftShopItem = item as GiftShopItem;
+          if (giftShopItem.itemId === itemId) {
+              return { ...item, quantity: newQuantity }; // Update quantity for matching item
+          }
+      }
+         
+      }
+      return item; // Return unchanged item for other items
+  });
+
+  // Update state with the modified cart items
+  setCartItems(updatedCartItems);
+
+  // Update local storage with the modified cart items
+  localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
 };
-
-
-  const calculateTotalQuantity = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
   
-  
-  
-
-  
-
 const handleDeleteItem = (itemType: ItemType, itemId: number) => {
   // Find the index of the item to delete
   const index = cartItems.findIndex(item => {
@@ -181,46 +200,20 @@ const handleDeleteItem = (itemType: ItemType, itemId: number) => {
 };
 
 
-const handleQuantityChange = (itemType: ItemType, itemId: number, newQuantity: number) => {
-  // Create a copy of the cartItems array and find the item to update
-  const updatedCartItems = cartItems.map(item => {
-      // Check item type and cast accordingly
-      if (item.itemType === itemType) {
-          // Check if the item is of type EventItem
-          if (itemType === "Event") {
-              const eventItem = item as EventItem;
-              if (eventItem.eventID === itemId) {
-                  return { ...item, quantity: newQuantity }; // Update quantity for matching item
-              }
-          }
-          if (itemType === "Ride") {
-            const rideItem = item as RideItem;
-            if (rideItem.rideId === itemId) {
-                return { ...item, quantity: newQuantity }; // Update quantity for matching item
-            }
-        }
-        if (itemType === "GiftShop") {
-          const giftShopItem = item as GiftShopItem;
-          if (giftShopItem.itemId === itemId) {
-              return { ...item, quantity: newQuantity }; // Update quantity for matching item
-          }
-      }
-         
-      }
-      return item; // Return unchanged item for other items
-  });
-
-  // Update state with the modified cart items
-  setCartItems(updatedCartItems);
-
-  // Update local storage with the modified cart items
-  localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+//Calculations 
+ const calculateFinalPrice = () => {
+    const totalPrice = cartItems.reduce(
+        (total, item) => total + item.unitPrice * item.quantity,
+        0
+    );
+    return parseFloat(totalPrice.toFixed(2)); // Convert string to number
 };
 
 
+  const calculateTotalQuantity = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
 
-
- 
 
   return (
     <Box>
