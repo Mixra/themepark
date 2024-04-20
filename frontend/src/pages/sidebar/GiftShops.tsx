@@ -377,9 +377,16 @@ const GiftShopsPage: React.FC = () => {
                           color="primary"
                           size="small"
                           sx={{ ml: 2 }}
-                          onClick={() => handleOpenPurchaseDialog(thisItem)}
+                          onClick={() => {
+                            if (thisItem.quantity > 0) {
+                              handleOpenPurchaseDialog(thisItem);
+                            }
+                          }}
+                          disabled={thisItem.quantity <= 0} // Disable the button if quantity is 0 or less
                         >
-                          Add to Cart
+                          {thisItem.quantity > 0
+                            ? "Add to Cart"
+                            : "Out of Stock"}
                         </Button>
                       )}
                     </Box>
@@ -461,8 +468,12 @@ const GiftShopsPage: React.FC = () => {
             label="Quantity"
             type="number"
             fullWidth
-            value={quantity}
+            value={Math.min(quantity, selectedItem?.quantity || 0)} // Enforce available quantity limit
             onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+            inputProps={{
+              min: 1, // Minimum quantity allowed (can be adjusted)
+              max: selectedItem?.quantity, // Maximum quantity allowed (based on available quantity)
+            }}
           />
         </DialogContent>
         <DialogActions>

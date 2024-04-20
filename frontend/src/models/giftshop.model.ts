@@ -30,6 +30,7 @@ export interface Item {
   unitPrice: number;
   itemType: ItemType;
   quantity: number;
+  availableInventory?: number;
 }
 
 export type ItemType = "Event" | "Ride" | "GiftShop";
