@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Button,
   Card,
+  Button,
   CardContent,
   CardActions,
   Typography,
@@ -206,14 +206,25 @@ const RestaurantsPage: React.FC = () => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  justifyContent: "center", // Center align horizontally
+                  flexDirection: "column",
                 }}
               >
-                <Typography variant="h5" component="div" gutterBottom>
+                <Typography
+                  variant="h5"
+                  component="div"
+                  gutterBottom
+                  sx={{ textAlign: "center" }}
+                >
                   {restaurant.restaurantName}
                 </Typography>
                 {restaurant.closureStatus && <ClosedIndicator />}
               </Box>
+
+              <Typography variant="body2" color="text.secondary">
+                <span style={{ fontWeight: "bold" }}>Park Area:</span>{" "}
+                {restaurant.area.areaName}
+              </Typography>
 
               <Divider
                 sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}

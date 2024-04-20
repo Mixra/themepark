@@ -257,19 +257,31 @@ const GiftShopsPage: React.FC = () => {
                 padding: 2,
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "space-between",
+                justifyContent: "center",
               }}
             >
               <Box
+                key={shop.shopID}
                 sx={{
+                  margin: 1,
+                  width: 300,
+                  height: "auto",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  flexDirection: "column",
+                  opacity: shop.closureStatus ? 0.5 : 1, // Reduce opacity for closed gift shops
+                  textAlign: "center",
                 }}
               >
-                <Typography variant="h5" component="div" gutterBottom>
-                  {shop.shopName}
-                </Typography>
+                <Box>
+                  <Typography variant="h5" component="div" gutterBottom>
+                    {shop.shopName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <span style={{ fontWeight: "bold" }}>Park Area:</span>{" "}
+                    {shop.area.areaName}
+                  </Typography>
+                </Box>
+
                 {shop.closureStatus && <ClosedIndicator />}
               </Box>
 
