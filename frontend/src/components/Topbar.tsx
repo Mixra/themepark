@@ -170,48 +170,53 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
         >
           <Paper elevation={3}>
             <List>
-              {notifications.map((notification) => (
-                <React.Fragment key={notification.notificationID}>
-                  <ListItem
-                    disablePadding
-                    onClick={() =>
-                      handleNotificationClick(notification.notificationID)
-                    }
-                    sx={{
-                      backgroundColor: notification.readStatus
-                        ? "transparent"
-                        : "rgba(0, 0, 0, 0.04)",
-                      "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.08)" },
-                    }}
-                  >
-                    <ListItemButton>
-                      <Box
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="flex-start"
-                      >
-                        <Typography variant="body1">
-                          {notification.message}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color={
-                            notification.readStatus ? "text.secondary" : ""
-                          }
+              {notifications.length === 0 ? (
+                <ListItem>
+                  <ListItemText primary="You Currently Do Not Have Any Notifications" />
+                </ListItem>
+              ) : (
+                notifications.map((notification) => (
+                  <React.Fragment key={notification.notificationID}>
+                    <ListItem
+                      disablePadding
+                      onClick={() =>
+                        handleNotificationClick(notification.notificationID)
+                      }
+                      sx={{
+                        backgroundColor: notification.readStatus
+                          ? "transparent"
+                          : "rgba(0, 0, 0, 0.04)",
+                        "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.08)" },
+                      }}
+                    >
+                      <ListItemButton>
+                        <Box
+                          display="flex"
+                          flexDirection="column"
+                          alignItems="flex-start"
                         >
-                          {notification.readStatus ? "Read" : "Unread"}
-                        </Typography>
-                      </Box>
-                    </ListItemButton>
-                  </ListItem>
-                  {notifications.indexOf(notification) !==
-                    notifications.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
+                          <Typography variant="body1">
+                            {notification.message}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color={
+                              notification.readStatus ? "text.secondary" : ""
+                            }
+                          >
+                            {notification.readStatus ? "Read" : "Unread"}
+                          </Typography>
+                        </Box>
+                      </ListItemButton>
+                    </ListItem>
+                    {notifications.indexOf(notification) !==
+                      notifications.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))
+              )}
             </List>
           </Paper>
         </Popover>
-
         <IconButton color="inherit" onClick={handleProfileMenuOpen}>
           <Avatar />
         </IconButton>

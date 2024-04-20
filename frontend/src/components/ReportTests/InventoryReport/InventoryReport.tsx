@@ -80,7 +80,7 @@ export function InventoryReport({
     <Card>
       <CardHeader title="Inventory Report" />
       <Divider />
-      {/* Dropdown for selecting shop ID */}
+      {/* Dropdown for selecting shop name */}
       <Box sx={{ p: 2 }}>
         <TextField
           select
