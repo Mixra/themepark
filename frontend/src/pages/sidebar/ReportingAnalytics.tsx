@@ -25,6 +25,7 @@ import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
 import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
+import { InventoryReport } from "../../components/ReportTests/InventoryReport/InventoryReport";
 import db from "../../components/db";
 
 type SalesReportData = {
@@ -84,7 +85,7 @@ const SaleComponentMap = {
 };
 
 
-type ReportType = "sales" | "maintenance" | "employee";
+type ReportType = "sales" | "maintenance" | "employee" | "inventory";
 
 const ReportingAnalytics: React.FC = () => {
   const theme = useTheme();
@@ -191,6 +192,17 @@ const ReportingAnalytics: React.FC = () => {
     }
   };
 
+  const fetchInventoryReport = async () => {
+    try {
+      // Fetch inventory report data from the backend
+      const response = await db.get("/Reports/inventory");
+      setReportData(response.data); // Assuming the response contains the inventory data
+    } catch (error) {
+      console.error("Failed to fetch inventory report:", error);
+      alert("Failed to fetch inventory report.");
+    }
+  };
+
   //this is teh end of fetching from database
 
   const handleViewReports = () => {
@@ -211,11 +223,108 @@ const ReportingAnalytics: React.FC = () => {
       case "maintenance":
         fetchMaintenanceReports(startDate, endDate);
         break;
+      
+        case "inventory":
+          setReportData({
+            items: [
+              // Existing items
+              {
+                itemID: "001",
+                itemName: "T-Shirt",
+                description: "Cotton T-Shirt",
+                quantity: 100,
+                unitPrice: 15.99,
+                shopId: 1,
+              },
+              {
+                itemID: "002",
+                itemName: "Jeans",
+                description: "Blue Denim Jeans",
+                quantity: 50,
+                unitPrice: 29.99,
+                shopId: 1,
+              },
+              {
+                itemID: "003",
+                itemName: "Sneakers",
+                description: "White Sneakers",
+                quantity: 75,
+                unitPrice: 49.99,
+                shopId: 1,
+              },
+              {
+                itemID: "004",
+                itemName: "Hat",
+                description: "Sun Hat",
+                quantity: 30,
+                unitPrice: 12.99,
+                shopId: 2,
+              },
+              {
+                itemID: "005",
+                itemName: "Sunglasses",
+                description: "Polarized Sunglasses",
+                quantity: 40,
+                unitPrice: 19.99,
+                shopId: 2,
+              },
+              {
+                itemID: "006",
+                itemName: "Flip Flops",
+                description: "Beach Flip Flops",
+                quantity: 60,
+                unitPrice: 9.99,
+                shopId: 2,
+              },
+
+
+            ],
+            bestItemsByGiftShop: {
+              // Include items from all shops
+              Shop1: {
+                itemID: "001",
+                itemName: "T-Shirt",
+                description: "Cotton T-Shirt",
+                quantity: 100,
+                unitPrice: 15.99,
+                shopId: 1,
+              },
+            },
+            worstItemsByGiftShop: {
+              // Include items from all shops
+              Shop1: {
+                itemID: "002",
+                itemName: "Jeans",
+                description: "Blue Denim Jeans",
+                quantity: 50,
+                unitPrice: 29.99,
+                shopId: 1,
+              },
+             
+            },
+            bestOverallItem: {
+              itemID: "003",
+              itemName: "Sneakers",
+              description: "White Sneakers",
+              quantity: 75,
+              unitPrice: 49.99,
+              shopId: 1,
+            },
+            worstOverallItem: {
+              itemID: "001",
+              itemName: "T-Shirt",
+              description: "Cotton T-Shirt",
+              quantity: 100,
+              unitPrice: 15.99,
+              shopId: 1,
+            },
+          });
+
     }
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "maintenance") {
+    if (reportType === "sales" || reportType === "maintenance" || reportType ==="inventory") {
       return (
         <>
           <DatePicker
@@ -263,7 +372,7 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {["sales", "maintenance", "employee"].map((type) => (
+          {["sales", "maintenance", "employee","inventory"].map((type) => (
             <MenuItem key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
@@ -346,6 +455,18 @@ const ReportingAnalytics: React.FC = () => {
           );
         })}
         </Box>
+        )}
+        {reportType === "inventory" && reportData && (
+          <InventoryReport
+          items={reportData?.items}
+          shopId={reportData?.shopId}
+          bestItemsByGiftShop={reportData?.bestItemsByGiftShop}
+          worstItemsByGiftShop={reportData?.worstItemsByGiftShop}
+          bestOverallItem={reportData?.bestOverallItem}
+          worstOverallItem={reportData?.worstOverallItem}
+        />
+
+
         )}
 
 
