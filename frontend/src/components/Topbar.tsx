@@ -102,12 +102,7 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
         >
           <MenuIcon />
         </IconButton>
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{ flexGrow: 1 }}
-          fontWeight="bold"
-        >
+        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} fontWeight="bold">
           The Clown Park
         </Typography>
 
