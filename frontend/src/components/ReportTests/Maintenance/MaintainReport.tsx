@@ -16,8 +16,8 @@ import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react';
 import dayjs from 'dayjs';
 
 const statusMap = {
-  'Ongoing': { label: 'Ongoing', color: 'warning' },
-  'Completed': { label: 'Completed', color: 'success' }
+  Ongoing: { label: 'Ongoing', color: 'warning' },
+  Completed: { label: 'Completed', color: 'success' }
 } as const;
 
 export interface MaintenanceEntry {
@@ -25,7 +25,8 @@ export interface MaintenanceEntry {
   entityType: string;
   maintenanceStartDate: Date;
   maintenanceEndDate: string | Date; // 'Ongoing' if null
-  maintenanceDescription: string;
+  reason: string;
+  description: string;
 }
 
 export interface LatestMaintenanceProps {
@@ -45,24 +46,27 @@ export function LatestMaintenance({ entries = [], sx }: LatestMaintenanceProps):
               <TableCell>Entity Type</TableCell>
               <TableCell>Entity ID</TableCell>
               <TableCell>Date Started</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Date ended</TableCell>
+              <TableCell>Reason</TableCell>
               <TableCell>Description</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {entries.map((entry) => {
-              const statusLabel = entry.maintenanceEndDate === 'Ongoing' ? 'Ongoing' : 'Completed';
-              const { label, color } = statusMap[statusLabel];
+              //const statusLabel = entry.maintenanceEndDate === 'Ongoing' ? 'Ongoing' : 'Completed';
+              const { label, color } = statusMap[entry.maintenanceEndDate];
 
               return (
                 <TableRow hover key={entry.entityID}>
                   <TableCell>{entry.entityType}</TableCell>
                   <TableCell>{entry.entityID}</TableCell>
                   <TableCell>{dayjs(entry.maintenanceStartDate).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{dayjs(entry.maintenanceEndDate || "Ongoing").format('MMM D, YYYY')}</TableCell>
                   <TableCell>
                     <Chip color={color} label={label} size="small" />
                   </TableCell>
-                  <TableCell>{entry.maintenanceDescription}</TableCell>
+                  <TableCell>{entry.reason}</TableCell>
+                  <TableCell>{entry.description}</TableCell>
                 </TableRow>
               );
             })}
