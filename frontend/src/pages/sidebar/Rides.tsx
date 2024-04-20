@@ -249,14 +249,19 @@ const RidesPage: React.FC = () => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  justifyContent: "center", // Center the ride name
+                  marginBottom: 1,
                 }}
               >
-                <Typography variant="h5" component="div" gutterBottom>
+                <Typography variant="h5" component="div">
                   {ride.rideName}
                 </Typography>
                 {ride.closureStatus && <ClosedIndicator />}
               </Box>
+
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Park Area: {ride.area.areaName}
+              </Typography>
               <Divider
                 sx={{ marginY: 1, borderColor: "black", borderWidth: 2 }}
               />
@@ -309,6 +314,17 @@ const RidesPage: React.FC = () => {
               <Typography variant="body2" fontWeight="bold">
                 Duration of the ride: {ride.duration} seconds
               </Typography>
+              <Box
+                sx={{
+                  marginTop: "auto",
+                  alignSelf: "flex-end",
+                  color: "#777", // Gray color for the park area text
+                }}
+              >
+                <Typography variant="body2">
+                  Park Area: {ride.parkArea?.areaName || "Unknown Area"}
+                </Typography>
+              </Box>
             </CardContent>
             <CardActions style={{ justifyContent: "center" }}>
               {!ride.closureStatus && (
