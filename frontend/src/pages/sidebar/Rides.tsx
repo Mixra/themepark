@@ -21,6 +21,7 @@ import RidesPopup from "../../components/RidesPopup";
 import DeleteRideConfirmation from "../../components/DeleteRideConfirmation";
 import db from "../../components/db";
 import { Ride, Purchase } from "../../models/ride.model";
+import { useCart } from "../../components/CartContext";
 
 const formatTime = (time: string): string => {
   const [hours, minutes] = time.split(":").map((part) => parseInt(part, 10));
@@ -35,7 +36,7 @@ const RidesPage: React.FC = () => {
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [showTicketDialog, setShowTicketDialog] = useState<boolean>(false);
-  const [cartItems, setCartItems] = useState<Purchase[]>([]);
+  const { cartItems, setCartItems } = useCart();
 
   const level = Number(localStorage.getItem("level"));
   const displayCreateButton = level === 999 || level === 1;
@@ -159,7 +160,23 @@ const RidesPage: React.FC = () => {
     }
 
     // Update cartItems state
-    setCartItems(existingCartItems);
+
+    setCartItems((currentItems) => {
+      const existingItemIndex = currentItems.findIndex(
+        (item) => item.rideId === newItem.rideId
+      );
+      if (existingItemIndex !== -1) {
+        // If the item already exists, update its quantity
+        return currentItems.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        // If the item doesn't exist, add it to the cart
+        return [...currentItems, newItem];
+      }
+    });
 
     // Store updated cartItems in local storage
     localStorage.setItem("cartItems", JSON.stringify(existingCartItems));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -19,6 +19,7 @@ import {
   Notifications as NotificationsIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "./CartContext";
 
 interface TopbarProps {
   onDrawerToggle?: () => void;
@@ -32,30 +33,12 @@ interface Item {
 const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationCount, setNotificationCount] = useState(5); // Dynamic notification count
-  const [cartItems, setCartItems] = useState<Item[]>([]);
-  const [cartItemCount, setCartItemCount] = useState(0);
-
+  const { cartItems } = useCart();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Retrieve cart items from local storage when component initializes
-    const storedCartItems = localStorage.getItem("cartItems");
-    if (storedCartItems) {
-      const parsedCartItems = JSON.parse(storedCartItems);
-      setCartItems(parsedCartItems);
-      updateCartItemCount(parsedCartItems); // Update cart item count
-    }
-  }, []);
-
-  useEffect(() => {
-    // Update cart item count when cart items change
-    updateCartItemCount(cartItems);
-  }, [cartItems]);
-
-  const updateCartItemCount = (items: Item[]) => {
-    const totalCount = items.reduce((total, item) => total + item.quantity, 0);
-    setCartItemCount(totalCount);
-  };
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -106,18 +89,21 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
           The Clown Park
         </Typography>
 
-        <IconButton color="inherit" onClick={handleShoppingCartClick}>
-          <Badge badgeContent={cartItemCount} color="error">
+        {/* Handle click to navigate to the shopping cart page */}
+        <IconButton color="inherit" onClick={() => navigate("/shopping_cart")}>
+          <Badge badgeContent={cartItemCount} color="secondary">
             <ShoppingCartIcon />
           </Badge>
         </IconButton>
 
+        {/* Assuming handleNotificationsClick navigates to notifications page or opens a notification panel */}
         <IconButton color="inherit" onClick={handleNotificationsClick}>
           <Badge badgeContent={notificationCount} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
 
+        {/* When user avatar is clicked, open a menu for profile and logout */}
         <IconButton color="inherit" onClick={handleProfileMenuOpen}>
           <Avatar />
         </IconButton>
@@ -143,5 +129,4 @@ const Topbar: React.FC<TopbarProps> = ({ onDrawerToggle }) => {
     </AppBar>
   );
 };
-
 export default Topbar;

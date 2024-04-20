@@ -23,3 +23,13 @@ export interface Inventory {
   quantity: number;
   unitPrice: number;
 }
+export interface Item {
+  id: number;
+  eventID?: number;
+  name: string;
+  unitPrice: number;
+  itemType: ItemType;
+  quantity: number;
+}
+
+export type ItemType = "Event" | "Ride" | "GiftShop";
