@@ -146,7 +146,7 @@ namespace backend.Controllers
 
             foreach (var affectedEntity in maintenance.AffectedEntities)
             {
-                Console.WriteLine($"Affected Entity: {affectedEntity.EntityType}, {affectedEntity.EntityID}, {affectedEntity.EntityName}");
+                // Console.WriteLine($"Affected Entity: {affectedEntity.EntityType}, {affectedEntity.EntityID}, {affectedEntity.EntityName}");
                 await _databaseService.ExecuteAsync(@"
                     INSERT INTO MaintenanceAffectedEntities (MaintenanceID, EntityType, EntityID, EntityName, ClosureStatus)
                     VALUES (@MaintenanceID, @EntityType, @EntityID, @EntityName, @ClosureStatus);", new
