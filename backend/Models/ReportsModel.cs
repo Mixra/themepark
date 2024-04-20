@@ -11,4 +11,9 @@ namespace backend.Models
         public required DateTime StartDate { get; set; }
         public required DateTime EndTime { get; set; }
     }
+
+    public class RideReportModel
+    {
+        public required int RideID { get; set;}
+    }
 }
