@@ -68,7 +68,7 @@ namespace backend.Controllers
         [HttpGet("history")]
         public async Task<IActionResult> GetPurchaseHistory()
         {
-            var username = HttpContext.Items["Username"].ToString();
+            var username = HttpContext.Items["Username"]?.ToString();
 
             var query = @"
             SELECT oi.OrderItemID AS Id, 
