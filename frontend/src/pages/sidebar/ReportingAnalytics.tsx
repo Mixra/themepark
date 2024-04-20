@@ -324,7 +324,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "maintenance" || reportType ==="inventory") {
+    if (reportType === "sales" || reportType ==="inventory") {
       return (
         <>
           <DatePicker
@@ -372,7 +372,7 @@ const ReportingAnalytics: React.FC = () => {
           onChange={handleReportTypeChange}
           sx={{ minWidth: 200 }}
         >
-          {["sales", "maintenance", "employee","inventory"].map((type) => (
+          {["sales", "employee","inventory"].map((type) => (
             <MenuItem key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)} Report
             </MenuItem>
