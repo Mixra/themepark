@@ -24,7 +24,6 @@ import { ParkSales } from "../../components/ReportTests/Sales/totalParkSale";
 import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
-import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
 import {
   InventoryReport,
   InventoryReportProps,
@@ -79,9 +78,7 @@ const ReportingAnalytics: React.FC = () => {
   const [filteredMaintenanceEntries, setFilteredMaintenanceEntries] = useState<
     MaintenanceEntry[]
   >([]);
-  const [filteredEmployees, setFilteredEmployees] = useState<
-    EmployeeReportData[]
-  >([]);
+ 
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
@@ -94,24 +91,11 @@ const ReportingAnalytics: React.FC = () => {
             )
           : reportData.entries
       );
-    } else if (
-      reportType === "employee" &&
-      reportData &&
-      reportData.employees
-    ) {
-      setFilteredEmployees(
-        showActiveOnly
-          ? reportData.employees.filter(
-              (employee: EmployeeReportData) =>
-                employee.employeeStatus === "Active"
-            )
-          : reportData.employees
-      );
     } else {
       setFilteredMaintenanceEntries([]);
-      setFilteredEmployees([]);
     }
-  }, [showOngoingOnly, showActiveOnly, reportData, reportType]);
+  }, [showOngoingOnly, reportData, reportType]);
+
 
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setReportType(event.target.value as ReportType | "");
@@ -156,7 +140,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {
-    if ((reportType === "sales" || reportType === "inventory" ) && (!startDate || !endDate)) {
+    if ((reportType === "sales" || reportType === "inventory"|| reportType === "maintenance" ) && (!startDate || !endDate)) {
       alert("Please select both start and end dates for the report.");
       return;
     }
@@ -206,7 +190,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "inventory") {
+    if (reportType === "sales" || reportType === "inventory"||reportType === "maintenance") {
       return (
         <>
           <DatePicker
@@ -291,7 +275,6 @@ const ReportingAnalytics: React.FC = () => {
           />
         )}
 
-       
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
             <Typography variant="h6">Sales Report</Typography>
