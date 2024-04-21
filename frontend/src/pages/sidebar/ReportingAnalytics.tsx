@@ -5,8 +5,6 @@ import {
   Typography,
   TextField,
   MenuItem,
-  FormControlLabel,
-  Switch,
 } from "@mui/material";
 import Joker from "../../components/Joker";
 import { useTheme } from "@mui/material/styles";
