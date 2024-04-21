@@ -87,21 +87,25 @@ const Tickets: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Total: ${(purchase.price * purchase.quantity).toFixed(2)}
             </Typography>
-            <div
-              style={{ marginTop: "16px", display: "flex", flexWrap: "wrap" }}
-            >
-              {Array.from({ length: purchase.quantity }).map((_, codeIndex) => (
-                <div
-                  key={codeIndex}
-                  style={{ marginRight: "16px", marginBottom: "16px" }}
-                >
-                  <QRCode
-                    value={`${purchase.name} - ${purchase.itemType} - ${purchase.purchaseDate}`}
-                    size={96}
-                  />
-                </div>
-              ))}
-            </div>
+            {purchase.itemType !== "GiftShop" && (
+              <div
+                style={{ marginTop: "16px", display: "flex", flexWrap: "wrap" }}
+              >
+                {Array.from({ length: purchase.quantity }).map(
+                  (_, codeIndex) => (
+                    <div
+                      key={codeIndex}
+                      style={{ marginRight: "16px", marginBottom: "16px" }}
+                    >
+                      <QRCode
+                        value={`${purchase.name} - ${purchase.itemType} - ${purchase.purchaseDate}`}
+                        size={96}
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </Box>
         </Grid>
       </Grid>
