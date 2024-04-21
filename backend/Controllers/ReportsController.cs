@@ -21,26 +21,6 @@ namespace backend.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet("employee")]
-        [Authorize(Roles = "999")]
-        public async Task<IActionResult> GenerateEmployeeReports()
-        {
-            var sql = "EXEC GetEmployeeReports;";
-
-            var employeeReports = await _databaseService.QueryAsync<dynamic>(sql);
-
-            var parsed = employeeReports.Select(x => new
-            {
-                Username = x.Username,
-                fullName = x.FullName,
-                assignedPark = x.AssignedPark,
-                employeeRole = x.Role,
-                employeeStatus = x.Status
-            });
-
-            return Ok(parsed);
-        }
-
         //sales
         [HttpPost("sales")]
         [Authorize(Roles = "999")]
@@ -63,52 +43,6 @@ namespace backend.Controllers
                 worstGiftshop = s.WorstGiftshop
             });
 
-            return Ok(parsed);
-        }
-
-        [HttpPost("completeInventory")]
-        [Authorize(Roles = "999")]
-        public async Task<IActionResult> GetCompleteInventoryReport([FromBody] SalesModel data)
-        {
-            var sql = "EXEC GetCompleteInventoryReport @StartDate, @EndDate";
-
-            var completeInventory = await _databaseService.QueryAsync<dynamic>(sql, new { StartDate = data.StartDate, EndDate = data.EndDate }
-            );
-
-            var parsed = completeInventory.Select(m => new{
-                ShopName =  m.ShopName,
-                ShopID = m.ShopID,
-                ItemID = m.ItemID,
-                ItemName = m.ItemName,
-                QuantityInStock = m.QuantityInStock,
-                QuantitySold = m.QuantitySold,
-                UnitPrice = m.UnitPrice
-            });
-            
-            return Ok(parsed);
-        }
-
-        [HttpPost("getBestAndWorst")]
-        [Authorize(Roles = "999")]
-        public async Task<IActionResult> GetBestAndWorst([FromBody] SalesModel data)
-        {
-            var sql = "EXEC GetBestAndWorstItems @StartDate, @EndDate";
-
-            var bestworstInventory = await _databaseService.QueryAsync<dynamic>(sql, new { StartDate = data.StartDate, EndDate = data.EndDate }
-            );
-
-            var parsed = bestworstInventory.Select(m => new{
-                ShopID = m.ShopID,
-                BestItemID = m.BestItemID,
-                BestItemName = m.BestItemName,
-                BestItemQuantity = m.BestItemQuantity,
-                BestItemSales = m.BestItemSales,
-                WorstItemID = m.WorstItemID,
-                WorstItemName = m.WorstItemName,
-                WorstItemQuantity = m.WorstItemQuantity,
-                WorstItemSales = m.WorstItemSales
-            });
-            
             return Ok(parsed);
         }
 

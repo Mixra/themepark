@@ -11,7 +11,7 @@ builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddHostedService<DBCronJobService>();
 
 builder.Services.AddCors(options =>
 {
