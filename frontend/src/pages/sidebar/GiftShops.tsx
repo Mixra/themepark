@@ -142,12 +142,15 @@ const GiftShopsPage: React.FC = () => {
   const handleAddToCart = () => {
     if (!selectedItem || quantity < 1) return;
 
+    // Ensure quantity does not exceed available inventory
+    const allowedQuantity = Math.min(quantity, selectedItem.quantity || 0);
+
     const newItem: Purchase = {
       itemId: selectedItem.itemID,
       name: selectedItem.itemName,
       unitPrice: selectedItem.unitPrice || 0,
       itemType: "GiftShop",
-      quantity,
+      quantity: allowedQuantity, // Use the corrected quantity
     };
 
     // Get existing cart items from local storage
@@ -161,7 +164,7 @@ const GiftShopsPage: React.FC = () => {
     );
     if (existingItemIndex !== -1) {
       // If the item already exists, update its quantity
-      existingCartItems[existingItemIndex].quantity += quantity;
+      existingCartItems[existingItemIndex].quantity += allowedQuantity;
     } else {
       // If the item doesn't exist, add it to the cart
       existingCartItems.push(newItem);
@@ -176,7 +179,7 @@ const GiftShopsPage: React.FC = () => {
         // If the item already exists, update its quantity
         return currentItems.map((item, index) =>
           index === existingItemIndex
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + allowedQuantity }
             : item
         );
       } else {
