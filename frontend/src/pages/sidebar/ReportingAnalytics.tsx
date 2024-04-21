@@ -85,6 +85,9 @@ const ReportingAnalytics: React.FC = () => {
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
+  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>([]);
+  const [rideId, setRideId] = useState<number>();
+
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
       setFilteredMaintenanceEntries(
@@ -113,10 +116,14 @@ const ReportingAnalytics: React.FC = () => {
     }
   }, [showOngoingOnly, showActiveOnly, reportData, reportType]);
 
+
+
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setReportType(event.target.value as ReportType | "");
     setReportData(null);
   };
+
+
 
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
@@ -139,7 +146,29 @@ const ReportingAnalytics: React.FC = () => {
       alert("Failed to fetch sales reports.");
     }
   };
+  
+  const fetchMaintenanceReport = async (startDate, endDate) => {
+    if (!startDate || !endDate) return;
+    const formattedStartDate = startDate.format("YYYY-MM-DD");
+    const formattedEndDate = endDate.format("YYYY-MM-DD");
 
+    try {
+      const response = await db.post(`/Reports/ridesReport`, {
+        StartDate: formattedStartDate,
+        EndDate: formattedEndDate,
+      });
+      if (!response.data || response.data.length === 0) {
+        alert("No rides data available for the selected period.");
+        setReportData(null);
+      } else {
+        setReportData(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rides reports:", error);
+      alert("Failed to fetch rides reports.");
+    }
+  };
+  
   
   const fetchInventoryReport = async () => {
     try {
@@ -166,39 +195,11 @@ const ReportingAnalytics: React.FC = () => {
         fetchSalesReport(startDate, endDate);
         break;
       case "maintenance":
-          setReportData({
-            entries: [
-              {
-                rideId: 1,
-                rideName: "Roller Coaster",
-                totalClosures: 10,
-                lastClosure: new Date("2024-04-19"),
-                averageClosureLengthDays: 2.5
-              },
-              {
-                rideId: 2,
-                rideName: "Carousel",
-                totalClosures: 5,
-                lastClosure: new Date("2024-04-18"),
-                averageClosureLengthDays: 1.8
-              },
-              {
-                rideId: 3,
-                rideName: "Ferris Wheel",
-                totalClosures: 7,
-                lastClosure: new Date("2024-04-20"),
-                averageClosureLengthDays: 2.1
-              },
-              {
-                rideId: 4,
-                rideName: "Teacups",
-                totalClosures: 3,
-                lastClosure: new Date("2024-04-17"),
-                averageClosureLengthDays: 1.3
-              }
-            ]
-          });
-          break;
+          //get the data from fetchInventoryHere
+        
+        fetchMaintenanceReport(startDate, endDate);
+        break;
+  
       case "inventory":
         fetchInventoryReport();
         break;

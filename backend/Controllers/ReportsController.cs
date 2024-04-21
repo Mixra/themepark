@@ -135,14 +135,15 @@ namespace backend.Controllers
 
         [HttpPost("rideReport")]
         [Authorize(Roles = "999")]
-        public async Task<IActionResult> GetRideStatistics([FromBody] RideReportModel data)
+        public async Task<IActionResult> GetRideStatistics([FromBody] SalesModel data)
         {
-            var sql = "EXEC sp_GetRideStatistics @RideID";
+            var sql = "EXEC sp_GetRideStatistics @StartDate, @EndDate";
 
-            var rideReport = await _databaseService.QueryAsync<dynamic>(sql, new { RideID = data.RideID});
+            var rideReport = await _databaseService.QueryAsync<dynamic>(sql, new { StartDate = data.StartDate, EndDate = data.EndDate });
 
             var parsed = rideReport.Select(m => new
             {
+                RideID = m.RideID,
                 RideName = m.RideName,
                 TotalClosures = m.TotalClosures,
                 LastClosure = m.LastClosure,
