@@ -1,11 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  MenuItem,
-} from "@mui/material";
+import { Box, Button, Typography, TextField, MenuItem } from "@mui/material";
 import Joker from "../../components/Joker";
 import { useTheme } from "@mui/material/styles";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -16,9 +10,6 @@ import { RideSale } from "../../components/ReportTests/Sales/RideSales";
 import { GiftShopSale } from "../../components/ReportTests/Sales/GiftShopSale";
 import { BestRide } from "../../components/ReportTests/Sales/BestRide";
 import { WorstRide } from "../../components/ReportTests/Sales/LeastPerfomRide";
-import { BestPark } from "../../components/ReportTests/Sales/BestPark";
-import { WorstPark } from "../../components/ReportTests/Sales/LeastPerfPark";
-import { ParkSales } from "../../components/ReportTests/Sales/totalParkSale";
 import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
@@ -36,7 +27,6 @@ type MaintenanceEntry = {
   reason: string;
   maintenanceDescription: string;
 };
-
 
 type MaintenanceReportData = {
   entries: MaintenanceEntry[];
@@ -76,12 +66,13 @@ const ReportingAnalytics: React.FC = () => {
   const [filteredMaintenanceEntries, setFilteredMaintenanceEntries] = useState<
     MaintenanceEntry[]
   >([]);
- 
+
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
 
   const [rideId, setRideId] = useState<number>();
-  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>([]);
-
+  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>(
+    []
+  );
 
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
@@ -97,15 +88,10 @@ const ReportingAnalytics: React.FC = () => {
     }
   }, [showOngoingOnly, reportData, reportType]);
 
-
-
-
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setReportType(event.target.value as ReportType | "");
     setReportData(null);
   };
-
-
 
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
@@ -128,31 +114,30 @@ const ReportingAnalytics: React.FC = () => {
       alert("Failed to fetch sales reports.");
     }
   };
-  
+
   const fetchMaintenanceReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
     const formattedStartDate = startDate.format("YYYY-MM-DD");
     const formattedEndDate = endDate.format("YYYY-MM-DD");
-  
+
     try {
-      const response = await db.post(`/Reports/rideReport`, {  // Check if this is the correct endpoint
+      const response = await db.post(`/Reports/rideReport`, {
+        // Check if this is the correct endpoint
         StartDate: formattedStartDate,
         EndDate: formattedEndDate,
       });
       if (!response.data || response.data.length === 0) {
         alert("No maintenance data available for the selected period.");
-        setMaintenanceData([]);  // Make sure to reset or set an empty array if no data is available
+        setMaintenanceData([]); // Make sure to reset or set an empty array if no data is available
       } else {
-        setMaintenanceData(response.data);  // Assuming `response.data` is the array of maintenance entries
+        setMaintenanceData(response.data); // Assuming `response.data` is the array of maintenance entries
       }
     } catch (error) {
       console.error("Failed to fetch maintenance reports:", error);
       alert("Failed to fetch maintenance reports.");
     }
   };
-  
-  
-  
+
   const fetchInventoryReport = async () => {
     try {
       const response = await db.post("/reports/inventory", {
@@ -168,21 +153,26 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {
-    if ((reportType === "sales" || reportType === "inventory"|| reportType === "maintenance" ) && (!startDate || !endDate)) {
+    if (
+      (reportType === "sales" ||
+        reportType === "inventory" ||
+        reportType === "maintenance") &&
+      (!startDate || !endDate)
+    ) {
       alert("Please select both start and end dates for the report.");
       return;
     }
-    
+
     switch (reportType) {
       case "sales":
         fetchSalesReport(startDate, endDate);
         break;
       case "maintenance":
-          //get the data from fetchInventoryHere
-        
+        //get the data from fetchInventoryHere
+
         fetchMaintenanceReport(startDate, endDate);
         break;
-  
+
       case "inventory":
         fetchInventoryReport();
         break;
@@ -190,7 +180,11 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "inventory"||reportType === "maintenance") {
+    if (
+      reportType === "sales" ||
+      reportType === "inventory" ||
+      reportType === "maintenance"
+    ) {
       return (
         <>
           <DatePicker
@@ -213,12 +207,6 @@ const ReportingAnalytics: React.FC = () => {
 
   return (
     <div>
-      <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
-        <Typography variant="body1">
-          Can't find what you're looking for?{" "}
-          <Button onClick={() => setShowChatbot(true)}>Try asking Joker</Button>
-        </Typography>
-      </Box>
       <Box
         sx={{
           backgroundColor: theme.palette.background.default,
@@ -272,7 +260,6 @@ const ReportingAnalytics: React.FC = () => {
         {reportType === "maintenance" && maintenanceData && (
           <LatestMaintenance entries={maintenanceData} />
         )}
-
 
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
