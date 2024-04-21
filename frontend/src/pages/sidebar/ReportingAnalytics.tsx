@@ -80,10 +80,10 @@ const ReportingAnalytics: React.FC = () => {
   >([]);
  
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
-  const [showActiveOnly, setShowActiveOnly] = useState(true);
 
-  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>([]);
   const [rideId, setRideId] = useState<number>();
+  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>([]);
+
 
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
@@ -135,23 +135,24 @@ const ReportingAnalytics: React.FC = () => {
     if (!startDate || !endDate) return;
     const formattedStartDate = startDate.format("YYYY-MM-DD");
     const formattedEndDate = endDate.format("YYYY-MM-DD");
-
+  
     try {
-      const response = await db.post(`/Reports/ridesReport`, {
+      const response = await db.post(`/Reports/rideReport`, {  // Check if this is the correct endpoint
         StartDate: formattedStartDate,
         EndDate: formattedEndDate,
       });
       if (!response.data || response.data.length === 0) {
-        alert("No rides data available for the selected period.");
-        setReportData(null);
+        alert("No maintenance data available for the selected period.");
+        setMaintenanceData([]);  // Make sure to reset or set an empty array if no data is available
       } else {
-        setReportData(response.data[0]);
+        setMaintenanceData(response.data);  // Assuming `response.data` is the array of maintenance entries
       }
     } catch (error) {
-      console.error("Failed to fetch rides reports:", error);
-      alert("Failed to fetch rides reports.");
+      console.error("Failed to fetch maintenance reports:", error);
+      alert("Failed to fetch maintenance reports.");
     }
   };
+  
   
   
   const fetchInventoryReport = async () => {
@@ -270,11 +271,10 @@ const ReportingAnalytics: React.FC = () => {
             {endDate && ` to ${dayjs(endDate).format("MM/DD/YYYY")}`}
           </Typography>
         )}
-        {reportType === "maintenance" && reportData && (
-          <LatestMaintenance
-          entries={reportData.entries}
-          />
+        {reportType === "maintenance" && maintenanceData && (
+          <LatestMaintenance entries={maintenanceData} />
         )}
+
 
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
