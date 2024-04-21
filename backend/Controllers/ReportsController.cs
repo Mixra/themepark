@@ -133,6 +133,30 @@ namespace backend.Controllers
             return Ok(parsed);
         }
 
+        [HttpPost("rideReport")]
+        [Authorize(Roles = "999")]
+        public async Task<IActionResult> GetRideStatistics([FromBody] SalesModel data)
+        {
+            var sql = "EXEC sp_GetRideStatistics @StartDate, @EndDate";
+
+            var rideReport = await _databaseService.QueryAsync<dynamic>(sql, new { StartDate = data.StartDate, EndDate = data.EndDate });
+
+            var parsed = rideReport.Select(m => new
+            {
+                RideID = m.RideID,
+                RideName = m.RideName,
+                TotalClosures = m.TotalClosures,
+                LastClosure = m.LastClosure,
+                AvgClosureLength = m.AvgClosureLength,
+                MaxTotalClosures = m.MaxTotalClosures,
+                MinTotalClosures = m.MinTotalClosures,
+                MaxAvgClosureLength = m.MaxAvgClosureLength,
+                MinAvgClosureLength = m.MinAvgClosureLength
+            });
+
+            return Ok(parsed);
+        }
+
 
         [HttpPost("inventory")]
         [Authorize(Roles = "999")]

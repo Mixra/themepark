@@ -24,7 +24,6 @@ import { ParkSales } from "../../components/ReportTests/Sales/totalParkSale";
 import { BestGift } from "../../components/ReportTests/Sales/BestGift";
 import { WorstGift } from "../../components/ReportTests/Sales/LeastPerfGift";
 import { LatestMaintenance } from "../../components/ReportTests/Maintenance/MaintainReport";
-import { EmployeeReport } from "../../components/ReportTests/Employee/EmployeeReport";
 import {
   InventoryReport,
   InventoryReportProps,
@@ -44,8 +43,6 @@ type MaintenanceEntry = {
 type MaintenanceReportData = {
   entries: MaintenanceEntry[];
 };
-
-
 
 const salesFields = [
   { label: "Total Sales", key: "totalSales", prefix: "$", trend: "up" },
@@ -81,11 +78,12 @@ const ReportingAnalytics: React.FC = () => {
   const [filteredMaintenanceEntries, setFilteredMaintenanceEntries] = useState<
     MaintenanceEntry[]
   >([]);
-  const [filteredEmployees, setFilteredEmployees] = useState<
-    EmployeeReportData[]
-  >([]);
+ 
   const [showOngoingOnly, setShowOngoingOnly] = useState(true);
   const [showActiveOnly, setShowActiveOnly] = useState(true);
+
+  const [maintenanceData, setMaintenanceData] = useState<MaintenanceEntry[]>([]);
+  const [rideId, setRideId] = useState<number>();
 
   useEffect(() => {
     if (reportType === "maintenance" && reportData && reportData.entries) {
@@ -96,29 +94,20 @@ const ReportingAnalytics: React.FC = () => {
             )
           : reportData.entries
       );
-    } else if (
-      reportType === "employee" &&
-      reportData &&
-      reportData.employees
-    ) {
-      setFilteredEmployees(
-        showActiveOnly
-          ? reportData.employees.filter(
-              (employee: EmployeeReportData) =>
-                employee.employeeStatus === "Active"
-            )
-          : reportData.employees
-      );
     } else {
       setFilteredMaintenanceEntries([]);
-      setFilteredEmployees([]);
     }
-  }, [showOngoingOnly, showActiveOnly, reportData, reportType]);
+  }, [showOngoingOnly, reportData, reportType]);
+
+
+
 
   const handleReportTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setReportType(event.target.value as ReportType | "");
     setReportData(null);
   };
+
+
 
   const fetchSalesReport = async (startDate, endDate) => {
     if (!startDate || !endDate) return;
@@ -141,7 +130,29 @@ const ReportingAnalytics: React.FC = () => {
       alert("Failed to fetch sales reports.");
     }
   };
+  
+  const fetchMaintenanceReport = async (startDate, endDate) => {
+    if (!startDate || !endDate) return;
+    const formattedStartDate = startDate.format("YYYY-MM-DD");
+    const formattedEndDate = endDate.format("YYYY-MM-DD");
 
+    try {
+      const response = await db.post(`/Reports/ridesReport`, {
+        StartDate: formattedStartDate,
+        EndDate: formattedEndDate,
+      });
+      if (!response.data || response.data.length === 0) {
+        alert("No rides data available for the selected period.");
+        setReportData(null);
+      } else {
+        setReportData(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rides reports:", error);
+      alert("Failed to fetch rides reports.");
+    }
+  };
+  
   
   const fetchInventoryReport = async () => {
     try {
@@ -158,7 +169,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const handleViewReports = () => {
-    if ((reportType === "sales" || reportType === "inventory" ) && (!startDate || !endDate)) {
+    if ((reportType === "sales" || reportType === "inventory"|| reportType === "maintenance" ) && (!startDate || !endDate)) {
       alert("Please select both start and end dates for the report.");
       return;
     }
@@ -168,39 +179,11 @@ const ReportingAnalytics: React.FC = () => {
         fetchSalesReport(startDate, endDate);
         break;
       case "maintenance":
-          setReportData({
-            entries: [
-              {
-                rideId: 1,
-                rideName: "Roller Coaster",
-                totalClosures: 10,
-                lastClosure: new Date("2024-04-19"),
-                averageClosureLengthDays: 2.5
-              },
-              {
-                rideId: 2,
-                rideName: "Carousel",
-                totalClosures: 5,
-                lastClosure: new Date("2024-04-18"),
-                averageClosureLengthDays: 1.8
-              },
-              {
-                rideId: 3,
-                rideName: "Ferris Wheel",
-                totalClosures: 7,
-                lastClosure: new Date("2024-04-20"),
-                averageClosureLengthDays: 2.1
-              },
-              {
-                rideId: 4,
-                rideName: "Teacups",
-                totalClosures: 3,
-                lastClosure: new Date("2024-04-17"),
-                averageClosureLengthDays: 1.3
-              }
-            ]
-          });
-          break;
+          //get the data from fetchInventoryHere
+        
+        fetchMaintenanceReport(startDate, endDate);
+        break;
+  
       case "inventory":
         fetchInventoryReport();
         break;
@@ -208,7 +191,7 @@ const ReportingAnalytics: React.FC = () => {
   };
 
   const renderDatePickers = () => {
-    if (reportType === "sales" || reportType === "inventory") {
+    if (reportType === "sales" || reportType === "inventory"||reportType === "maintenance") {
       return (
         <>
           <DatePicker
@@ -293,7 +276,6 @@ const ReportingAnalytics: React.FC = () => {
           />
         )}
 
-       
         {reportType === "sales" && reportData && (
           <Box sx={{ padding: 4 }}>
             <Typography variant="h6">Sales Report</Typography>
